@@ -1,5 +1,8 @@
 package com.cyecize.http;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +24,7 @@ public class HttpRequestImpl implements HttpRequest {
 
     private Map<String, HttpCookie> cookies;
 
-    public HttpRequestImpl(String requestContent){
+    public HttpRequestImpl(String requestContent) {
         this.initMethod(requestContent);
         this.initRequestUrl(requestContent);
         this.initHeaders(requestContent);
@@ -132,8 +135,8 @@ public class HttpRequestImpl implements HttpRequest {
         for (int i = 0; i < queryKeyValuePairs.length; i++) {
             String[] queryKeyValuePair = queryKeyValuePairs[i].split("\\=");
 
-            String queryParameterKey = queryKeyValuePair[0];
-            String queryParameterValue = queryKeyValuePair[1];
+            String queryParameterKey = this.decode(queryKeyValuePair[0]);
+            String queryParameterValue = queryKeyValuePair.length > 1 ? this.decode(queryKeyValuePair[1]) : null;
 
             this.queryParameters.putIfAbsent(queryParameterKey, queryParameterValue);
         }
@@ -150,8 +153,7 @@ public class HttpRequestImpl implements HttpRequest {
 
                 for (int i = 0; i < bodyParams.size(); i++) {
                     String[] bodyKeyValuePair = bodyParams.get(i).split("\\=");
-
-                    this.addBodyParameter(bodyKeyValuePair[0], bodyKeyValuePair[1]);
+                    this.addBodyParameter(this.decode(bodyKeyValuePair[0]), bodyKeyValuePair.length > 1 ? this.decode(bodyKeyValuePair[1]) : null);
                 }
             }
         }
@@ -172,6 +174,10 @@ public class HttpRequestImpl implements HttpRequest {
 
             this.cookies.putIfAbsent(cookieNameValuePair[0], new HttpCookieImpl(cookieNameValuePair[0], cookieNameValuePair[1]));
         }
+    }
+
+    private String decode(String s) {
+        return URLDecoder.decode(s, StandardCharsets.UTF_8);
     }
 
 }

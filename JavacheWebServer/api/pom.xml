@@ -6,7 +6,7 @@
 
     <groupId>com.cyecize</groupId>
     <artifactId>javache-api</artifactId>
-    <version>1.1</version>
+    <version>1.2.1</version>
     <build>
         <plugins>
             <plugin>
@@ -19,6 +19,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

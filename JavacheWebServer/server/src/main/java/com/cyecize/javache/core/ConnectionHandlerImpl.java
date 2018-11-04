@@ -4,11 +4,10 @@ import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.services.InputStreamCachingService;
 import com.cyecize.javache.services.LoggingService;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
-import java.util.Set;
+import java.util.List;
+
 
 public class ConnectionHandlerImpl implements ConnectionHandler {
 
@@ -18,13 +17,13 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 
     private OutputStream clientSocketOutputStream;
 
-    private Set<RequestHandler> requestHandlers;
+    private List<RequestHandler> requestHandlers;
 
     private InputStreamCachingService cachingService;
 
     private LoggingService loggingService;
 
-    public ConnectionHandlerImpl(Socket clientSocket, Set<RequestHandler> requestHandlers, InputStreamCachingService cachingService, LoggingService loggingService) {
+    public ConnectionHandlerImpl(Socket clientSocket, List<RequestHandler> requestHandlers, InputStreamCachingService cachingService, LoggingService loggingService) {
         this.initializeConnection(clientSocket);
         this.requestHandlers = requestHandlers;
         this.cachingService = cachingService;
@@ -39,7 +38,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
             this.clientSocketOutputStream.close();
             this.clientSocket.close();
             this.cachingService.evictCache();
-        } catch (IOException e) {
+        } catch (IOException |ArrayIndexOutOfBoundsException e) {
             this.loggingService.error(e.getMessage());
         }
     }

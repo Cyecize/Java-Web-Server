@@ -11,7 +11,10 @@ public final class Reader {
         StringBuilder result = new StringBuilder();
 
         do {
-            result.append((char) inputStream.read());
+            int val = inputStream.read();
+            if (val > -1) {
+                result.append((char) val);
+            }
         } while (inputStream.available() > 0);
 
         return result.toString();

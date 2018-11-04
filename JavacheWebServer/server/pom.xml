@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.cyecize</groupId>
-    <artifactId>javache-api</artifactId>
-    <version>1.1</version>
+    <artifactId>javache</artifactId>
+    <version>1.0</version>
     <build>
         <plugins>
             <plugin>
@@ -20,5 +20,22 @@
         </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>http</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${basedir}/lib/http-1.0.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>javache-api</artifactId>
+            <scope>system</scope>
+            <version>1.1</version>
+            <systemPath>${basedir}/lib/javache-api-1.1.jar</systemPath>
+        </dependency>
+    </dependencies>
 
 </project>

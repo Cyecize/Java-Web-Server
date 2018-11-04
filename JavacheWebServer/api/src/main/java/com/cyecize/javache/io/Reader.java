@@ -3,15 +3,16 @@ package com.cyecize.javache.io;
 import java.io.*;
 
 public final class Reader {
-    public Reader() {}
+    public Reader() {
+    }
 
     public String readAllLines(InputStream inputStream) throws IOException {
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream));
 
         StringBuilder result = new StringBuilder();
-        while(buffer.ready()) {
-            result.append((char)buffer.read());
-        }
+
+        do {
+            result.append((char) inputStream.read());
+        } while (inputStream.available() > 0);
 
         return result.toString();
     }

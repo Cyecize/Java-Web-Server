@@ -7,3 +7,6 @@
 /JavacheWebServer/api/.idea/**
 /JavacheWebServer/api/out/**
 /JavacheWebServer/api/target/**
+/JavacheWebServer/server/.idea/**
+/JavacheWebServer/server/out/**
+/JavacheWebServer/server/target/**

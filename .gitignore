@@ -4,3 +4,6 @@
 /SoletApi/.idea/**
 /SoletApi/out/**
 /SoletApi/target/**
+/JavacheWebServer/api/.idea/**
+/JavacheWebServer/api/out/**
+/JavacheWebServer/api/target/**

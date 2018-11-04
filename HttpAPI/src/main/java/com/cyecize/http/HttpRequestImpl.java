@@ -177,7 +177,11 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     private String decode(String s) {
-        return URLDecoder.decode(s, StandardCharsets.UTF_8);
+        try {
+            return URLDecoder.decode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return s;
+        }
     }
 
 }

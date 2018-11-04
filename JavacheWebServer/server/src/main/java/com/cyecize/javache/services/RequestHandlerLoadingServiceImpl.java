@@ -51,18 +51,17 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
                 .filter(this::isJarFile)
                 .collect(Collectors.toList());
 
+        for (File jFile : allJarFiles) {
+            this.addJarFileToClassPath(jFile.getCanonicalPath());
+        }
+
         for (String currentRequestHandlerName : requestHandlerPriority) {
             File jarFile = allJarFiles.stream()
-                    .filter(x -> {
-                        System.out.println(this.trimFileNameExtension(x));
-                       return this.trimFileNameExtension(x).equals(currentRequestHandlerName);}
-                    )
+                    .filter(x -> this.trimFileNameExtension(x).equals(currentRequestHandlerName))
                     .findFirst().orElse(null);
 
             if (jarFile != null) {
-                String canonicalPath = jarFile.getCanonicalPath();
-                JarFile fileAsJar = new JarFile(canonicalPath);
-                this.addJarFileToClassPath(canonicalPath);
+                JarFile fileAsJar = new JarFile(jarFile.getCanonicalPath());
                 this.loadJarFile(fileAsJar);
             }
         }
@@ -72,16 +71,19 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         URL url = new URL("jar:file:" + canonicalPath + "!/");
         URLClassLoader ucl = new URLClassLoader(new URL[] {url}, Thread.currentThread().getContextClassLoader());
         Thread.currentThread().setContextClassLoader(ucl);
-        //URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-        //Class urlClsLoader = URLClassLoader.class;
 
-//        try {
-//            Method method = urlClsLoader.getDeclaredMethod("addURL", URL.class);
-//            method.setAccessible(true);
-//            method.invoke(sysloader, new Object[]{url});
-//        } catch (Throwable t) {
-//            t.printStackTrace();
-//        }
+        URLClassLoader sysloader =
+                (URLClassLoader) ClassLoader.getSystemClassLoader();
+        Class sysclass = URLClassLoader.class;
+
+        try {
+            Method method = sysclass.getDeclaredMethod("addURL", URL.class);
+            method.setAccessible(true);
+            method.invoke(sysloader, new Object[] { url });
+        } catch (Throwable t) {
+            t.printStackTrace();
+            // throw new IOException("Error, could not add URL to system classloader");
+        }
     }
 
     private void loadJarFile(JarFile jarFile) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {

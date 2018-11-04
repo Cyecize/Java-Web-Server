@@ -27,7 +27,7 @@ Summer MVC is really simple but it does have a templating engine, Path variables
 
 Technologies used
 ---------------------
-	* Java 11
+	* Java 8
 	
 	* Maven
 	

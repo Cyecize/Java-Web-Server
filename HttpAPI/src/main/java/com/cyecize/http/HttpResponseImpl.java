@@ -1,5 +1,6 @@
 package com.cyecize.http;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,6 +90,6 @@ public class HttpResponseImpl implements HttpResponse {
         }
 
         result.append(System.lineSeparator());
-        return result.toString().getBytes();
+        return result.toString().getBytes(StandardCharsets.UTF_8);
     }
 }

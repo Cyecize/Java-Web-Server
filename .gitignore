@@ -1,6 +1,9 @@
 /HttpAPI/.idea/**
 /HttpAPI/out/**
 /HttpAPI/target/**
+/BroccolinaRequestHandler/.idea/**
+/BroccolinaRequestHandler/out/**
+/BroccolinaRequestHandler/target/**
 /SoletApi/.idea/**
 /SoletApi/out/**
 /SoletApi/target/**

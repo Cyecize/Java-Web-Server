@@ -53,7 +53,7 @@ public class ServerImpl implements Server {
                 FutureTask<?> task = new FutureTask<>(connectionHandler, null);
                 task.run();
                 //for debugging disable async
-                //connectionHandler.run();
+               // connectionHandler.run();
             } catch (SocketTimeoutException ignored) {
             }
         }

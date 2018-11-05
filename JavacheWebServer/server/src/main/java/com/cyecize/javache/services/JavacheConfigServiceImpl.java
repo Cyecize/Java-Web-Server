@@ -15,7 +15,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
     private static final String CONFIG_FOLDER_PATH = WebConstants.WORKING_DIRECTORY + "config/";
 
-    private static final String REQUEST_HANDLER_PRIORITY_FILE = CONFIG_FOLDER_PATH + "config.ini";
+    private static final String REQUEST_HANDLER_PRIORITY_FILE = CONFIG_FOLDER_PATH + "request-handlers.ini";
 
     private static final String REQUEST_HANDLER_PRIORITY_FILE_NOT_FOUND_FORMAT = "Request Handler priority configuration file does not exist for \"%s\".";
 
@@ -49,7 +49,6 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
         this.requestHandlers =
                 Arrays.stream(configFileContent
-                                .replace("request-handlers: ", "")
                                 .split(","))
                         .collect(Collectors.toCollection(LinkedList::new));
     }

@@ -69,8 +69,8 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
     private void addJarFileToClassPath(String canonicalPath) throws MalformedURLException {
         URL url = new URL("jar:file:" + canonicalPath + "!/");
-        URLClassLoader ucl = new URLClassLoader(new URL[] {url}, Thread.currentThread().getContextClassLoader());
-        Thread.currentThread().setContextClassLoader(ucl);
+       // URLClassLoader ucl = new URLClassLoader(new URL[] {url}, Thread.currentThread().getContextClassLoader());
+        //Thread.currentThread().setContextClassLoader(ucl);
 
         URLClassLoader sysloader =
                 (URLClassLoader) ClassLoader.getSystemClassLoader();

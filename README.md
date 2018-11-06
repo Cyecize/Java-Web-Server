@@ -33,12 +33,27 @@ Technologies used
 	
 How to run the app?
 ------------------
-Ok so you have javache and the resource handlers ready and you want to build an app.
-Create a maven project and include the SummerApi, SoletApi, HttpApi jar files.
-from there you can annotate a class with @Controller from the SummerApi package and use the 
-class as a controller.
-You can add other dependencies like hibernate but make sure you include them in the jar file.
-Javache reads the jar files unpon loading and adds them in the classpath.
+Javache Web Server has 3 directories where you can add extension/configurations.
+
+Config folder contains configurations for the server like the request handlers and their priorities.
+
+Lib folder is where you can put any libraries that you might use in your application like hibernate.
+You also need to put broccolina, toyote and soletApi there.
+
+Webapps folder is where you put your applications. ROOT.jar is the main app. Any other app
+will be accessed by its name. For example shop.jar will be accessible on localhost:8000/shop/.
+
+Your app has to be .jar and has to be structured like so:
+* classes - put the compiled output there
+
+* resources - put the resources there (html, css, js, other files)
+
+* lib - you can put the .jar libraries here or put them instead in javache's lib folder.
+
+To better understand, you can extract some of the provided example applications.
+
+In the exams folder you can find a working javache demo with everything set up.
+You just need to run a command.
 
 More info
 -------------

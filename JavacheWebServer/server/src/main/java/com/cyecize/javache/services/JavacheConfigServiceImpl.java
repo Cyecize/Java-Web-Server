@@ -47,10 +47,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
         String configFileContent = new Reader().readAllLines(new FileInputStream(priorityConfigFile));
 
-        this.requestHandlers =
-                Arrays.stream(configFileContent
-                                .split(","))
-                        .collect(Collectors.toCollection(LinkedList::new));
+        this.requestHandlers = Arrays.stream(configFileContent.split(",\\s+"))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
 

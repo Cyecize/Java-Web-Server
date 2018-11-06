@@ -69,11 +69,8 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
     private void addJarFileToClassPath(String canonicalPath) throws MalformedURLException {
         URL url = new URL("jar:file:" + canonicalPath + "!/");
-       // URLClassLoader ucl = new URLClassLoader(new URL[] {url}, Thread.currentThread().getContextClassLoader());
-        //Thread.currentThread().setContextClassLoader(ucl);
-
-        URLClassLoader sysloader =
-                (URLClassLoader) ClassLoader.getSystemClassLoader();
+        //TODO this method does not work for Java 9 and beyond since they URLClassLoader is no longer used. Find an alternative.
+        URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Class sysclass = URLClassLoader.class;
 
         try {
@@ -82,7 +79,6 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
             method.invoke(sysloader, new Object[] { url });
         } catch (Throwable t) {
             t.printStackTrace();
-            // throw new IOException("Error, could not add URL to system classloader");
         }
     }
 
@@ -109,11 +105,9 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
     }
 
     private void loadRequestHandler(Class<?> requestHandlerClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        RequestHandler requestHandlerObject
-                = (RequestHandler) requestHandlerClass
+        RequestHandler requestHandlerObject = (RequestHandler) requestHandlerClass
                 .getDeclaredConstructor(String.class)
                 .newInstance(WebConstants.WORKING_DIRECTORY);
-
         this.requestHandlers.add(requestHandlerObject);
     }
 

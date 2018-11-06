@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +18,7 @@ import java.util.regex.Pattern;
 public class SoletDispatcher implements RequestHandler {
 
     private static final String APPLICATIONS_FOLDER_NAME = "webapps/";
+    private static final String SELECTED_APP_FORMAT = "Selected App for Request: \"%s\" - %s ";
 
     private final String workingDir;
 
@@ -78,7 +80,7 @@ public class SoletDispatcher implements RequestHandler {
                 break;
             }
         }
-        System.out.println("resolveCurrentRequestAppName " + this.currentRequestAppName);
+        System.out.println(String.format(SELECTED_APP_FORMAT, request.getRequestURL(), this.currentRequestAppName));
     }
 
     private HttpSolet findSoletCandidate(HttpSoletRequest request) {
@@ -95,6 +97,10 @@ public class SoletDispatcher implements RequestHandler {
             if (this.soletMap.containsKey(applicationRoute)) {
                 return this.soletMap.get(applicationRoute);
             }
+        }
+
+        if (request.isResource()) {
+            return null;
         }
 
         if (this.soletMap.containsKey("/*")) {

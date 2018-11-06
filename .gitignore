@@ -4,6 +4,9 @@
 /BroccolinaRequestHandler/.idea/**
 /BroccolinaRequestHandler/out/**
 /BroccolinaRequestHandler/target/**
+/CoyoteResourceHandler/.idea/**
+/CoyoteResourceHandler/out/**
+/CoyoteResourceHandler/target/**
 /SoletApi/.idea/**
 /SoletApi/out/**
 /SoletApi/target/**

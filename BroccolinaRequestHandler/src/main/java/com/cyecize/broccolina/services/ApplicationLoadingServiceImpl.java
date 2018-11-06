@@ -119,9 +119,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     private void loadApplicationLibraries(String librariesRootFolderPath) {
 
         File libraryFolder = new File(librariesRootFolderPath);
-
         if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
-            //throw new IllegalArgumentException(String.format(INVALID_FOLDER_FORMAT, librariesRootFolderPath));
             return;
         }
 
@@ -150,9 +148,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     }
 
     private void addUrlToClassPath(URL url) {
-        URLClassLoader ucl = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
-        Thread.currentThread().setContextClassLoader(ucl);
-
+        //TODO this method does not work for Java 9 and beyond since they URLClassLoader is no longer used. Find an alternative.
         try {
             URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
             Class sysClassLoaderType = URLClassLoader.class;

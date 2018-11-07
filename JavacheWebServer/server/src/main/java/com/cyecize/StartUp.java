@@ -15,8 +15,8 @@ public class StartUp {
         final LoggingService loggingService = new LoggingServiceImpl();
         int port = WebConstants.DEFAULT_SERVER_PORT;
 
-        if (args.length > 1) {
-            port = Integer.parseInt(args[1]);
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
         }
 
         Server server = new ServerImpl(port, loggingService, new RequestHandlerLoadingServiceImpl(), new JavacheConfigServiceImpl());

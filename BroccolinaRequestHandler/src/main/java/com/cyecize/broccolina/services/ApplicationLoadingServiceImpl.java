@@ -94,7 +94,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                     .replace(".class", "")
                     .replace("/", ".");
 
-            Class currentClassFile = Class.forName(className);
+            Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
 
             if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
                 this.loadSolet(currentClassFile, applicationName);
@@ -148,7 +148,6 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     }
 
     private void addUrlToClassPath(URL url) {
-        //TODO this method does not work for Java 9 and beyond since they URLClassLoader is no longer used. Find an alternative.
         try {
             URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
             Class sysClassLoaderType = URLClassLoader.class;

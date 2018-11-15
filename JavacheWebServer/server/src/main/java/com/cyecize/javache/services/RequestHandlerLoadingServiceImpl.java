@@ -69,7 +69,6 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
     private void addJarFileToClassPath(String canonicalPath) throws MalformedURLException {
         URL url = new URL("jar:file:" + canonicalPath + "!/");
-        //TODO this method does not work for Java 9 and beyond since they URLClassLoader is no longer used. Find an alternative.
         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Class sysclass = URLClassLoader.class;
 
@@ -90,12 +89,11 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
             if (!currentEntry.isDirectory() && currentEntry.getName().endsWith(".class")) {
 
-                String className = currentEntry
-                        .getName()
+                String className = currentEntry.getName()
                         .replace(".class", "")
                         .replace("/", ".");
 
-                Class currentClassFile = Thread.currentThread().getContextClassLoader().loadClass(className);
+                Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
 
                 if (RequestHandler.class.isAssignableFrom(currentClassFile)) {
                     this.loadRequestHandler(currentClassFile);
@@ -104,7 +102,7 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         }
     }
 
-    private void loadRequestHandler(Class<?> requestHandlerClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private void loadRequestHandler(Class<RequestHandler> requestHandlerClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         RequestHandler requestHandlerObject = (RequestHandler) requestHandlerClass
                 .getDeclaredConstructor(String.class)
                 .newInstance(WebConstants.WORKING_DIRECTORY);

@@ -8,10 +8,16 @@ import com.cyecize.javache.services.LoggingServiceImpl;
 import com.cyecize.javache.services.RequestHandlerLoadingServiceImpl;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class StartUp {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        replaceSystemClassLoader();
         final LoggingService loggingService = new LoggingServiceImpl();
         int port = WebConstants.DEFAULT_SERVER_PORT;
 
@@ -27,5 +33,20 @@ public class StartUp {
             loggingService.error(ex.getMessage());
             loggingService.printStackTrace(ex.getStackTrace());
         }
+    }
+
+    /*
+        This is a workaround for java 9 and above.
+        Since java 9 the systemClassLoader is no longer URLClassLoader
+        which means that there is no method "addUrl"
+        by doing this we change the default classLoader with URLClassLoader
+     */
+    private static void replaceSystemClassLoader() throws IllegalAccessException {
+        Field scl = Arrays.stream(ClassLoader.class.getDeclaredFields())
+                .filter(f -> f.getType() == ClassLoader.class && !f.getName().equals("parent"))
+                .findFirst().orElse(null);
+
+        scl.setAccessible(true);
+        scl.set(null, new URLClassLoader(new URL[0], ClassLoader.getSystemClassLoader()));
     }
 }

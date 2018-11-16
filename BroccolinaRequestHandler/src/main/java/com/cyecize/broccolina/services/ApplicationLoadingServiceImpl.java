@@ -20,6 +20,10 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private static final String MISSING_SOLET_ANNOTATION_FORMAT = "Missing solet annotation for class named %s.";
 
+    private static final String APPLICATION_LIB_FOLDER_NAME = "lib";
+
+    private static final String APPLICATION_CLASSES_FOLDER_NAME = "classes";
+
     private final JarFileUnzipService jarFileUnzipService;
 
     private Map<String, HttpSolet> solets;
@@ -62,8 +66,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     }
 
     private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        String classesRootFolderPath = applicationRootFolderPath + "classes" + File.separator;
-        String librariesRootFolderPath = applicationRootFolderPath + "lib" + File.separator;
+        String classesRootFolderPath = applicationRootFolderPath + APPLICATION_CLASSES_FOLDER_NAME + File.separator;
+        String librariesRootFolderPath = applicationRootFolderPath + APPLICATION_LIB_FOLDER_NAME + File.separator;
 
         this.loadApplicationLibraries(librariesRootFolderPath);
         this.loadApplicationClasses(classesRootFolderPath, applicationName);
@@ -75,7 +79,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         if (!classesRootDirectory.exists() || !classesRootDirectory.isDirectory()) {
             return;
         }
-        this.addDirectoryToClassPath(classesRootDirectory.getCanonicalPath() + "/");
+        this.addDirectoryToClassPath(classesRootDirectory.getCanonicalPath() + File.separator);
         this.loadClass(classesRootDirectory, "", currentApplicationName);
     }
 
@@ -89,7 +93,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                 return;
             }
 
-            String className = (packageName.replace("classes.", "")) + currentFile
+            String className = (packageName.replace(APPLICATION_CLASSES_FOLDER_NAME + ".", "")) + currentFile
                     .getName()
                     .replace(".class", "")
                     .replace("/", ".");
@@ -150,11 +154,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     private void addUrlToClassPath(URL url) {
         try {
             URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
-            Class sysClassLoaderType = URLClassLoader.class;
+            Class<URLClassLoader> sysClassLoaderType = URLClassLoader.class;
 
             Method method = sysClassLoaderType.getDeclaredMethod("addURL", URL.class);
             method.setAccessible(true);
-            method.invoke(sysClassLoaderInstance, new Object[]{url});
+            method.invoke(sysClassLoaderInstance, url);
         } catch (Throwable t) {
             t.printStackTrace();
         }

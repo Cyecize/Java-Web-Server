@@ -16,7 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-
 public class ResourceHandler implements RequestHandler {
     private static final String APPLICATION_RESOURCES_FOLDER_NAME = "resources";
 
@@ -32,7 +31,7 @@ public class ResourceHandler implements RequestHandler {
         this.serverRootFolderPath = serverRootFolderPath;
         this.hasIntercepted = false;
         this.appNameCollector = new AppNameCollectorImpl();
-        System.out.println("created toyote");
+        System.out.println("Loaded Toyote");
     }
 
     private String getApplicationName(String requestUrl) {
@@ -45,8 +44,8 @@ public class ResourceHandler implements RequestHandler {
         return "ROOT";
     }
 
-    private String getResourceName(String requestUrl) {
-        return requestUrl.substring(requestUrl.lastIndexOf("/") + 1);
+    private String getResourceName(String requestUrl, String appName) {
+        return requestUrl.replace("/" + appName, "");
     }
 
     private void notFound(String resourceName, HttpResponse response) {
@@ -78,14 +77,15 @@ public class ResourceHandler implements RequestHandler {
             HttpRequest request = new HttpRequestImpl(s);
             HttpResponse response = new HttpResponseImpl();
 
+            String applicationName = this.getApplicationName(request.getRequestURL());
             String resourcesFolder = this.serverRootFolderPath
                     + "webapps"
                     + File.separator
-                    + this.getApplicationName(request.getRequestURL())
+                    + applicationName
                     + File.separator
                     + APPLICATION_RESOURCES_FOLDER_NAME;
 
-            String resourceName = this.getResourceName(request.getRequestURL());
+            String resourceName = this.getResourceName(request.getRequestURL(), applicationName);
 
             this.handleResourceRequest(resourcesFolder, resourceName, response);
 

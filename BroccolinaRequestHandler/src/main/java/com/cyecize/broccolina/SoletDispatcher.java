@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,11 +73,16 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     private void resolveCurrentRequestAppName(HttpSoletRequest request) {
+        boolean isAppNameFound = false;
         for (String applicationName : this.applicationNames) {
             if (request.getRequestURL().startsWith(applicationName)) {
                 this.currentRequestAppName = applicationName;
+                isAppNameFound = true;
                 break;
             }
+        }
+        if (!isAppNameFound) {
+            this.currentRequestAppName = "";
         }
         System.out.println(String.format(SELECTED_APP_FORMAT, request.getRequestURL(), this.currentRequestAppName));
     }

@@ -30,8 +30,6 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
     @Override
     public void loadRequestHandlers(List<String> requestHandlerPriority) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         this.requestHandlers = new LinkedList<>();
-        URLClassLoader ucl = new URLClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
-        Thread.currentThread().setContextClassLoader(ucl);
         this.loadLibraryFiles(requestHandlerPriority);
     }
 
@@ -69,13 +67,11 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
     private void addJarFileToClassPath(String canonicalPath) throws MalformedURLException {
         URL url = new URL("jar:file:" + canonicalPath + "!/");
-        URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-        Class sysclass = URLClassLoader.class;
-
+        Class<URLClassLoader> uclType = URLClassLoader.class;
         try {
-            Method method = sysclass.getDeclaredMethod("addURL", URL.class);
+            Method method = uclType.getDeclaredMethod("addURL", URL.class);
             method.setAccessible(true);
-            method.invoke(sysloader, new Object[] { url });
+            method.invoke(ClassLoader.getSystemClassLoader(), url);
         } catch (Throwable t) {
             t.printStackTrace();
         }

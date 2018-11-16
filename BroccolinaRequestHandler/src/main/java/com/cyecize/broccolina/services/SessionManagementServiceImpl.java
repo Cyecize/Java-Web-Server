@@ -25,6 +25,8 @@ public class SessionManagementServiceImpl implements SessionManagementService {
                 request.getCookies().remove(SESSION_COOKIE_NAME);
                 request.setSession(new HttpSessionImpl());
             }
+        } else {
+            request.setSession(new HttpSessionImpl());
         }
     }
 

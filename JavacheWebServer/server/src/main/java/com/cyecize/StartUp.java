@@ -47,6 +47,7 @@ public class StartUp {
                 .findFirst().orElse(null);
 
         scl.setAccessible(true);
-        scl.set(null, new URLClassLoader(new URL[0], ClassLoader.getSystemClassLoader()));
+        scl.set(null, new URLClassLoader(new URL[0]));
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
     }
 }

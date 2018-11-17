@@ -26,16 +26,16 @@
             <groupId>com.cyecize</groupId>
             <artifactId>http</artifactId>
             <scope>system</scope>
-            <version>1.1</version>
-            <systemPath>${basedir}/lib/http-1.1.jar</systemPath>
+            <version>1.2</version>
+            <systemPath>${basedir}/lib/http-1.2.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
             <scope>system</scope>
-            <version>1.2.1</version>
-            <systemPath>${basedir}/lib/javache-api-1.2.1.jar</systemPath>
+            <version>1.2.2</version>
+            <systemPath>${basedir}/lib/javache-api-1.2.2.jar</systemPath>
         </dependency>
 
     </dependencies>

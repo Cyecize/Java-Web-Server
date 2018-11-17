@@ -1,6 +1,5 @@
 package com.cyecize.http;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -177,11 +176,7 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     private String decode(String s) {
-        try {
-            return URLDecoder.decode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return s;
-        }
+        return URLDecoder.decode(s, StandardCharsets.UTF_8);
     }
 
 }

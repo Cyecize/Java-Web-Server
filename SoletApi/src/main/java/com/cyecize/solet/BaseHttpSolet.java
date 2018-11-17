@@ -3,68 +3,59 @@ package com.cyecize.solet;
 import com.cyecize.http.HttpStatus;
 
 public abstract class BaseHttpSolet implements HttpSolet {
+
+    private static final String FUNCTIONALITY_NOT_FOUND_FORMAT = "<h1>[ERROR] %s %s </h1><br/>"
+            + "<h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>";
+
     private boolean isInitialized;
 
     private SoletConfig soletConfig;
 
+    protected String appNamePrefix;
+
     protected BaseHttpSolet() {
         this.isInitialized = false;
+        this.appNamePrefix = "";
     }
 
     private void configureNotFound(HttpSoletRequest request, HttpSoletResponse response) {
         response.setStatusCode(HttpStatus.NOT_FOUND);
-
         response.addHeader("Content-Type", "text/html");
     }
 
-    protected void doGet(HttpSoletRequest request, HttpSoletResponse response) {
-        this.configureNotFound(request, response);
-
-        response.setContent((
-                "<h1>[ERROR] GET "
-                        + request.getRequestURL()
-                        + "</h1><br/>"
-                        + "<h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>"
-        ).getBytes());
+    protected String createRoute(String route) {
+        return this.appNamePrefix + route;
     }
 
-    protected void doPost(HttpSoletRequest request, HttpSoletResponse response) {
+    protected void doGet(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         this.configureNotFound(request, response);
-
-        response.setContent((
-                "<h1>[ERROR] POST "
-                        + request.getRequestURL()
-                        + "</h1><br/>"
-                        + "<h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>"
-        ).getBytes());
+        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "GET", request.getRequestURL())));
     }
 
-    protected void doPut(HttpSoletRequest request, HttpSoletResponse response) {
+    protected void doPost(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         this.configureNotFound(request, response);
-
-        response.setContent((
-                "<h1>[ERROR] PUT "
-                        + request.getRequestURL()
-                        + "</h1><br/>"
-                        + "<h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>"
-        ).getBytes());
+        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "POST", request.getRequestURL())));
     }
 
-    protected void doDelete(HttpSoletRequest request, HttpSoletResponse response) {
+    protected void doPut(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         this.configureNotFound(request, response);
+        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "PUT", request.getRequestURL())));
+    }
 
-        response.setContent((
-                "<h1>[ERROR] DELETE "
-                        + request.getRequestURL()
-                        + "</h1><br/>"
-                        + "<h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>"
-        ).getBytes());
+    protected void doDelete(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+        this.configureNotFound(request, response);
+        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "DELETE", request.getRequestURL())));
     }
 
     @Override
     public void init(SoletConfig soletConfig) {
         this.isInitialized = true;
         this.soletConfig = soletConfig;
+    }
+
+    @Override
+    public void setAppNamePrefix(String appName) {
+        this.appNamePrefix = appName;
     }
 
     @Override
@@ -78,7 +69,7 @@ public abstract class BaseHttpSolet implements HttpSolet {
     }
 
     @Override
-    public void service(HttpSoletRequest request, HttpSoletResponse response) {
+    public void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         switch (request.getMethod().toUpperCase()) {
             case "GET":
                 this.doGet(request, response);

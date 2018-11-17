@@ -41,6 +41,11 @@ public class HttpSessionImpl implements HttpSession {
     }
 
     @Override
+    public Object getAttribute(String key) {
+        return this.sessionAttributes.get(key);
+    }
+
+    @Override
     public Map<String, Object> getAttributes() {
         return this.sessionAttributes;
     }

@@ -50,6 +50,8 @@ public interface HttpResponse {
 
     void setStatusCode(HttpStatus statusCode);
 
+    void setContent(String content);
+
     void setContent(byte[] content);
 
     void addHeader(String header, String value);
@@ -58,12 +60,13 @@ public interface HttpResponse {
 
     void addCookie(HttpCookie cookie);
 
+    String getResponse();
+
+    HttpStatus getStatusCode();
+
     byte[] getContent();
 
     byte[] getBytes();
 
     Map<String, String> getHeaders();
-
-    HttpStatus getStatusCode();
-
 }

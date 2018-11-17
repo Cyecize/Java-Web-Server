@@ -10,18 +10,18 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
-      <library name="Maven: com.cyecize:http:1.1">
+      <library name="Maven: com.cyecize:http:1.2">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/http-1.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/http-1.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="Maven: com.cyecize:javache-api:1.2.1">
+      <library name="Maven: com.cyecize:javache-api:1.2.2">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/javache-api-1.2.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/javache-api-1.2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

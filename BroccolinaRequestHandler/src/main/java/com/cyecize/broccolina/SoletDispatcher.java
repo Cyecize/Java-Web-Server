@@ -55,7 +55,12 @@ public class SoletDispatcher implements RequestHandler {
             this.hasIntercepted = false;
             return;
         }
-        solet.service(request, response);
+        try {
+            solet.setAppNamePrefix(this.currentRequestAppName);
+            solet.service(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (response.getStatusCode() == null) {
             response.setStatusCode(HttpStatus.OK);
@@ -63,7 +68,7 @@ public class SoletDispatcher implements RequestHandler {
 
         this.sessionManagementService.sendSessionIfExistent(request, response);
         this.sessionManagementService.clearInvalidSessions();
-        new Writer().writeBytes(response.getBytes(), response.getOutputStream());
+        new Writer().writeData(response.getResponse(), response.getOutputStream());
         this.hasIntercepted = true;
     }
 

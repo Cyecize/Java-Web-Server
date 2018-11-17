@@ -6,9 +6,9 @@ import java.util.Map;
 
 public class HttpResponseImpl implements HttpResponse {
 
-    private HttpStatus statusCode;
+    private static final String CONTENT_TYPE = "Content-Type";
 
-    private HttpSession session;
+    private HttpStatus statusCode;
 
     private byte[] content;
 
@@ -25,6 +25,11 @@ public class HttpResponseImpl implements HttpResponse {
     @Override
     public void setStatusCode(HttpStatus statusCode) {
         this.statusCode = statusCode;
+    }
+
+    @Override
+    public void setContent(String content) {
+        this.content = content.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -48,26 +53,8 @@ public class HttpResponseImpl implements HttpResponse {
     }
 
     @Override
-    public byte[] getContent() {
-        return this.content;
-    }
-
-    @Override
-    public byte[] getBytes() {
-        byte[] headersBytes = this.getHeaderBytes();
-        byte[] bodyBytes = this.getContent();
-
-        byte[] fullResponse = new byte[headersBytes.length + bodyBytes.length];
-
-        System.arraycopy(headersBytes, 0, fullResponse, 0, headersBytes.length);
-        System.arraycopy(bodyBytes, 0, fullResponse, headersBytes.length, bodyBytes.length);
-
-        return fullResponse;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() {
-        return this.headers;
+    public String getResponse() {
+        return this.getHeaderString() + new String(this.getContent(), StandardCharsets.UTF_8);
     }
 
     @Override
@@ -75,9 +62,31 @@ public class HttpResponseImpl implements HttpResponse {
         return this.statusCode;
     }
 
-    private byte[] getHeaderBytes() {
+    @Override
+    public byte[] getContent() {
+        return this.content;
+    }
+
+    @Override
+    public byte[] getBytes() {
+        byte[] headers = this.getHeaderString().getBytes();
+        byte[] result = new byte[headers.length + this.getContent().length];
+        System.arraycopy(headers, 0, result, 0, headers.length);
+        System.arraycopy(this.getContent(), 0, result, headers.length, this.getContent().length);
+        return result;
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+        return this.headers;
+    }
+
+
+    private String getHeaderString() {
         StringBuilder result = new StringBuilder()
                 .append(ResponseLines.getResponseLine(this.getStatusCode().getStatusCode())).append(System.lineSeparator());
+
+        this.headers.put(CONTENT_TYPE, this.resolveCharset(this.headers.getOrDefault(CONTENT_TYPE, "text/html")));
 
         for (Map.Entry<String, String> header : this.getHeaders().entrySet()) {
             result.append(header.getKey()).append(": ").append(header.getValue()).append(System.lineSeparator());
@@ -90,6 +99,14 @@ public class HttpResponseImpl implements HttpResponse {
         }
 
         result.append(System.lineSeparator());
-        return result.toString().getBytes(StandardCharsets.UTF_8);
+        return result.toString();
+    }
+
+    private String resolveCharset(String contentType) {
+        if (contentType.contains("charset")) {
+            return contentType;
+        } else {
+            return contentType + "; charset=utf8";
+        }
     }
 }

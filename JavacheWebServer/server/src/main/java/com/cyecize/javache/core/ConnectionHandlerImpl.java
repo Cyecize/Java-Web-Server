@@ -38,7 +38,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
             this.clientSocketOutputStream.close();
             this.clientSocket.close();
             this.cachingService.evictCache();
-        } catch (IOException |ArrayIndexOutOfBoundsException e) {
+        } catch (IOException | ArrayIndexOutOfBoundsException e) {
             this.loggingService.error(e.getMessage());
         }
     }

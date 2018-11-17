@@ -1,6 +1,5 @@
 package com.cyecize.http;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public interface HttpSession {
@@ -12,6 +11,8 @@ public interface HttpSession {
     boolean isValid();
 
     String getId();
+
+    Object getAttribute(String key);
 
     Map<String, Object> getAttributes();
 

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,7 +52,7 @@ public class ResourceHandler implements RequestHandler {
     private void notFound(String resourceName, HttpResponse response) {
         response.setStatusCode(HttpStatus.NOT_FOUND);
         response.addHeader("Content-Type", "text/html");
-        response.setContent(String.format(RESOURCE_NOT_FOUND_MESSAGE, resourceName).getBytes());
+        response.setContent(String.format(RESOURCE_NOT_FOUND_MESSAGE, resourceName));
     }
 
     private void handleResourceRequest(String resourcesFolder, String resourceName, HttpResponse response) {
@@ -85,9 +86,7 @@ public class ResourceHandler implements RequestHandler {
                     + File.separator
                     + APPLICATION_RESOURCES_FOLDER_NAME;
 
-            String resourceName = this.getResourceName(request.getRequestURL(), applicationName);
-
-            this.handleResourceRequest(resourcesFolder, resourceName, response);
+            this.handleResourceRequest(resourcesFolder, this.getResourceName(request.getRequestURL(), applicationName), response);
 
             new Writer().writeBytes(response.getBytes(), outputStream);
             this.hasIntercepted = true;

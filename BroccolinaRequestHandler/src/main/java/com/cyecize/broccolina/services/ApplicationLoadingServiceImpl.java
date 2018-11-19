@@ -2,6 +2,7 @@ package com.cyecize.broccolina.services;
 
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
+import com.cyecize.solet.SoletConfigImpl;
 import com.cyecize.solet.WebSolet;
 
 import java.io.File;
@@ -116,7 +117,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         if (!applicationName.equals(ROOT_APPLICATION_FILE_NAME)) {
             soletRoute = "/" + applicationName + soletRoute;
         }
-        soletInstance.init(null);
+        if (!soletInstance.isInitialized()) {
+            soletInstance.init(new SoletConfigImpl());
+        }
         this.solets.put(soletRoute, soletInstance);
     }
 

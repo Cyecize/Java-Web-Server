@@ -89,11 +89,13 @@ public class ResourceHandler implements RequestHandler {
             this.handleResourceRequest(resourcesFolder, this.getResourceName(request.getRequestURL(), applicationName), response);
 
             new Writer().writeBytes(response.getBytes(), outputStream);
+            response = null;
             this.hasIntercepted = true;
         } catch (IOException e) {
             e.printStackTrace();
             this.hasIntercepted = false;
         }
+        System.gc();
     }
 
     @Override

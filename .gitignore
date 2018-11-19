@@ -16,3 +16,6 @@
 /JavacheWebServer/server/.idea/**
 /JavacheWebServer/server/out/**
 /JavacheWebServer/server/target/**
+/SummerMVC_Framework/.idea/**
+/SummerMVC_Framework/out/**
+/SummerMVC_Framework/target/**

@@ -1,7 +1,9 @@
 package com.cyecize.summer.areas.scanning.services;
 
-import java.util.Map;
+import com.cyecize.summer.areas.scanning.exceptions.ControllerLoadException;
+
+import java.util.Set;
 
 public interface ControllerLoadingService {
-    Map<String, Object> loadControllers();
+    Set<Object> loadControllers(Set<Class<?>> availableClasses, Set<Object> loadedServices) throws ControllerLoadException;
 }

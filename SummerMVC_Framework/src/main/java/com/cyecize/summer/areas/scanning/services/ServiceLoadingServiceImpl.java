@@ -33,6 +33,7 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
             throw new ServiceLoadException(e.getMessage(), e);
         }
+        loadedServices.addAll(beans);
         return loadedServices;
     }
 

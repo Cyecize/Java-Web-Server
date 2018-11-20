@@ -41,7 +41,7 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
             InputStream in = new BufferedInputStream(fileAsJarArchive.getInputStream(currentEntry));
             OutputStream out = new BufferedOutputStream(new FileOutputStream(currentEntryAsFile));
             byte[] buffer = new byte[2048];
-            for (;;) {
+            while (true) {
                 int nBytes = in.read(buffer);
                 if (nBytes <= 0) {
                     break;

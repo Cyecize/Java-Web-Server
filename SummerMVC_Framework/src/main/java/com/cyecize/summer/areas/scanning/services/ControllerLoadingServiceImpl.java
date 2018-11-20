@@ -5,7 +5,9 @@ import com.cyecize.summer.common.annotations.Controller;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class ControllerLoadingServiceImpl implements ControllerLoadingService {
@@ -14,16 +16,16 @@ public class ControllerLoadingServiceImpl implements ControllerLoadingService {
 
     private static final String COULD_NOT_FIND_DEPENDENCY_FORMAT = "Could not find instance for dependency \"%s\".";
 
-    private Set<Object> loadedControllers;
+    private Map<Class<?>, Object> loadedControllers;
 
     private Set<Object> loadedServices;
 
     public ControllerLoadingServiceImpl() {
-        this.loadedControllers = new HashSet<>();
+        this.loadedControllers = new HashMap<>();
     }
 
     @Override
-    public Set<Object> loadControllers(Set<Class<?>> availableClasses, Set<Object> loadedServices) throws ControllerLoadException {
+    public Map<Class<?>, Object> loadControllers(Set<Class<?>> availableClasses, Set<Object> loadedServices) throws ControllerLoadException {
         this.loadedServices = loadedServices;
         Set<Class<?>> controllerClasses = this.findControllerClasses(availableClasses);
         for (Class<?> controllerClass : controllerClasses) {
@@ -62,7 +64,8 @@ public class ControllerLoadingServiceImpl implements ControllerLoadingService {
 
     private void instantiateController(Constructor<?> constructor, Object... params) throws ControllerLoadException {
         try {
-            this.loadedControllers.add(constructor.newInstance(params));
+            Object instance = constructor.newInstance(params);
+            this.loadedControllers.put(instance.getClass(), instance);
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new ControllerLoadException(e.getMessage(), e);
         }

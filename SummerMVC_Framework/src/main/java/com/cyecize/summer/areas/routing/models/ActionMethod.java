@@ -24,4 +24,7 @@ public class ActionMethod {
         return this.method;
     }
 
+    public Class<?> getControllerClass() {
+        return controllerClass;
+    }
 }

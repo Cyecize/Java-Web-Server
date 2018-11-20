@@ -33,8 +33,8 @@ public class SummerBootApplication {
             Map<String, Set<ActionMethod>> actionsByMethod = methodScanningService.findActionMethods(loadedControllers);
 
             SoletConfig soletConfig = new SoletConfigImpl();
-            soletConfig.setAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS_NAME, loadedServicesAndBeans);
-            soletConfig.setAttribute(SOLET_CFG_LOADED_CONTROLLERS_NAME, loadedControllers);
+            soletConfig.setAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS, loadedServicesAndBeans);
+            soletConfig.setAttribute(SOLET_CFG_LOADED_CONTROLLERS, loadedControllers);
             soletConfig.setAttribute(SOLET_CFG_LOADED_ACTIONS, actionsByMethod);
             startupSolet.init(soletConfig);
             loadedClasses = null;

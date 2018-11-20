@@ -16,6 +16,8 @@ public interface DependencyContainer {
 
     Object reloadController(Object controller);
 
+    <T> T getObject(Class<T> objType);
+
     Set<Object> getServicesAndBeans();
 
     Set<Object> getPlatformBeans();

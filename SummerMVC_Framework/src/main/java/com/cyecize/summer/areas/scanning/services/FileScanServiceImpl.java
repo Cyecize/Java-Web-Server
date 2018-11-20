@@ -22,6 +22,11 @@ public class FileScanServiceImpl implements FileScanService {
     }
 
     @Override
+    public String getAppRootDir() {
+        return this.scanDir;
+    }
+
+    @Override
     public Set<Class<?>> scanFiles() throws FileScanException {
         File file = new File(this.scanDir);
         if (!file.exists() || !file.isDirectory()) {

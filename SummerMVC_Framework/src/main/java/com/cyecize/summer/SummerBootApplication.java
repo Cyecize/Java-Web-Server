@@ -36,6 +36,7 @@ public class SummerBootApplication {
             soletConfig.setAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS, loadedServicesAndBeans);
             soletConfig.setAttribute(SOLET_CFG_LOADED_CONTROLLERS, loadedControllers);
             soletConfig.setAttribute(SOLET_CFG_LOADED_ACTIONS, actionsByMethod);
+            soletConfig.setAttribute(SOLET_CFG_WORKING_DIR, fileScanService.getAppRootDir());
             startupSolet.init(soletConfig);
             loadedClasses = null;
             loadedBeans = null;
@@ -47,7 +48,6 @@ public class SummerBootApplication {
             serviceLoadingService = null;
             controllerLoadingService = null;
             methodScanningService = null;
-            System.gc();
         }
     }
 }

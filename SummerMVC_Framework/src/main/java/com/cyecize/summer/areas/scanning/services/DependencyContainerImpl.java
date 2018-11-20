@@ -78,6 +78,15 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getObject(Class<T> objType) {
+        return (T) this.platformBeans.stream().filter(pb -> objType.isAssignableFrom(pb.getClass()))
+                .findFirst().orElse(this.allServicesAndBeans.stream()
+                        .filter(sb -> objType.isAssignableFrom(sb.getClass())).findFirst().orElse(null)
+                );
+    }
+
+    @Override
     public Set<Object> getServicesAndBeans() {
         return this.allServicesAndBeans;
     }

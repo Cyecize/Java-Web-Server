@@ -11,16 +11,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 public class ResourceHandler implements RequestHandler {
-    private static final String APPLICATION_RESOURCES_FOLDER_NAME = "resources";
 
     private static final String RESOURCE_NOT_FOUND_MESSAGE = "<h1 style=\"text-align: center;\">The resource - \"%s\" you are looking for cannot be found.</h1>";
+
+    private static final String WEB_APPS_DIR_NAME = "webapps";
+
+    private static final String CLASSES_FOLDER_NAME = "classes";
 
     private final String serverRootFolderPath;
 
@@ -80,11 +82,11 @@ public class ResourceHandler implements RequestHandler {
 
             String applicationName = this.getApplicationName(request.getRequestURL());
             String resourcesFolder = this.serverRootFolderPath
-                    + "webapps"
+                    + WEB_APPS_DIR_NAME
                     + File.separator
                     + applicationName
                     + File.separator
-                    + APPLICATION_RESOURCES_FOLDER_NAME;
+                    + CLASSES_FOLDER_NAME;
 
             this.handleResourceRequest(resourcesFolder, this.getResourceName(request.getRequestURL(), applicationName), response);
 

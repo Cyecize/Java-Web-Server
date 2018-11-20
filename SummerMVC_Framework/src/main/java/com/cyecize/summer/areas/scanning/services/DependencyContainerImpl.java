@@ -13,10 +13,13 @@ public class DependencyContainerImpl implements DependencyContainer {
 
     private Set<Object> allServicesAndBeans;
 
+    private Set<Object> platformBeans;
+
     private Map<ServiceLifeSpan, List<Class<?>>> cachedClassesByLifeSpan;
 
     public DependencyContainerImpl() {
         this.allServicesAndBeans = new HashSet<>();
+        this.platformBeans = new HashSet<>();
         this.cachedClassesByLifeSpan = new HashMap<>();
     }
 
@@ -44,6 +47,16 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
+    public void addPlatformBean(Object object) {
+        this.platformBeans.add(object);
+    }
+
+    @Override
+    public void evictPlatformBeans() {
+        this.platformBeans = new HashSet<>();
+    }
+
+    @Override
     public Object reloadController(Object controller) {
         try {
             Class controllerClass = controller.getClass();
@@ -67,6 +80,11 @@ public class DependencyContainerImpl implements DependencyContainer {
     @Override
     public Set<Object> getServicesAndBeans() {
         return this.allServicesAndBeans;
+    }
+
+    @Override
+    public Set<Object> getPlatformBeans() {
+        return this.platformBeans;
     }
 
     private Object loadService(Class<?> serviceClass, ServiceLifeSpan serviceLifeSpan) throws ServiceLoadException {

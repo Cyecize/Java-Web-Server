@@ -31,12 +31,6 @@ public class SummerBootApplication {
             Set<Object> loadedServicesAndBeans = serviceLoadingService.loadServices(loadedBeans, loadedClasses);
             Map<Class<?>, Object> loadedControllers = controllerLoadingService.loadControllers(loadedClasses, loadedServicesAndBeans);
             Map<String, Set<ActionMethod>> actionsByMethod = methodScanningService.findActionMethods(loadedControllers);
-            actionsByMethod.forEach((k,v) -> {
-                System.out.println("For method " + k);
-                v.forEach(a -> {
-                    System.out.println("----- " + a.getPattern());
-                });
-            });
 
             SoletConfig soletConfig = new SoletConfigImpl();
             soletConfig.setAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS_NAME, loadedServicesAndBeans);

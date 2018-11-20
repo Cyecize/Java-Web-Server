@@ -10,7 +10,13 @@ public interface DependencyContainer {
 
     void reloadServices(ServiceLifeSpan lifeSpan);
 
+    void addPlatformBean(Object object);
+
+    void evictPlatformBeans();
+
     Object reloadController(Object controller);
 
     Set<Object> getServicesAndBeans();
+
+    Set<Object> getPlatformBeans();
 }

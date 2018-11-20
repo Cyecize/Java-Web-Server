@@ -4,6 +4,7 @@ import com.cyecize.solet.*;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.constants.IocConstants;
 
 import java.util.Set;
@@ -18,22 +19,18 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.dependencyContainer = new DependencyContainerImpl();
     }
 
-    private void reloadServicesWithRequestLifeSpan() {
+    private void processRequest(HttpSoletRequest request, HttpSoletResponse response) {
         this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
     }
 
     @Override
     protected final void doGet(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.reloadServicesWithRequestLifeSpan();
-        //TODO Find action method and invoke
-        response.setContent("Hello, this is default get!");
+        this.processRequest(request, response);
     }
 
     @Override
     protected final void doPost(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.reloadServicesWithRequestLifeSpan();
-        //TODO Find action method and invoke
-        response.setContent("Hello, this is default post!");
+        this.processRequest(request, response);
     }
 
     @Override
@@ -57,7 +54,17 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+        dependencyContainer.addPlatformBean(request);
+        dependencyContainer.addPlatformBean(response);
+        dependencyContainer.addPlatformBean(new Model());
+
+        if (request.getSession() != null) {
+            dependencyContainer.addPlatformBean(request.getSession());
+        }
+
         super.service(request, response);
+
+        dependencyContainer.evictPlatformBeans();
     }
 
     @Override

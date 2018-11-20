@@ -30,23 +30,27 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
         while (jarEntries.hasMoreElements()) {
             JarEntry currentEntry = jarEntries.nextElement();
 
-            String currentEntryCannonicalPath = jarFolder.getCanonicalPath() + File.separator + currentEntry.getName();
-            File currentEntryAsFile = new File(currentEntryCannonicalPath);
+            String currentEntryCanonicalPath = jarFolder.getCanonicalPath() + File.separator + currentEntry.getName();
+            File currentEntryAsFile = new File(currentEntryCanonicalPath);
 
             if (currentEntry.isDirectory()) {
                 currentEntryAsFile.mkdir();
                 continue;
             }
 
-            InputStream currentEntryInputStream = fileAsJarArchive.getInputStream(currentEntry);
-            OutputStream currentEntryOutputStream = new FileOutputStream(currentEntryAsFile.getCanonicalPath());
-
-            while (currentEntryInputStream.available() > 0) {
-                currentEntryOutputStream.write(currentEntryInputStream.read());
+            InputStream in = new BufferedInputStream(fileAsJarArchive.getInputStream(currentEntry));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(currentEntryAsFile));
+            byte[] buffer = new byte[2048];
+            for (;;) {
+                int nBytes = in.read(buffer);
+                if (nBytes <= 0) {
+                    break;
+                }
+                out.write(buffer, 0, nBytes);
             }
-
-            currentEntryInputStream.close();
-            currentEntryOutputStream.close();
+            out.flush();
+            out.close();
+            in.close();
         }
 
         fileAsJarArchive.close();

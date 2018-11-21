@@ -80,7 +80,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     }
 
     private void handleModelResponse(Model result) throws EmptyViewException, ViewNotFoundException {
-        Object viewName = result.get(MODEL_VIEW_NAME_KEY);
+        Object viewName = result.getAttribute(MODEL_VIEW_NAME_KEY);
         if (viewName == null) {
             throw new EmptyViewException(VIEW_EMPTY_MSG);
         }

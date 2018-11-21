@@ -71,7 +71,11 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
         //TODO try catch this then search for exception listeners
         //Also TODO... add interceptors here
-        super.service(request, response);
+        try {
+            super.service(request, response);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         dependencyContainer.evictPlatformBeans();
     }

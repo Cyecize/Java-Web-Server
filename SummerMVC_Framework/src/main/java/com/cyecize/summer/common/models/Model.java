@@ -22,7 +22,11 @@ public class Model extends JtwigModel {
         return super.get(name).isPresent();
     }
 
-    public Optional<Value> getAttribute(String name) {
-        return super.get(name);
+    public Object getAttribute(String name) {
+        if (super.get(name).isPresent()) {
+            return super.get(name).get().getValue();
+        }
+        return null;
     }
+
 }

@@ -11,8 +11,13 @@ import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.JsonResponse;
 import com.cyecize.summer.common.models.Model;
 import com.google.gson.Gson;
+import org.jtwig.JtwigModel;
+import org.jtwig.JtwigTemplate;
+import org.jtwig.environment.EnvironmentConfiguration;
+import org.jtwig.environment.EnvironmentConfigurationBuilder;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -50,8 +55,20 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                     case "template":
                         String pathToFile = this.workingDir + "templates/" + resultTokens[1].trim();
                         try {
-                            response.setContent(Files.readAllBytes(Paths.get(pathToFile)));
-                        } catch (IOException e) {
+                            var conf  = EnvironmentConfigurationBuilder
+                                    .configuration()
+                                    .resources()
+                                    .withDefaultInputCharset(StandardCharsets.UTF_8)
+                                    .and()
+                                    .render()
+                                    .withOutputCharset(StandardCharsets.UTF_8)
+                                    .and()
+                                    .build();
+                            JtwigTemplate template = JtwigTemplate.fileTemplate(pathToFile, conf);
+
+                            String content = template.render(this.dependencyContainer.getObject(Model.class));
+                            response.setContent(content);
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                         break;

@@ -31,6 +31,8 @@ Technologies used
 	
 	* Maven
 	
+	* Gson (com.google.code.gson) used in SummerMVC
+	
 How to run the app?
 ------------------
 Javache Web Server has 3 directories where you can add extension/configurations.
@@ -38,15 +40,13 @@ Javache Web Server has 3 directories where you can add extension/configurations.
 Config folder contains configurations for the server like the request handlers and their priorities.
 
 Lib folder is where you can put any libraries that you might use in your application like hibernate.
-You also need to put broccolina, toyote and soletApi there.
+You also need to put broccolina, toyote, soletApi and httpApi there.
 
 Webapps folder is where you put your applications. ROOT.jar is the main app. Any other app
 will be accessed by its name. For example shop.jar will be accessible on localhost:8000/shop/.
 
 Your app has to be .jar and has to be structured like so:
-* classes - put the compiled output there
-
-* resources - put the resources there (html, css, js, other files)
+* classes - put the compiled output there (classes, resources)
 
 * lib - you can put the .jar libraries here or put them instead in javache's lib folder.
 

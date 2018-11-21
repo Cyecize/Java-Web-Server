@@ -6,7 +6,6 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.common.annotations.Controller;
-import com.cyecize.summer.common.annotations.routing.GetMapping;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 

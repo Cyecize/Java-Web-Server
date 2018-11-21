@@ -10,7 +10,11 @@ import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.JsonResponse;
 import com.cyecize.summer.common.models.Model;
+import com.google.gson.Gson;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static com.cyecize.summer.constants.IocConstants.*;
@@ -21,6 +25,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private ActionMethodInvokingService methodInvokingService;
 
     protected DependencyContainer dependencyContainer;
+
+    protected String workingDir;
 
     protected DispatcherSolet() {
         super();
@@ -42,7 +48,12 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
             if (resultTokens.length == 2) {
                 switch (resultTokens[0].trim()) {
                     case "template":
-
+                        String pathToFile = this.workingDir + "templates/" + resultTokens[1].trim();
+                        try {
+                            response.setContent(Files.readAllBytes(Paths.get(pathToFile)));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case "redirect":
                         response.sendRedirect(super.createRoute(resultTokens[1]));
@@ -53,17 +64,19 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
             }
         } else if (invokedMethodResult instanceof Model) {
 
+        } else if (invokedMethodResult instanceof JsonResponse) {
+            response.addHeader("Content-Type", "application/json");
+            response.setContent(new Gson().toJson(invokedMethodResult));
         } else {
-
+            response.setContent(new Gson().toJson(invokedMethodResult));
         }
-        System.out.println(result.getInvocationResult());
-        System.out.println("Produces " + result.getContentType());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final void init(SoletConfig soletConfig) {
-        if (soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS) != null) {
+        if (soletConfig.getAttribute(SOLET_CFG_WORKING_DIR) != null) {
+            this.workingDir = (String) soletConfig.getAttribute(SOLET_CFG_WORKING_DIR);
             this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
             this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                     this.dependencyContainer,

@@ -1,0 +1,15 @@
+Javache
+
+Javache-api
+	- Reader and Postman are not very good friends.
+Http
+
+SoletApi
+
+Broccolina
+
+Toyote
+
+Summer
+	- Loading 2 apps in javache with the same package name will result in 
+	replacing the first app classes with an instance of the second app.

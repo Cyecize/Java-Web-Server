@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.solet.HttpSoletRequest;
+import com.cyecize.summer.areas.routing.exceptions.HttpNotFoundException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
@@ -40,12 +41,11 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     }
 
     @Override
-    public ActionInvokeResult invokeMethod() {
+    public ActionInvokeResult invokeMethod() throws HttpNotFoundException {
         this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
-        System.out.println("path is " + this.currentRequest.getRelativeRequestURL());
         ActionMethod actionMethod = this.findActionMethod();
         if (actionMethod == null) {
-            return null;
+            throw new HttpNotFoundException(this.currentRequest.getRequestURL());
         }
         Map<String, Object> pathVariables = this.getPathVariables(actionMethod);
         Object methodResult = this.invokeAction(actionMethod, pathVariables);

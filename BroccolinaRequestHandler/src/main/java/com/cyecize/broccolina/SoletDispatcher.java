@@ -50,7 +50,6 @@ public class SoletDispatcher implements RequestHandler {
 
         this.sessionManagementService.initSessionIfExistent(request);
         HttpSolet solet = this.findSoletCandidate(request);
-
         if (solet == null /*|| request.isResource()*/) {
             this.hasIntercepted = false;
             return;
@@ -92,6 +91,7 @@ public class SoletDispatcher implements RequestHandler {
         if (!isAppNameFound) {
             this.currentRequestAppName = "";
         }
+        request.setContextPath(this.currentRequestAppName);
         System.out.println(String.format(SELECTED_APP_FORMAT, request.getRequestURL(), this.currentRequestAppName));
     }
 
@@ -115,8 +115,8 @@ public class SoletDispatcher implements RequestHandler {
             return null;
         }
 
-        if (this.soletMap.containsKey("/*")) {
-            return this.soletMap.get("/*");
+        if (this.soletMap.containsKey(this.currentRequestAppName + "/*")) {
+            return this.soletMap.get(this.currentRequestAppName + "/*");
         }
 
         return null;

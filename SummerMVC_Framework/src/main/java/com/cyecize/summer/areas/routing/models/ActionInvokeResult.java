@@ -4,15 +4,18 @@ public class ActionInvokeResult {
 
     private Object invocationResult;
 
-    public ActionInvokeResult(Object invocationResult) {
+    private String contentType;
+
+    public ActionInvokeResult(Object invocationResult, String contentType) {
         this.invocationResult = invocationResult;
+        this.contentType = contentType;
     }
 
     public Object getInvocationResult() {
         return invocationResult;
     }
 
-    public void setInvocationResult(Object invocationResult) {
-        this.invocationResult = invocationResult;
+    public String getContentType() {
+        return contentType;
     }
 }

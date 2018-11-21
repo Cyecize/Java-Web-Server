@@ -8,7 +8,9 @@ import com.cyecize.summer.areas.routing.services.ActionMethodInvokingServiceImpl
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.common.models.JsonResponse;
 import com.cyecize.summer.common.models.Model;
+
 import java.util.*;
 
 import static com.cyecize.summer.constants.IocConstants.*;
@@ -28,7 +30,34 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private void processRequest(HttpSoletRequest request, HttpSoletResponse response) {
         this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
         ActionInvokeResult result = this.methodInvokingService.invokeMethod();
+        if (result == null) {
+            System.out.println("Not Found!");
+            return;
+        }
+        response.addHeader("Content-Type", result.getContentType());
+        Object invokedMethodResult = result.getInvocationResult();
+        if (invokedMethodResult instanceof String) {
+            String stringResult = (String) invokedMethodResult;
+            String[] resultTokens = stringResult.split(":");
+            if (resultTokens.length == 2) {
+                switch (resultTokens[0].trim()) {
+                    case "template":
+
+                        break;
+                    case "redirect":
+                        response.sendRedirect(super.createRoute(resultTokens[1]));
+                        break;
+                }
+            } else {
+                response.setContent(stringResult);
+            }
+        } else if (invokedMethodResult instanceof Model) {
+
+        } else {
+
+        }
         System.out.println(result.getInvocationResult());
+        System.out.println("Produces " + result.getContentType());
     }
 
     @Override

@@ -40,9 +40,9 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
-            <version>1.1</version>
+            <version>1.1.2</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/solet-1.1.jar</systemPath>
+            <systemPath>${basedir}/lib/solet-1.1.2.jar</systemPath>
         </dependency>
     </dependencies>
 

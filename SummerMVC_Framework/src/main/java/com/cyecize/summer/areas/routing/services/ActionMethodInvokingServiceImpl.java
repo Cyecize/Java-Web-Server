@@ -6,6 +6,7 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.common.annotations.Controller;
+import com.cyecize.summer.common.annotations.routing.GetMapping;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
@@ -20,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingService {
 
-    private static final String CANNOT_INSTANTIATE_CLASS_FORMAT = "Cannot make an instance of class \"%s\" because it relies on dependencies.";
+    private static final String CANNOT_INSTANTIATE_CLASS_FORMAT = "Cannot create an instance of class \"%s\" because it relies on dependencies.";
 
     private final DependencyContainer dependencyContainer;
 
@@ -42,6 +43,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     @Override
     public ActionInvokeResult invokeMethod() {
         this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
+        System.out.println("path is " + this.currentRequest.getRelativeRequestURL());
         ActionMethod actionMethod = this.findActionMethod();
         if (actionMethod == null) {
             return null;
@@ -50,7 +52,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         Object methodResult = this.invokeAction(actionMethod, pathVariables);
 
         this.currentRequest = null;
-        return new ActionInvokeResult(methodResult);
+        return new ActionInvokeResult(methodResult, actionMethod.getContentType());
     }
 
     private Object invokeAction(ActionMethod actionMethod, Map<String, Object> pathVariables) {
@@ -139,7 +141,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             return null;
         }
         return this.actionMethods.get(this.currentRequest.getMethod().toUpperCase()).stream()
-                .filter(action -> Pattern.matches(action.getPattern(), this.currentRequest.getRequestURL()))
+                .filter(action -> Pattern.matches(action.getPattern(), this.currentRequest.getRelativeRequestURL()))
                 .findFirst().orElse(null);
     }
 }

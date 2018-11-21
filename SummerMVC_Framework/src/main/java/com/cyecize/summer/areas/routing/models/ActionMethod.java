@@ -1,5 +1,6 @@
 package com.cyecize.summer.areas.routing.models;
 
+import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.GetMapping;
 import com.cyecize.summer.common.annotations.routing.PostMapping;
 
@@ -43,6 +44,8 @@ public class ActionMethod {
             this.contentType = this.method.getAnnotation(GetMapping.class).produces();
         } else if (this.method.isAnnotationPresent(PostMapping.class)) {
             this.contentType = this.method.getAnnotation(PostMapping.class).produces();
+        } else if (this.getMethod().isAnnotationPresent(ExceptionListener.class)) {
+            this.contentType = this.method.getAnnotation(ExceptionListener.class).produces();
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.cyecize.summer;
 
+import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.*;
 import com.cyecize.summer.areas.routing.exceptions.HttpNotFoundException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
@@ -9,6 +10,7 @@ import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
+import com.cyecize.summer.common.models.ModelAndView;
 
 import java.util.*;
 
@@ -35,11 +37,15 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private void processRequest() throws HttpNotFoundException {
         this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
         ActionInvokeResult result = this.methodInvokingService.invokeMethod();
-        if (result == null) {
-            System.out.println("Not Found!");
-            return;
-        }
         this.methodResultHandler.handleActionResult(result);
+    }
+
+    private void processException(Exception ex) {
+        ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
+        if (exResult == null) {
+            this.whitePageException(this.dependencyContainer.getObject(HttpSoletResponse.class), ex);
+        }
+        this.methodResultHandler.handleActionResult(exResult);
     }
 
     @Override
@@ -64,20 +70,29 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         dependencyContainer.addPlatformBean(request);
         dependencyContainer.addPlatformBean(response);
         dependencyContainer.addPlatformBean(new Model());
+        dependencyContainer.addPlatformBean(new ModelAndView());
 
         if (request.getSession() != null) {
             dependencyContainer.addPlatformBean(request.getSession());
         }
 
-        //TODO try catch this then search for exception listeners
-        //Also TODO... add interceptors here
+        //TODO... add interceptors here
         try {
             super.service(request, response);
-        }catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) {
+            try {
+                this.processException(ex);
+            } catch (Exception exception) {
+                this.whitePageException(response, exception);
+            }
         }
-
         dependencyContainer.evictPlatformBeans();
+    }
+
+    private void whitePageException(HttpSoletResponse response, Exception ex) {
+        response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        response.setContent(String.format("Uncaught exception \"%s\". Check the console.", ex.getMessage()));
+        ex.printStackTrace();
     }
 
     //override these methods and make them final to prevent the app from overriding and breaking the code.

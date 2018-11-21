@@ -7,4 +7,6 @@ import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 public interface ActionMethodInvokingService {
 
     ActionInvokeResult invokeMethod() throws HttpNotFoundException;
+
+    ActionInvokeResult invokeMethod(Exception ex);
 }

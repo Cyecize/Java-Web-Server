@@ -19,9 +19,13 @@ public class ModelAndView {
         this.attributes = new HashMap<>();
     }
 
-    public ModelAndView(String viewName, HttpStatus status) {
+    public ModelAndView(String viewName) {
         this();
         this.viewName = viewName;
+    }
+
+    public ModelAndView(String viewName, HttpStatus status) {
+        this(viewName);
         this.status = status;
     }
 

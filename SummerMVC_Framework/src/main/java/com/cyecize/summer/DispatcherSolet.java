@@ -44,6 +44,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
         if (exResult == null) {
             this.whitePageException(this.dependencyContainer.getObject(HttpSoletResponse.class), ex);
+            return;
         }
         this.methodResultHandler.handleActionResult(exResult);
     }

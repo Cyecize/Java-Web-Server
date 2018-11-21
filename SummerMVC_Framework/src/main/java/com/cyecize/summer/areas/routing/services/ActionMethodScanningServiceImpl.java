@@ -8,6 +8,7 @@ import com.cyecize.summer.common.annotations.routing.PostMapping;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ActionMethodScanningServiceImpl implements ActionMethodScanningService {
 
@@ -36,6 +37,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         for (Class<?> controllerType : controllers.keySet()) {
             this.loadActionMethodsFromController(controllerType);
         }
+        this.orderExceptionsByHierarchy();
         return this.actionsByHttpMethod;
     }
 
@@ -77,4 +79,10 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         ActionMethod actionMethod = new ActionMethod(pathPattern, method, controller);
         this.actionsByHttpMethod.get(httpMethod).add(actionMethod);
     }
+
+    private void orderExceptionsByHierarchy() {
+        this.actionsByHttpMethod.put(EXCEPTION, this.actionsByHttpMethod.get(EXCEPTION).stream().sorted(ActionMethod::compareTo)
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
+    }
+
 }

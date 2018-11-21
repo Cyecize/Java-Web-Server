@@ -6,7 +6,7 @@ import com.cyecize.summer.common.annotations.routing.PostMapping;
 
 import java.lang.reflect.Method;
 
-public class ActionMethod {
+public class ActionMethod implements Comparable<ActionMethod> {
 
     private String pattern;
 
@@ -47,5 +47,21 @@ public class ActionMethod {
         } else if (this.getMethod().isAnnotationPresent(ExceptionListener.class)) {
             this.contentType = this.method.getAnnotation(ExceptionListener.class).produces();
         }
+    }
+
+    @Override
+    public int compareTo(ActionMethod actionMethod) {
+        if (!this.getMethod().isAnnotationPresent(ExceptionListener.class) || !actionMethod.getMethod().isAnnotationPresent(ExceptionListener.class)) {
+            return 0;
+        }
+        Class<?> c1 = this.getMethod().getAnnotation(ExceptionListener.class).value();
+        Class<?> c2 = actionMethod.getMethod().getAnnotation(ExceptionListener.class).value();
+        if (c1.isAssignableFrom(c2)) {
+            return 1;
+        }
+        if (c2.isAssignableFrom(c1)) {
+            return -1;
+        }
+        return 0;
     }
 }

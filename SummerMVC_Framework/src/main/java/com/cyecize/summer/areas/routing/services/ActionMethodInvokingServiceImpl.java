@@ -14,10 +14,7 @@ import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,13 +58,14 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     @Override
     public ActionInvokeResult invokeMethod(Exception ex) {
         this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
-        this.dependencyContainer.addPlatformBean(ex);
-        ActionMethod actionMethod = this.findActionMethod(ex);
+        List<Throwable> exceptionStack = this.getExceptionStack(ex);
+        exceptionStack.forEach(this.dependencyContainer::addPlatformBean);
+
+        ActionMethod actionMethod = this.findActionMethod(exceptionStack);
         if (actionMethod == null) {
             return null;
         }
         Object methodResult = this.invokeAction(actionMethod, new HashMap<>());
-
         this.currentRequest = null;
         return new ActionInvokeResult(methodResult, actionMethod.getContentType());
     }
@@ -162,24 +160,32 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     }
 
     /**
-     * Checks first if there is an exception with the same name and then
-     * checks if it is assignable to avoid higher classes to be prioritized.
-     * Then if no exception is found, search again until you get null for parameter.
+     * Iterates through every exception thrown and looks for assignable exception listener.
+     * Exception listeners are sorted by Inheritance where the highest in the hierarchy are last
+     * to avoid overriding exceptions as much as possible.
      */
-    private ActionMethod findActionMethod(Throwable ex) {
-        if (ex == null || !this.actionMethods.containsKey(EXCEPTION)) {
+    private ActionMethod findActionMethod(List<Throwable> exceptionStack) {
+        if (!this.actionMethods.containsKey(EXCEPTION)) {
             return null;
         }
-        Set<ActionMethod> methods = this.actionMethods.get(EXCEPTION);
-        return methods.stream()
-                .filter(e -> {
-                    Class<?> cls = e.getMethod().getAnnotation(ExceptionListener.class).value();
-                    return ex.getClass().getName().equals(cls.getName());
-                }).findFirst()
-                .orElse(methods.stream()
-                        .filter(e -> {
-                            Class<?> cls = e.getMethod().getAnnotation(ExceptionListener.class).value();
-                            return ex.getClass().isAssignableFrom(cls);
-                        }).findFirst().orElse(this.findActionMethod(ex.getCause())));
+        for (ActionMethod exMethod : this.actionMethods.get(EXCEPTION)) {
+            Class<?> actionExType = exMethod.getMethod().getAnnotation(ExceptionListener.class).value();
+            for (Throwable throwable : exceptionStack) {
+                if (actionExType.isAssignableFrom(throwable.getClass())) {
+                    return exMethod;
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<Throwable> getExceptionStack(Throwable ex) {
+        List<Throwable> thList = new ArrayList<>();
+        if (ex == null) {
+            return thList;
+        }
+        thList.add(ex);
+        thList.addAll(this.getExceptionStack(ex.getCause()));
+        return thList;
     }
 }

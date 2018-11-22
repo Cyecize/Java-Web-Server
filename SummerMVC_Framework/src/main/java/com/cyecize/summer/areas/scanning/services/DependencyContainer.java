@@ -14,7 +14,7 @@ public interface DependencyContainer {
 
     void evictPlatformBeans();
 
-    Object reloadController(Object controller);
+    Object reloadComponent(Object component);
 
     <T> T getObject(Class<T> objType);
 

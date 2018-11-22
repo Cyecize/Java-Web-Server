@@ -23,13 +23,19 @@ public class SummerBootApplication {
         FileScanService fileScanService = new FileScanServiceImpl(startupSolet.getClass());
         BeanLoadingService beanLoadingService = new BeanLoadingServiceImpl();
         ServiceLoadingService serviceLoadingService = new ServiceLoadingServiceImpl();
-        ControllerLoadingService controllerLoadingService = new ControllerLoadingServiceImpl();
         ActionMethodScanningService methodScanningService = new ActionMethodScanningServiceImpl(new PathFormatter());
+
         try {
             Set<Class<?>> loadedClasses = fileScanService.scanFiles();
             Set<Object> loadedBeans = beanLoadingService.loadBeans(loadedClasses);
             Set<Object> loadedServicesAndBeans = serviceLoadingService.loadServices(loadedBeans, loadedClasses);
-            Map<Class<?>, Object> loadedControllers = controllerLoadingService.loadControllers(loadedClasses, loadedServicesAndBeans);
+
+            ComponentInstantiatingService componentInstantiatingService = new ComponentInstantiatingServiceImpl(loadedServicesAndBeans, loadedClasses);
+            ControllerLoadingService controllerLoadingService = new ControllerLoadingServiceImpl(componentInstantiatingService);
+            ComponentLoadingService componentLoadingService = new ComponentLoadingServiceImpl(componentInstantiatingService);
+
+            Map<Class<?>, Object> loadedControllers = controllerLoadingService.loadControllers();
+            Map<String, Set<Object>> loadedComponents = componentLoadingService.getComponents();
             Map<String, Set<ActionMethod>> actionsByMethod = methodScanningService.findActionMethods(loadedControllers);
 
             SoletConfig soletConfig = new SoletConfigImpl();
@@ -37,16 +43,21 @@ public class SummerBootApplication {
             soletConfig.setAttribute(SOLET_CFG_LOADED_CONTROLLERS, loadedControllers);
             soletConfig.setAttribute(SOLET_CFG_LOADED_ACTIONS, actionsByMethod);
             soletConfig.setAttribute(SOLET_CFG_WORKING_DIR, fileScanService.getAppRootDir());
+            soletConfig.setAttribute(SOLET_CFG_COMPONENTS, loadedComponents);
+
             startupSolet.init(soletConfig);
+
             loadedClasses = null;
             loadedBeans = null;
+            componentInstantiatingService = null;
+            componentLoadingService = null;
+            controllerLoadingService = null;
         } catch (FileScanException | ServiceLoadException | BeanLoadException | ControllerLoadException ex) {
             ex.printStackTrace();
         } finally {
             fileScanService = null;
             beanLoadingService = null;
             serviceLoadingService = null;
-            controllerLoadingService = null;
             methodScanningService = null;
         }
     }

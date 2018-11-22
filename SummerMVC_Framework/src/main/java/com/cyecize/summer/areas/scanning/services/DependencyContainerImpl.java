@@ -57,15 +57,15 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
-    public Object reloadController(Object controller) {
+    public Object reloadComponent(Object component) {
         try {
-            Class controllerClass = controller.getClass();
-            Constructor<?> constructor = controllerClass.getConstructors()[0];
+            Class componentClas = component.getClass();
+            Constructor<?> constructor = componentClas.getConstructors()[0];
             if (constructor.getParameterCount() < 1) {
                 return constructor.newInstance();
             }
             Object[] paramInstances = new Object[constructor.getParameterCount()];
-            Class<?>[] paramTypes = constructor.getExceptionTypes();
+            Class<?>[] paramTypes = constructor.getParameterTypes();
             for (int i = 0; i < paramTypes.length; i++) {
                 paramInstances[i] = this.findAssignableService(paramTypes[i], null);
             }

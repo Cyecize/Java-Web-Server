@@ -42,12 +42,18 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     }
 
     @Override
-    public ActionInvokeResult invokeMethod() throws HttpNotFoundException {
+    public ActionMethod findAction() throws HttpNotFoundException {
         this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
         ActionMethod actionMethod = this.findActionMethod();
         if (actionMethod == null) {
             throw new HttpNotFoundException(this.currentRequest.getRequestURL());
         }
+        return actionMethod;
+    }
+
+    @Override
+    public ActionInvokeResult invokeMethod(ActionMethod actionMethod) {
+
         Map<String, Object> pathVariables = this.getPathVariables(actionMethod);
         Object methodResult = this.invokeAction(actionMethod, pathVariables);
 
@@ -75,7 +81,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 .filter((kvp) -> actionMethod.getControllerClass().isAssignableFrom(kvp.getKey()))
                 .findFirst().orElse(null).getValue();
         if (controller.getClass().getAnnotation(Controller.class).lifeSpan() == ServiceLifeSpan.REQUEST) {
-            controller = this.dependencyContainer.reloadController(controller);
+            controller = this.dependencyContainer.reloadComponent(controller);
         }
 
         Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);

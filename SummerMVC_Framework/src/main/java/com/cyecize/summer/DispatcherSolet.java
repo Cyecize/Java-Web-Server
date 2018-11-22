@@ -2,7 +2,6 @@ package com.cyecize.summer;
 
 import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.*;
-import com.cyecize.summer.areas.routing.exceptions.HttpNotFoundException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.*;
@@ -25,6 +24,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     private TemplateRenderingService renderingService;
 
+    private InterceptorInvokerService interceptorService;
+
     protected DependencyContainer dependencyContainer;
 
     protected String workingDir;
@@ -34,10 +35,15 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.dependencyContainer = new DependencyContainerImpl();
     }
 
-    private void processRequest() throws HttpNotFoundException {
+    private void processRequest(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
-        ActionInvokeResult result = this.methodInvokingService.invokeMethod();
+        ActionMethod method = this.methodInvokingService.findAction();
+        if (!this.interceptorService.preHandle(request, response, method)) {
+            return;
+        }
+        ActionInvokeResult result = this.methodInvokingService.invokeMethod(method);
         this.methodResultHandler.handleActionResult(result);
+        this.interceptorService.postHandle(request, response, result, this.dependencyContainer.getObject(Model.class));
     }
 
     private void processException(Exception ex) {
@@ -62,6 +68,10 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
             this.renderingService = new TemplateRenderingTwigService(this.workingDir);
             this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
+
+            Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
+
+            this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
         }
         super.init(soletConfig);
     }
@@ -99,12 +109,12 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     //override these methods and make them final to prevent the app from overriding and breaking the code.
     @Override
     protected final void doGet(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.processRequest();
+        this.processRequest(request, response);
     }
 
     @Override
     protected final void doPost(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.processRequest();
+        this.processRequest(request, response);
     }
 
     @Override

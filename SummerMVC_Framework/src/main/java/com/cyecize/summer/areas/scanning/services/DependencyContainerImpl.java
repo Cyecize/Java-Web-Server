@@ -59,18 +59,18 @@ public class DependencyContainerImpl implements DependencyContainer {
     @Override
     public Object reloadComponent(Object component) {
         try {
-            Class componentClas = component.getClass();
-            Constructor<?> constructor = componentClas.getConstructors()[0];
+            Class componentClass = component.getClass();
+            Constructor<?> constructor = componentClass.getConstructors()[0];
             if (constructor.getParameterCount() < 1) {
                 return constructor.newInstance();
             }
             Object[] paramInstances = new Object[constructor.getParameterCount()];
             Class<?>[] paramTypes = constructor.getParameterTypes();
             for (int i = 0; i < paramTypes.length; i++) {
-                paramInstances[i] = this.findAssignableService(paramTypes[i], null);
+                paramInstances[i] = this.getObject(paramTypes[i]);
             }
             return constructor.newInstance(paramInstances);
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ServiceLoadException e) {
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             //should not be reached
             e.printStackTrace();
         }
@@ -124,7 +124,7 @@ public class DependencyContainerImpl implements DependencyContainer {
                 return this.loadService(cls, lifeSpan);
             }
         }
-        throw new ServiceLoadException(String.format("Could not find dependency for \"%s\" (this should not be reached!)", param.getName()));
+        return null; //This should only be reached by platform services
     }
 
     private Object findAlreadyLoadedService(Class<?> serviceClass) {

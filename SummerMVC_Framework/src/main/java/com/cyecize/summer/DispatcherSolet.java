@@ -7,9 +7,13 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.*;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
+import com.cyecize.summer.areas.security.interfaces.UserDetails;
+import com.cyecize.summer.areas.security.models.Principal;
+import com.cyecize.summer.areas.security.models.SecurityConfig;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
+import com.cyecize.summer.constants.SecurityConstants;
 
 import java.util.*;
 
@@ -33,12 +37,12 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     protected DispatcherSolet() {
         super();
         this.dependencyContainer = new DependencyContainerImpl();
+        this.dependencyContainer.addPlatformBean(new Principal());
     }
 
     private void processRequest(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
         ActionMethod method = this.methodInvokingService.findAction();
-        if (!this.interceptorService.preHandle(request, response, method)) {
+        if (!this.interceptorService.preHandle(request, response, method, false)) {
             return;
         }
         ActionInvokeResult result = this.methodInvokingService.invokeMethod(method);
@@ -78,18 +82,20 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+        dependencyContainer.addPlatformBean(dependencyContainer);
         dependencyContainer.addPlatformBean(request);
         dependencyContainer.addPlatformBean(response);
+        dependencyContainer.addPlatformBean(request.getSession());
         dependencyContainer.addPlatformBean(new Model());
         dependencyContainer.addPlatformBean(new ModelAndView());
+        dependencyContainer.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
 
-        if (request.getSession() != null) {
-            dependencyContainer.addPlatformBean(request.getSession());
-        }
+        this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
 
-        //TODO... add interceptors here
         try {
-            super.service(request, response);
+            if (this.interceptorService.preHandle(request, response, dependencyContainer, true)) {
+                super.service(request, response);
+            }
         } catch (Exception ex) {
             try {
                 this.processException(ex);
@@ -97,6 +103,9 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                 this.whitePageException(response, exception);
             }
         }
+
+        request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getObject(Principal.class).getUser());
+        System.out.println(dependencyContainer.getObject(Principal.class).getUser());
         dependencyContainer.evictPlatformBeans();
     }
 

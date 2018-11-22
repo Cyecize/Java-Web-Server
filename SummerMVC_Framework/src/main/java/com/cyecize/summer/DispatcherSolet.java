@@ -9,7 +9,6 @@ import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.areas.security.interfaces.UserDetails;
 import com.cyecize.summer.areas.security.models.Principal;
-import com.cyecize.summer.areas.security.models.SecurityConfig;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
@@ -25,8 +24,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private ActionMethodInvokingService methodInvokingService;
 
     private ActionMethodResultHandler methodResultHandler;
-
-    private TemplateRenderingService renderingService;
 
     private InterceptorInvokerService interceptorService;
 
@@ -70,7 +67,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                     (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
                     (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));
 
-            this.renderingService = new TemplateRenderingTwigService(this.workingDir);
+            TemplateRenderingService renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
             this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
 
             Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
@@ -105,7 +102,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         }
 
         request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getObject(Principal.class).getUser());
-        System.out.println(dependencyContainer.getObject(Principal.class).getUser());
         dependencyContainer.evictPlatformBeans();
     }
 

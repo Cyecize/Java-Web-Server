@@ -33,7 +33,6 @@ public class SecurityInterceptor implements InterceptorAdapter {
     @Override
     public boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler) throws Exception {
         if (!(handler instanceof ActionMethod)) {
-            System.out.println("handler not an instance");
             return true;
         }
 
@@ -50,8 +49,6 @@ public class SecurityInterceptor implements InterceptorAdapter {
         }
 
         if (this.securityConfig != null) {
-            System.out.println("req " + request.getRelativeRequestURL());
-            System.out.println("actual " + securityConfig.getLogoutURL());
             if (request.getRelativeRequestURL().equals(this.securityConfig.getLogoutURL())) {
                 this.principal.logout();
                 response.sendRedirect(request.getContextPath() + this.securityConfig.getLogoutRedirectURL());
@@ -69,7 +66,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
             this.handleNotLoggedIn(request, response);
             return false;
         }
-        if (annotation.value() == AuthorizationType.ANONYMOUS) {
+        if (annotation.value() == AuthorizationType.ANONYMOUS && principal.isUserPresent()) {
             this.handleNotPrivileged(request, response);
             return false;
         }

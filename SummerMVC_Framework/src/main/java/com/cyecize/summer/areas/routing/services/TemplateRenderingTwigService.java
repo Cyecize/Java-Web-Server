@@ -1,6 +1,9 @@
 package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
+import com.cyecize.summer.areas.routing.utils.JTwigHasRoleFunction;
+import com.cyecize.summer.areas.routing.utils.JTwigPathFunction;
+import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.constants.RoutingConstants;
 import org.jtwig.JtwigTemplate;
@@ -16,11 +19,17 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
 
     private static final String TEMPLATE_NOT_FOUND_FORMAT = "Template \"%s\" not found under resources/templates/%s";
 
+    private final String appRootDir;
+
+    private final DependencyContainer dependencyContainer;
+
     private EnvironmentConfiguration twigEnvironmentConfig;
 
     private String templatesDir;
 
-    public TemplateRenderingTwigService(String appRootDir) {
+    public TemplateRenderingTwigService(String appRootDir, DependencyContainer dependencyContainer) {
+        this.appRootDir = appRootDir;
+        this.dependencyContainer = dependencyContainer;
         this.initTwigEnvironment();
         this.templatesDir = appRootDir + RoutingConstants.TEMPLATES_DIRECTORY + File.separator;
     }
@@ -42,10 +51,14 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
         this.twigEnvironmentConfig = EnvironmentConfigurationBuilder
                 .configuration()
                 .resources()
-                .withDefaultInputCharset(StandardCharsets.UTF_8)
+                    .withDefaultInputCharset(StandardCharsets.UTF_8)
                 .and()
                 .render()
-                .withOutputCharset(StandardCharsets.UTF_8)
+                    .withOutputCharset(StandardCharsets.UTF_8)
+                .and()
+                .functions()
+                    .add(new JTwigPathFunction(this.appRootDir))
+                    .add(new JTwigHasRoleFunction(this.dependencyContainer))
                 .and()
                 .build();
     }

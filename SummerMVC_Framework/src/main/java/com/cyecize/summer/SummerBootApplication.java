@@ -19,8 +19,8 @@ public class SummerBootApplication {
     public static <T extends DispatcherSolet> void run(T startupSolet) {
         FileScanService fileScanService = new FileScanServiceImpl(startupSolet.getClass());
         PostConstructInvokingService postConstructInvokingService = new PostConstructInvokingServiceImpl();
-        BeanLoadingService beanLoadingService = new BeanLoadingServiceImpl(postConstructInvokingService);
-        ServiceLoadingService serviceLoadingService = new ServiceLoadingServiceImpl(postConstructInvokingService);
+        BeanLoadingService beanLoadingService = new BeanLoadingServiceImpl();
+        ServiceLoadingService serviceLoadingService = new ServiceLoadingServiceImpl();
         ActionMethodScanningService methodScanningService = new ActionMethodScanningServiceImpl(new PathFormatter());
 
 
@@ -28,6 +28,8 @@ public class SummerBootApplication {
             Set<Class<?>> loadedClasses = fileScanService.scanFiles();
             Set<Object> loadedBeans = beanLoadingService.loadBeans(loadedClasses);
             Set<Object> loadedServicesAndBeans = serviceLoadingService.loadServices(loadedBeans, loadedClasses);
+
+            postConstructInvokingService.invokePostConstructMethod(loadedServicesAndBeans);
 
             ComponentInstantiatingService componentInstantiatingService = new ComponentInstantiatingServiceImpl(loadedServicesAndBeans, loadedClasses, postConstructInvokingService);
             ControllerLoadingService controllerLoadingService = new ControllerLoadingServiceImpl(componentInstantiatingService);

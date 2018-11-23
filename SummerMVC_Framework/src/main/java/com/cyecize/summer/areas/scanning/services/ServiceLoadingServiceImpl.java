@@ -14,19 +14,16 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
 
     private static final String COULD_NOT_FIND_ASSIGNABLE_FORMAT = "Could not find assignable class for \"%s\".";
 
-    private final PostConstructInvokingService constructInvokingService;
-
     private Map<Class<?>, Object> loadedInstances;
 
     private List<Class<?>> availableServices;
 
-    public ServiceLoadingServiceImpl(PostConstructInvokingService constructInvokingService) {
-        this.constructInvokingService = constructInvokingService;
+    public ServiceLoadingServiceImpl() {
         this.loadedInstances = new HashMap<>();
     }
 
     @Override
-    public Set<Object> loadServices(Set<Object> beans, Set<Class<?>> availableClasses) throws ServiceLoadException, PostConstructException {
+    public Set<Object> loadServices(Set<Object> beans, Set<Class<?>> availableClasses) throws ServiceLoadException {
         this.includeBeansToCurrentServices(beans);
         Set<Object> loadedServices = new HashSet<>();
         this.findServiceClasses(availableClasses);
@@ -37,7 +34,6 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
             throw new ServiceLoadException(e.getMessage(), e);
         }
-        this.constructInvokingService.invokePostConstructMethod(loadedServices);
         loadedServices.addAll(beans);
         return loadedServices;
     }

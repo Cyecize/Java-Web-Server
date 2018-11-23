@@ -1,8 +1,8 @@
-package com.cyecize.summer.areas.routing.services;
+package com.cyecize.summer.areas.template.services;
 
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
-import com.cyecize.summer.areas.routing.utils.JTwigHasRoleFunction;
-import com.cyecize.summer.areas.routing.utils.JTwigPathFunction;
+import com.cyecize.summer.areas.template.functions.JTwigHasRoleFunction;
+import com.cyecize.summer.areas.template.functions.JTwigPathFunction;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.constants.RoutingConstants;
@@ -42,7 +42,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
         try {
             JtwigTemplate template = JtwigTemplate.fileTemplate(this.templatesDir + view, this.twigEnvironmentConfig);
             return template.render(model);
-        } catch (JtwigException | ParseException ex) {
+        } catch (JtwigException ex) {
             throw new ViewNotFoundException(String.format(TEMPLATE_NOT_FOUND_FORMAT, view, view), ex);
         }
     }

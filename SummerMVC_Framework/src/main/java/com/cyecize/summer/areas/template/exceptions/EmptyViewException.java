@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.routing.exceptions;
+package com.cyecize.summer.areas.template.exceptions;
 
 public class EmptyViewException extends Exception {
 

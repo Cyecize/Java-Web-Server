@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.routing.utils;
+package com.cyecize.summer.areas.template.functions;
 
 import org.jtwig.exceptions.JtwigException;
 import org.jtwig.functions.FunctionRequest;

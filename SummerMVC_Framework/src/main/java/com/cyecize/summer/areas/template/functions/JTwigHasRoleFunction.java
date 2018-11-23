@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.routing.utils;
+package com.cyecize.summer.areas.template.functions;
 
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.security.models.Principal;

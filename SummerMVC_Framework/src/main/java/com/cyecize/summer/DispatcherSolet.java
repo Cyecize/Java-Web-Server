@@ -9,6 +9,7 @@ import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.areas.security.interfaces.UserDetails;
 import com.cyecize.summer.areas.security.models.Principal;
+import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;

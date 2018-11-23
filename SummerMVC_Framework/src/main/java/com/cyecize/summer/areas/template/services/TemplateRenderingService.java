@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.routing.services;
+package com.cyecize.summer.areas.template.services;
 
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
 import com.cyecize.summer.common.models.Model;

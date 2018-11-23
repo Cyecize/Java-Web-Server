@@ -6,10 +6,7 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.ActionMethodScanningService;
 import com.cyecize.summer.areas.routing.services.ActionMethodScanningServiceImpl;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
-import com.cyecize.summer.areas.scanning.exceptions.BeanLoadException;
-import com.cyecize.summer.areas.scanning.exceptions.ControllerLoadException;
-import com.cyecize.summer.areas.scanning.exceptions.FileScanException;
-import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
+import com.cyecize.summer.areas.scanning.exceptions.*;
 import com.cyecize.summer.areas.scanning.services.*;
 
 import java.util.Map;
@@ -21,16 +18,18 @@ public class SummerBootApplication {
 
     public static <T extends DispatcherSolet> void run(T startupSolet) {
         FileScanService fileScanService = new FileScanServiceImpl(startupSolet.getClass());
-        BeanLoadingService beanLoadingService = new BeanLoadingServiceImpl();
-        ServiceLoadingService serviceLoadingService = new ServiceLoadingServiceImpl();
+        PostConstructInvokingService postConstructInvokingService = new PostConstructInvokingServiceImpl();
+        BeanLoadingService beanLoadingService = new BeanLoadingServiceImpl(postConstructInvokingService);
+        ServiceLoadingService serviceLoadingService = new ServiceLoadingServiceImpl(postConstructInvokingService);
         ActionMethodScanningService methodScanningService = new ActionMethodScanningServiceImpl(new PathFormatter());
+
 
         try {
             Set<Class<?>> loadedClasses = fileScanService.scanFiles();
             Set<Object> loadedBeans = beanLoadingService.loadBeans(loadedClasses);
             Set<Object> loadedServicesAndBeans = serviceLoadingService.loadServices(loadedBeans, loadedClasses);
 
-            ComponentInstantiatingService componentInstantiatingService = new ComponentInstantiatingServiceImpl(loadedServicesAndBeans, loadedClasses);
+            ComponentInstantiatingService componentInstantiatingService = new ComponentInstantiatingServiceImpl(loadedServicesAndBeans, loadedClasses, postConstructInvokingService);
             ControllerLoadingService controllerLoadingService = new ControllerLoadingServiceImpl(componentInstantiatingService);
             ComponentLoadingService componentLoadingService = new ComponentLoadingServiceImpl(componentInstantiatingService);
 
@@ -52,10 +51,11 @@ public class SummerBootApplication {
             componentInstantiatingService = null;
             componentLoadingService = null;
             controllerLoadingService = null;
-        } catch (FileScanException | ServiceLoadException | BeanLoadException | ControllerLoadException ex) {
+        } catch (FileScanException | ServiceLoadException | BeanLoadException | ControllerLoadException | PostConstructException ex) {
             ex.printStackTrace();
         } finally {
             fileScanService = null;
+            postConstructInvokingService = null;
             beanLoadingService = null;
             serviceLoadingService = null;
             methodScanningService = null;

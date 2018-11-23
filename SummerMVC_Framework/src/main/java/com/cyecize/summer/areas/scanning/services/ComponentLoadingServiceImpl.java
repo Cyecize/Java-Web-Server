@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.ComponentInstantiationException;
+import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.extensions.InterceptorAdapter;
@@ -25,7 +26,7 @@ public class ComponentLoadingServiceImpl implements ComponentLoadingService {
     }
 
     @Override
-    public Map<String, Set<Object>> getComponents() throws ServiceLoadException {
+    public Map<String, Set<Object>> getComponents() throws ServiceLoadException, PostConstructException {
         try {
             Set<Object> components = this.componentInstantiatingService.instantiateClasses(this.componentInstantiatingService.findClassesByAnnotation(Component.class));
             for (Object component : components) {

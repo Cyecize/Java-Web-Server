@@ -2,6 +2,7 @@ package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.ComponentInstantiationException;
 import com.cyecize.summer.areas.scanning.exceptions.ControllerLoadException;
+import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 import com.cyecize.summer.common.annotations.Controller;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class ControllerLoadingServiceImpl implements ControllerLoadingService {
     }
 
     @Override
-    public Map<Class<?>, Object> loadControllers() throws ControllerLoadException {
+    public Map<Class<?>, Object> loadControllers() throws ControllerLoadException, PostConstructException {
         try {
             Set<Object> controllers = this.componentInstantiatingService.instantiateClasses(this.componentInstantiatingService.findClassesByAnnotation(Controller.class));
             for (Object controller : controllers) {

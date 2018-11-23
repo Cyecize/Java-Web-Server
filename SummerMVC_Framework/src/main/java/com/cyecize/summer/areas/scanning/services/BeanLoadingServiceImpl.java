@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.BeanLoadException;
+import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 import com.cyecize.summer.common.annotations.Bean;
 import com.cyecize.summer.common.annotations.BeanConfig;
 
@@ -12,23 +13,27 @@ public class BeanLoadingServiceImpl implements BeanLoadingService {
 
     private static final String INVALID_BEAN_CONSTRUCTOR = "Bean Config Classes must have public empty constructors.";
 
+    private final PostConstructInvokingService constructInvokingService;
+
     private List<Object> loadedBeanConfigInstances;
 
     private Set<Object> loadedBeans;
 
-    public BeanLoadingServiceImpl() {
+    public BeanLoadingServiceImpl(PostConstructInvokingService constructInvokingService) {
+        this.constructInvokingService = constructInvokingService;
         this.loadedBeanConfigInstances = new ArrayList<>();
         this.loadedBeans = new HashSet<>();
     }
 
     @Override
-    public Set<Object> loadBeans(Set<Class<?>> availableClasses) throws BeanLoadException {
+    public Set<Object> loadBeans(Set<Class<?>> availableClasses) throws BeanLoadException, PostConstructException {
         try {
             this.findBeanConfigClasses(availableClasses);
             this.findAndLoadBeans();
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new BeanLoadException(e.getMessage(), e);
         }
+        this.constructInvokingService.invokePostConstructMethod(this.loadedBeans);
         return this.loadedBeans;
     }
 

@@ -1,5 +1,6 @@
 package com.cyecize.summer.areas.scanning.services;
 
+import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
 import com.cyecize.summer.common.annotations.Service;
 
@@ -13,16 +14,19 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
 
     private static final String COULD_NOT_FIND_ASSIGNABLE_FORMAT = "Could not find assignable class for \"%s\".";
 
+    private final PostConstructInvokingService constructInvokingService;
+
     private Map<Class<?>, Object> loadedInstances;
 
     private List<Class<?>> availableServices;
 
-    public ServiceLoadingServiceImpl() {
+    public ServiceLoadingServiceImpl(PostConstructInvokingService constructInvokingService) {
+        this.constructInvokingService = constructInvokingService;
         this.loadedInstances = new HashMap<>();
     }
 
     @Override
-    public Set<Object> loadServices(Set<Object> beans, Set<Class<?>> availableClasses) throws ServiceLoadException {
+    public Set<Object> loadServices(Set<Object> beans, Set<Class<?>> availableClasses) throws ServiceLoadException, PostConstructException {
         this.includeBeansToCurrentServices(beans);
         Set<Object> loadedServices = new HashSet<>();
         this.findServiceClasses(availableClasses);
@@ -33,6 +37,7 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
             throw new ServiceLoadException(e.getMessage(), e);
         }
+        this.constructInvokingService.invokePostConstructMethod(loadedServices);
         loadedServices.addAll(beans);
         return loadedServices;
     }

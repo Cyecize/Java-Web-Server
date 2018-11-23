@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.ComponentInstantiationException;
+import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -19,9 +20,12 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
 
     private final Set<Class<?>> loadedClasses;
 
-    public ComponentInstantiatingServiceImpl(Set<Object> loadedClassesAndBeans, Set<Class<?>> loadedClasses) {
+    private final PostConstructInvokingService constructInvokingService;
+
+    public ComponentInstantiatingServiceImpl(Set<Object> loadedClassesAndBeans, Set<Class<?>> loadedClasses, PostConstructInvokingService constructInvokingService) {
         this.loadedServicesAndBeans = loadedClassesAndBeans;
         this.loadedClasses = loadedClasses;
+        this.constructInvokingService = constructInvokingService;
     }
 
     @Override
@@ -30,11 +34,12 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
     }
 
     @Override
-    public Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException {
+    public Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException, PostConstructException {
         Set<Object> instances = new HashSet<>();
         for (Class<?> componentClass : componentClasses) {
             instances.add(this.loadComponent(componentClass));
         }
+        this.constructInvokingService.invokePostConstructMethod(instances);
         return instances;
     }
 

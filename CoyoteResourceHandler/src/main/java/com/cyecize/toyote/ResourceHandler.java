@@ -6,9 +6,7 @@ import com.cyecize.javache.io.Writer;
 import com.cyecize.toyote.services.AppNameCollector;
 import com.cyecize.toyote.services.AppNameCollectorImpl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -59,8 +57,9 @@ public class ResourceHandler implements RequestHandler {
 
     private void handleResourceRequest(String resourcesFolder, String resourceName, HttpResponse response) {
         try {
-            Path resourcePath = Paths.get(new URL("file:/" + new File(resourcesFolder + File.separator + resourceName).getCanonicalPath()).toURI());
-            byte[] resourceContent = Files.readAllBytes(resourcePath);
+            File file = new File(resourcesFolder + File.separator + resourceName);
+            Path resourcePath = Paths.get(new URL("file:/" + file.getCanonicalPath()).toURI());
+            byte[] resourceContent = this.readAllBytes(file);
 
             response.setStatusCode(HttpStatus.OK);
 
@@ -103,5 +102,19 @@ public class ResourceHandler implements RequestHandler {
     @Override
     public boolean hasIntercepted() {
         return this.hasIntercepted;
+    }
+
+    private byte[] readAllBytes(File file) throws IOException {
+        InputStream in = new BufferedInputStream(new FileInputStream(file));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        while (true) {
+            int nBytes = in.read(buffer);
+            if (nBytes <= 0) {
+                break;
+            }
+            out.write(buffer, 0, nBytes);
+        }
+        return out.toByteArray();
     }
 }

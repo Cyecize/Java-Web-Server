@@ -12,6 +12,8 @@ import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
+import com.cyecize.summer.common.models.RedirectAttributes;
+import com.cyecize.summer.constants.RoutingConstants;
 import com.cyecize.summer.constants.SecurityConstants;
 
 import java.util.*;
@@ -26,6 +28,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private ActionMethodResultHandler methodResultHandler;
 
     private InterceptorInvokerService interceptorService;
+
+    private TemplateRenderingTwigService renderingService;
 
     protected DependencyContainer dependencyContainer;
 
@@ -67,7 +71,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                     (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
                     (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));
 
-            TemplateRenderingService renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
+            this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
             this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
 
             Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
@@ -94,16 +98,20 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         }
 
         request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getObject(Principal.class).getUser());
+        request.getSession().addAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID, dependencyContainer.getObject(RedirectAttributes.class).getAttributes());
         dependencyContainer.evictPlatformBeans();
     }
 
+    @SuppressWarnings("unchecked")
     private void addPlatformDependencies(HttpSoletRequest request, HttpSoletResponse response) {
         dependencyContainer.addPlatformBean(dependencyContainer);
         dependencyContainer.addPlatformBean(request);
         dependencyContainer.addPlatformBean(response);
         dependencyContainer.addPlatformBean(request.getSession());
-        dependencyContainer.addPlatformBean(new Model());
+        dependencyContainer.addPlatformBean(this.renderingService);
+        dependencyContainer.addPlatformBean(new Model((Map<String, Object>) request.getSession().getAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID)));
         dependencyContainer.addPlatformBean(new ModelAndView());
+        dependencyContainer.addPlatformBean(new RedirectAttributes());
         dependencyContainer.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
     }
 

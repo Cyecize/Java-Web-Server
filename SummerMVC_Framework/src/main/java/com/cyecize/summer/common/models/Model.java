@@ -2,10 +2,18 @@ package com.cyecize.summer.common.models;
 
 import org.jtwig.JtwigModel;
 
+import java.util.Map;
+
 public class Model extends JtwigModel {
 
     public Model() {
         super();
+    }
+
+    public Model(Map<String, Object> attributes) {
+        if (attributes != null) {
+            this.populateModel(attributes);
+        }
     }
 
     public void addAttribute(String name, Object value) {
@@ -21,6 +29,10 @@ public class Model extends JtwigModel {
             return super.get(name).get().getValue();
         }
         return null;
+    }
+
+    private void populateModel(Map<String, Object> attributes) {
+        attributes.forEach(this::addAttribute);
     }
 
 }

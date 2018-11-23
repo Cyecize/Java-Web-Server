@@ -55,7 +55,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
             try {
                 suitableMethod.invoke(this, methodInvokeResult);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new ActionInvocationException(e.getCause().getCause().getMessage(), e.getCause());
+                throw new ActionInvocationException(e.getCause().getMessage(), e.getCause());
             }
         } else {
             this.handleOtherResponse(result);
@@ -72,7 +72,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     }
 
     private void handleModelAndViewResponse(ModelAndView result) throws EmptyViewException, ViewNotFoundException {
-        Model model = new Model();
+        Model model = this.dependencyContainer.getObject(Model.class);
         this.response.setStatusCode(result.getStatus());
         result.getAttributes().forEach(model::addAttribute);
         model.addAttribute(MODEL_VIEW_NAME_KEY, result.getView());

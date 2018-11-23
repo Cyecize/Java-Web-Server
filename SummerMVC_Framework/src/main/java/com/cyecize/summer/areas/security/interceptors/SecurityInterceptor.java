@@ -21,9 +21,9 @@ public class SecurityInterceptor implements InterceptorAdapter {
 
     private static final String NOT_AUTHORIZED_FOR_URL_FORMAT = "User not authorized for \"%s\".";
 
-    private final SecurityConfig securityConfig;
+    private SecurityConfig securityConfig;
 
-    private final Principal principal;
+    private Principal principal;
 
     public SecurityInterceptor(SecurityConfig securityConfig, Principal principal) {
         this.securityConfig = securityConfig;
@@ -32,6 +32,15 @@ public class SecurityInterceptor implements InterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler) throws Exception {
+
+        if (this.securityConfig != null) {
+            if (request.getRelativeRequestURL().equals(this.securityConfig.getLogoutURL())) {
+                this.principal.logout();
+                response.sendRedirect(request.getContextPath() + this.securityConfig.getLogoutRedirectURL());
+                return false;
+            }
+        }
+
         if (!(handler instanceof ActionMethod)) {
             return true;
         }
@@ -48,14 +57,6 @@ public class SecurityInterceptor implements InterceptorAdapter {
             return this.handleAnnotation(preAuthorize, request, response);
         }
 
-        if (this.securityConfig != null) {
-            if (request.getRelativeRequestURL().equals(this.securityConfig.getLogoutURL())) {
-                this.principal.logout();
-                response.sendRedirect(request.getContextPath() + this.securityConfig.getLogoutRedirectURL());
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -66,12 +67,17 @@ public class SecurityInterceptor implements InterceptorAdapter {
             this.handleNotLoggedIn(request, response);
             return false;
         }
-        if (annotation.value() == AuthorizationType.ANONYMOUS && principal.isUserPresent()) {
-            this.handleNotPrivileged(request, response);
-            return false;
+
+        if (annotation.value() == AuthorizationType.ANONYMOUS) {
+            if (this.principal.isUserPresent()) {
+                this.handleNotPrivileged(request, response);
+                return false;
+            }
+            return true;
         }
+
         if (!annotation.role().equals("")) {
-            if (!principal.hasAuthority(annotation.role())) {
+            if (!this.principal.hasAuthority(annotation.role())) {
                 this.handleNotPrivileged(request, response);
                 return false;
             }
@@ -84,7 +90,6 @@ public class SecurityInterceptor implements InterceptorAdapter {
     }
 
     private void handleNotPrivileged(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
         throw new UnauthorizedException(String.format(NOT_AUTHORIZED_FOR_URL_FORMAT, request.getRelativeRequestURL()));
     }
 }

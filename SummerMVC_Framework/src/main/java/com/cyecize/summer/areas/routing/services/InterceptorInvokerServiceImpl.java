@@ -11,13 +11,14 @@ import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.extensions.InterceptorAdapter;
 import com.cyecize.summer.common.models.Model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class InterceptorInvokerServiceImpl implements InterceptorInvokerService {
 
-    private final Set<Object> interceptors;
+    private Set<Object> interceptors;
 
-    private final DependencyContainer dependencyContainer;
+    private DependencyContainer dependencyContainer;
 
     public InterceptorInvokerServiceImpl(Set<Object> interceptors, DependencyContainer dependencyContainer) {
         this.interceptors = interceptors;
@@ -27,13 +28,11 @@ public class InterceptorInvokerServiceImpl implements InterceptorInvokerService 
 
     @Override
     public boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler, boolean reload) throws Exception {
+        if (reload) {
+            this.reloadInterceptors();
+        }
         for (Object interceptor : this.interceptors) {
-            Object instanceOfInterceptor = interceptor;
-            if (reload && interceptor.getClass().getAnnotation(Component.class).lifespan() == ServiceLifeSpan.REQUEST) {
-                instanceOfInterceptor = this.dependencyContainer.reloadComponent(interceptor);
-            }
-            InterceptorAdapter interceptorAdapter = (InterceptorAdapter) instanceOfInterceptor;
-            if (!interceptorAdapter.preHandle(request, response, handler)) {
+            if (!((InterceptorAdapter) interceptor).preHandle(request, response, handler)) {
                 return false;
             }
         }
@@ -45,6 +44,18 @@ public class InterceptorInvokerServiceImpl implements InterceptorInvokerService 
         for (Object interceptor : this.interceptors) {
             ((InterceptorAdapter) interceptor).postHandle(request, response, handler, model);
         }
+    }
+
+    private void reloadInterceptors() {
+        Set<Object> freshInterceptors = new HashSet<>();
+        for (Object interceptor : this.interceptors) {
+            if (interceptor.getClass().getAnnotation(Component.class).lifespan() == ServiceLifeSpan.REQUEST) {
+                freshInterceptors.add(this.dependencyContainer.reloadComponent(interceptor));
+            } else {
+                freshInterceptors.add(interceptor);
+            }
+        }
+        this.interceptors = freshInterceptors;
     }
 
     /**

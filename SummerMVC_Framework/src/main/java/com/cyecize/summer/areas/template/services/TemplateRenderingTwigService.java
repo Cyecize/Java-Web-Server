@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.template.services;
 
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
+import com.cyecize.summer.areas.template.functions.JTwigFieldErrorsFunction;
 import com.cyecize.summer.areas.template.functions.JTwigHasRoleFunction;
 import com.cyecize.summer.areas.template.functions.JTwigPathFunction;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
@@ -59,6 +60,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
                 .functions()
                     .add(new JTwigPathFunction(this.appRootDir))
                     .add(new JTwigHasRoleFunction(this.dependencyContainer))
+                    .add(new JTwigFieldErrorsFunction(this.dependencyContainer))
                 .and()
                 .build();
     }

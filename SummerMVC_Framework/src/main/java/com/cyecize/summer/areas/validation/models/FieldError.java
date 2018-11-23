@@ -6,11 +6,14 @@ public class FieldError {
 
     private String fieldName;
 
+    private String message;
+
     private Object rejectedValue;
 
-    public FieldError(String objectName, String fieldName, Object rejectedValue) {
+    public FieldError(String objectName, String fieldName, String errorMessage,  Object rejectedValue) {
         this.object = objectName;
         this.fieldName = fieldName;
+        this.message = errorMessage;
         this.rejectedValue = rejectedValue;
     }
 
@@ -20,6 +23,10 @@ public class FieldError {
 
     public String getFieldName() {
         return this.fieldName;
+    }
+
+    public String getMessage() {
+        return this.message;
     }
 
     public Object getRejectedValue() {

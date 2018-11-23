@@ -3,6 +3,7 @@ package com.cyecize.summer.areas.scanning.services;
 import com.cyecize.summer.areas.scanning.exceptions.ComponentInstantiationException;
 import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
+import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.extensions.InterceptorAdapter;
 
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.cyecize.summer.constants.IocConstants.COMPONENT_MAP_INTERCEPTORS;
+import static com.cyecize.summer.constants.IocConstants.COMPONENT_MAP_VALIDATORS;
 
 public class ComponentLoadingServiceImpl implements ComponentLoadingService {
 
@@ -23,6 +25,7 @@ public class ComponentLoadingServiceImpl implements ComponentLoadingService {
         this.componentInstantiatingService = componentInstantiatingService;
         this.components = new HashMap<>();
         this.components.put(COMPONENT_MAP_INTERCEPTORS, new HashSet<>());
+        this.components.put(COMPONENT_MAP_VALIDATORS, new HashSet<>());
     }
 
     @Override
@@ -45,6 +48,9 @@ public class ComponentLoadingServiceImpl implements ComponentLoadingService {
     private void handleComponentType(Object component) {
         if (component instanceof InterceptorAdapter) {
             this.components.get(COMPONENT_MAP_INTERCEPTORS).add(component);
+        }
+        if (component instanceof ConstraintValidator) {
+            this.components.get(COMPONENT_MAP_VALIDATORS).add(component);
         }
         //add more here
     }

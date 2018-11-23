@@ -10,6 +10,10 @@ import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
 import com.cyecize.summer.areas.security.interfaces.UserDetails;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
+import com.cyecize.summer.areas.validation.interfaces.BindingResult;
+import com.cyecize.summer.areas.validation.models.BindingResultImpl;
+import com.cyecize.summer.areas.validation.models.FieldError;
+import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
@@ -100,6 +104,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
         request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getObject(Principal.class).getUser());
         request.getSession().addAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID, dependencyContainer.getObject(RedirectAttributes.class).getAttributes());
+        request.getSession().addAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID, dependencyContainer.getObject(BindingResult.class).getErrors());
         dependencyContainer.evictPlatformBeans();
     }
 
@@ -114,6 +119,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         dependencyContainer.addPlatformBean(new ModelAndView());
         dependencyContainer.addPlatformBean(new RedirectAttributes());
         dependencyContainer.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
+        dependencyContainer.addPlatformBean(new BindingResultImpl());
+        dependencyContainer.addPlatformBean(new RedirectedBindingResult((List<FieldError>) request.getSession().getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID)));
     }
 
     private void whitePageException(HttpSoletResponse response, Exception ex) {

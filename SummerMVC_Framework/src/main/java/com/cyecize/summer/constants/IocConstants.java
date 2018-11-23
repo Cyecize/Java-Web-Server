@@ -14,4 +14,6 @@ public class IocConstants {
 
     public static final String COMPONENT_MAP_INTERCEPTORS = "Interceptors";
 
+    public static final String COMPONENT_MAP_VALIDATORS = "Validators";
+
 }

@@ -23,7 +23,6 @@ public class SummerBootApplication {
         ServiceLoadingService serviceLoadingService = new ServiceLoadingServiceImpl();
         ActionMethodScanningService methodScanningService = new ActionMethodScanningServiceImpl(new PathFormatter());
 
-
         try {
             Set<Class<?>> loadedClasses = fileScanService.scanFiles();
             Set<Object> loadedBeans = beanLoadingService.loadBeans(loadedClasses);

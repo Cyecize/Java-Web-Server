@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 public class SoletDispatcher implements RequestHandler {
 
     private static final String APPLICATIONS_FOLDER_NAME = "webapps/";
-    private static final String SELECTED_APP_FORMAT = "Selected App for Request: \"%s\" - %s ";
 
     private final String workingDir;
 
@@ -92,7 +91,6 @@ public class SoletDispatcher implements RequestHandler {
             this.currentRequestAppName = "";
         }
         request.setContextPath(this.currentRequestAppName);
-        System.out.println(String.format(SELECTED_APP_FORMAT, request.getRequestURL(), this.currentRequestAppName));
     }
 
     private HttpSolet findSoletCandidate(HttpSoletRequest request) {

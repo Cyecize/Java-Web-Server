@@ -79,16 +79,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        dependencyContainer.addPlatformBean(dependencyContainer);
-        dependencyContainer.addPlatformBean(request);
-        dependencyContainer.addPlatformBean(response);
-        dependencyContainer.addPlatformBean(request.getSession());
-        dependencyContainer.addPlatformBean(new Model());
-        dependencyContainer.addPlatformBean(new ModelAndView());
-        dependencyContainer.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
-
-        this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
-
+        this.addPlatformDependencies(request, response);
+        dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
         try {
             if (this.interceptorService.preHandle(request, response, dependencyContainer, true)) {
                 super.service(request, response);
@@ -103,6 +95,16 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
         request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getObject(Principal.class).getUser());
         dependencyContainer.evictPlatformBeans();
+    }
+
+    private void addPlatformDependencies(HttpSoletRequest request, HttpSoletResponse response) {
+        dependencyContainer.addPlatformBean(dependencyContainer);
+        dependencyContainer.addPlatformBean(request);
+        dependencyContainer.addPlatformBean(response);
+        dependencyContainer.addPlatformBean(request.getSession());
+        dependencyContainer.addPlatformBean(new Model());
+        dependencyContainer.addPlatformBean(new ModelAndView());
+        dependencyContainer.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
     }
 
     private void whitePageException(HttpSoletResponse response, Exception ex) {

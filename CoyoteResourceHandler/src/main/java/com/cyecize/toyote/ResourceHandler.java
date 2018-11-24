@@ -20,6 +20,8 @@ public class ResourceHandler implements RequestHandler {
 
     private static final String WEB_APPS_DIR_NAME = "webapps";
 
+    private static final String WEB_ASSETS_DIR_NAME = "assets";
+
     private static final String CLASSES_FOLDER_NAME = "classes";
 
     private final String serverRootFolderPath;
@@ -55,7 +57,7 @@ public class ResourceHandler implements RequestHandler {
         response.setContent(String.format(RESOURCE_NOT_FOUND_MESSAGE, resourceName));
     }
 
-    private void handleResourceRequest(String resourcesFolder, String resourceName, HttpResponse response) {
+    private boolean handleResourceRequest(String resourcesFolder, String resourceName, HttpResponse response) {
         try {
             File file = new File(resourcesFolder + File.separator + resourceName);
             Path resourcePath = Paths.get(new URL("file:/" + file.getCanonicalPath()).toURI());
@@ -68,8 +70,10 @@ public class ResourceHandler implements RequestHandler {
             response.addHeader("Content-Disposition", "inline");
 
             response.setContent(resourceContent);
+            return true;
         } catch (IOException | URISyntaxException e) {
             this.notFound(resourceName, response);
+            return false;
         }
     }
 
@@ -80,6 +84,7 @@ public class ResourceHandler implements RequestHandler {
             HttpResponse response = new HttpResponseImpl();
 
             String applicationName = this.getApplicationName(request.getRequestURL());
+            String resourceName = this.getResourceName(request.getRequestURL(), applicationName);
             String resourcesFolder = this.serverRootFolderPath
                     + WEB_APPS_DIR_NAME
                     + File.separator
@@ -87,7 +92,13 @@ public class ResourceHandler implements RequestHandler {
                     + File.separator
                     + CLASSES_FOLDER_NAME;
 
-            this.handleResourceRequest(resourcesFolder, this.getResourceName(request.getRequestURL(), applicationName), response);
+            if (!this.handleResourceRequest(resourcesFolder, resourceName, response)) {
+                resourcesFolder = this.serverRootFolderPath
+                        + WEB_ASSETS_DIR_NAME
+                        + File.separator
+                        + applicationName;
+                this.handleResourceRequest(resourcesFolder, resourceName, response);
+            }
 
             new Writer().writeBytes(response.getBytes(), outputStream);
             response = null;

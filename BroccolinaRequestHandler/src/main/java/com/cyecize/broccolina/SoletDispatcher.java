@@ -18,6 +18,8 @@ public class SoletDispatcher implements RequestHandler {
 
     private static final String APPLICATIONS_FOLDER_NAME = "webapps/";
 
+    private static final String ASSETS_FOLDER_NAME = "assets/";
+
     private final String workingDir;
 
     private Map<String, HttpSolet> soletMap;
@@ -35,7 +37,8 @@ public class SoletDispatcher implements RequestHandler {
     public SoletDispatcher(String workingDir) {
         this.workingDir = workingDir;
         this.hasIntercepted = false;
-        this.applicationLoadingService = new ApplicationLoadingServiceImpl(new JarFileUnzipServiceImpl());
+        this.applicationLoadingService = new ApplicationLoadingServiceImpl(new JarFileUnzipServiceImpl(),
+                this.workingDir + APPLICATIONS_FOLDER_NAME, this.workingDir + ASSETS_FOLDER_NAME);
         this.sessionManagementService = new SessionManagementServiceImpl();
         this.initializeSoletMap();
         this.currentRequestAppName = "";
@@ -53,8 +56,8 @@ public class SoletDispatcher implements RequestHandler {
             this.hasIntercepted = false;
             return;
         }
+
         try {
-            solet.setAppNamePrefix(this.currentRequestAppName);
             solet.service(request, response);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
@@ -122,7 +125,7 @@ public class SoletDispatcher implements RequestHandler {
 
     private void initializeSoletMap() {
         try {
-            this.soletMap = this.applicationLoadingService.loadApplications(this.workingDir + APPLICATIONS_FOLDER_NAME);
+            this.soletMap = this.applicationLoadingService.loadApplications();
             this.applicationNames = this.applicationLoadingService.getApplicationNames();
             System.out.println("Loaded Applications: " + String.join(", ", this.applicationNames));
         } catch (Exception ex) {

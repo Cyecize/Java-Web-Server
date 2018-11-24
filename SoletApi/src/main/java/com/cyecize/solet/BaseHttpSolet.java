@@ -13,6 +13,8 @@ public abstract class BaseHttpSolet implements HttpSolet {
 
     protected String appNamePrefix;
 
+    protected String assetsFolder;
+
     protected BaseHttpSolet() {
         this.isInitialized = false;
         this.appNamePrefix = "";
@@ -56,6 +58,11 @@ public abstract class BaseHttpSolet implements HttpSolet {
     @Override
     public void setAppNamePrefix(String appName) {
         this.appNamePrefix = appName;
+    }
+
+    @Override
+    public void setAssetsFolder(String dir) {
+        this.assetsFolder = dir;
     }
 
     @Override

@@ -10,5 +10,5 @@ public interface ApplicationLoadingService {
 
     List<String> getApplicationNames();
 
-    Map<String, HttpSolet> loadApplications(String applicationsFolderPath) throws IOException;
+    Map<String, HttpSolet> loadApplications() throws IOException;
 }

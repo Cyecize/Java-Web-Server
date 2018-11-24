@@ -6,6 +6,8 @@ public interface HttpSolet {
 
     void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception;
 
+    void setAssetsFolder(String dir);
+
     void setAppNamePrefix(String appName);
 
     boolean isInitialized();

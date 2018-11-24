@@ -27,14 +27,21 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private final JarFileUnzipService jarFileUnzipService;
 
+    private final String applicationsFolderPath;
+
+    private final String assetsDir;
+
     private Map<String, HttpSolet> solets;
 
     private List<String> applicationNames;
 
-    public ApplicationLoadingServiceImpl(JarFileUnzipService jarFileUnzipService) {
+    public ApplicationLoadingServiceImpl(JarFileUnzipService jarFileUnzipService, String applicationsFolderPath, String assetsDir) {
         this.jarFileUnzipService = jarFileUnzipService;
+        this.applicationsFolderPath = applicationsFolderPath;
+        this.assetsDir = assetsDir;
         this.solets = new HashMap<>();
         this.applicationNames = new ArrayList<>();
+        this.makeAppAssetDir(this.assetsDir);
     }
 
     @Override
@@ -43,19 +50,18 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     }
 
     @Override
-    public Map<String, HttpSolet> loadApplications(String applicationsFolderPath) throws IOException {
+    public Map<String, HttpSolet> loadApplications() throws IOException {
         try {
-            File applicationsFolder = new File(applicationsFolderPath);
+            File applicationsFolder = new File(this.applicationsFolderPath);
 
             if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
                 List<File> allJarFiles = Arrays.stream(applicationsFolder.listFiles()).filter(this::isJarFile).collect(Collectors.toList());
                 for (File applicationJarFile : allJarFiles) {
                     this.jarFileUnzipService.unzipJar(applicationJarFile);
 
-                    this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath()
-                            .replace(".jar", File.separator), applicationJarFile.getName()
-                            .replace(".jar", "")
-                    );
+                    String appName = applicationJarFile.getName().replace(".jar", "");
+                    this.makeAppAssetDir(this.assetsDir + appName + File.separator);
+                    this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), appName);
                 }
             }
         } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
@@ -113,6 +119,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         if (soletAnnotation == null) {
             throw new IllegalArgumentException(String.format(MISSING_SOLET_ANNOTATION_FORMAT, soletClass.getName()));
         }
+
         String soletRoute = soletAnnotation.value();
         if (!applicationName.equals(ROOT_APPLICATION_FILE_NAME)) {
             soletRoute = "/" + applicationName + soletRoute;
@@ -120,6 +127,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         if (!soletInstance.isInitialized()) {
             soletInstance.init(new SoletConfigImpl());
         }
+
+        soletInstance.setAppNamePrefix("/" + applicationName);
+        soletInstance.setAssetsFolder(this.assetsDir + applicationName);
         this.solets.put(soletRoute, soletInstance);
     }
 
@@ -145,7 +155,6 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                     } catch (IOException ignored) {
                     }
                 });
-
     }
 
     private void addDirectoryToClassPath(String canonicalPath) {
@@ -172,6 +181,13 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
             method.invoke(sysClassLoaderInstance, url);
         } catch (Throwable t) {
             t.printStackTrace();
+        }
+    }
+
+    private void makeAppAssetDir(String dir) {
+        File file = new File(dir);
+        if (!file.exists()) {
+            file.mkdir();
         }
     }
 

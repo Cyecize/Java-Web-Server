@@ -86,7 +86,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
     }
 
     private void handleNotLoggedIn(HttpSoletRequest request, HttpSoletResponse response) {
-        response.sendRedirect(request.getContextPath() + this.securityConfig.getLoginURL() + "?callback=" + request.getRequestURL());
+        response.sendRedirect(request.getContextPath() + this.securityConfig.getLoginURL() + "?callback=" + request.getRelativeRequestURL());
     }
 
     private void handleNotPrivileged(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {

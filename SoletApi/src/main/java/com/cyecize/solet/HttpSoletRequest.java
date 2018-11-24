@@ -3,6 +3,7 @@ package com.cyecize.solet;
 import com.cyecize.http.HttpRequest;
 
 import java.io.InputStream;
+import java.util.Map;
 
 public interface HttpSoletRequest extends HttpRequest {
 
@@ -13,4 +14,6 @@ public interface HttpSoletRequest extends HttpRequest {
     String getRelativeRequestURL();
 
     InputStream getInputStream();
+
+    Map<String, MemoryFile> getUploadedFiles();
 }

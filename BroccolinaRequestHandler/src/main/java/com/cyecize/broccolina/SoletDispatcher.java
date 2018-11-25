@@ -4,11 +4,15 @@ import com.cyecize.broccolina.services.*;
 import com.cyecize.http.HttpStatus;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
+import com.cyecize.javache.services.InputStreamCachingService;
+import com.cyecize.javache.services.InputStreamCachingServiceImpl;
 import com.cyecize.solet.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -45,8 +49,10 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(String s, OutputStream outputStream) throws IOException {
-        HttpSoletRequest request = new HttpSoletRequestImpl(s, new ByteArrayInputStream(s.getBytes()));
+    public void handleRequest(InputStream inputStream, OutputStream outputStream) throws IOException {
+        byte[] bytes = inputStream.readAllBytes();
+
+        HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), new ByteArrayInputStream(bytes));
         HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
         this.resolveCurrentRequestAppName(request);
 

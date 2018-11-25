@@ -12,7 +12,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class StartUp {
 

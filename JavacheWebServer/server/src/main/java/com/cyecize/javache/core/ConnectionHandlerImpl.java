@@ -1,13 +1,13 @@
 package com.cyecize.javache.core;
 
 import com.cyecize.javache.api.RequestHandler;
+
 import com.cyecize.javache.services.InputStreamCachingService;
 import com.cyecize.javache.services.LoggingService;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
-
 
 public class ConnectionHandlerImpl implements ConnectionHandler {
 
@@ -46,7 +46,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 
     private void processClientConnection() throws IOException {
         for (RequestHandler requestHandler : this.requestHandlers) {
-            requestHandler.handleRequest(this.cachingService.getOrCacheRequestContent(this.clientSocketInputStream), this.clientSocketOutputStream);
+            requestHandler.handleRequest(this.cachingService.getOrCacheInputStream(this.clientSocketInputStream), this.clientSocketOutputStream);
             if (requestHandler.hasIntercepted()) {
                 break;
             }

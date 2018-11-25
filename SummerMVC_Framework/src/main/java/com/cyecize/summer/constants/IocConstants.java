@@ -10,6 +10,8 @@ public class IocConstants {
 
     public static final String SOLET_CFG_WORKING_DIR = "workingDirectory";
 
+    public static final String SOLET_CFG_ASSETS_DIR = "assetsDirectory";
+
     public static final String SOLET_CFG_COMPONENTS = "loadedComponents";
 
     public static final String COMPONENT_MAP_INTERCEPTORS = "Interceptors";

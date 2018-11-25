@@ -1,16 +1,21 @@
 package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.solet.HttpSoletRequest;
+import com.cyecize.solet.MemoryFile;
+import com.cyecize.solet.SoletConfig;
 import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
 import com.cyecize.summer.areas.routing.exceptions.HttpNotFoundException;
+import com.cyecize.summer.areas.routing.interfaces.MultipartFile;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
+import com.cyecize.summer.areas.routing.models.MultipartFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.common.annotations.Controller;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.constants.IocConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
@@ -128,10 +133,16 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         }
         Arrays.stream(bindingModel.getClass().getDeclaredFields()).forEach(f -> {
             f.setAccessible(true);
-            if (!request.getBodyParameters().containsKey(f.getName())) {
-                return;
+            Object parsedVal = null;
+            if (f.getType() == MultipartFile.class) {
+                MemoryFile memoryFile = request.getUploadedFiles().get(f.getName());
+                if (memoryFile != null) {
+                    parsedVal = new MultipartFileImpl(dependencyContainer.getObject(SoletConfig.class).getAttribute(IocConstants.SOLET_CFG_ASSETS_DIR) + "", memoryFile);
+                }
+            } else {
+                parsedVal = this.dataResolver.resolve(f.getType(), request.getBodyParameters().get(f.getName()));
             }
-            Object parsedVal = this.dataResolver.resolve(f.getType(), request.getBodyParameters().get(f.getName()));
+
             try {
                 f.set(bindingModel, parsedVal);
             } catch (IllegalAccessException e) {

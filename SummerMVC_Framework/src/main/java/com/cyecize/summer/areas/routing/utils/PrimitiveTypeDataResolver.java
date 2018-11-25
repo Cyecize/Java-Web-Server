@@ -41,9 +41,12 @@ public class PrimitiveTypeDataResolver {
         if (primitiveType == char.class || primitiveType == Character.class) {
             Object parsed = this.tryParse((() -> data.charAt(0)));
             if (parsed != null) return parsed;
-            return ' ';
+            return (char)0;
         }
-        return data;
+        if (primitiveType == String.class) {
+            return data;
+        }
+        return null;
     }
 
     private Object tryParse(TryParse function) {

@@ -113,6 +113,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         dependencyContainer.addPlatformBean(dependencyContainer);
         dependencyContainer.addPlatformBean(request);
         dependencyContainer.addPlatformBean(response);
+        dependencyContainer.addPlatformBean(this.getSoletConfig());
         dependencyContainer.addPlatformBean(request.getSession());
         dependencyContainer.addPlatformBean(this.renderingService);
         dependencyContainer.addPlatformBean(new Model((Map<String, Object>) request.getSession().getAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID)));
@@ -168,5 +169,11 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public final SoletConfig getSoletConfig() {
         return super.getSoletConfig();
+    }
+
+    @Override
+    public void setAssetsFolder(String dir) {
+        super.setAssetsFolder(dir);
+        this.getSoletConfig().setAttribute(SOLET_CFG_ASSETS_DIR, dir);
     }
 }

@@ -6,5 +6,5 @@ import java.io.InputStream;
 public interface InputStreamCachingService {
     void evictCache();
 
-    String getOrCacheRequestContent(InputStream inputStream) throws IOException;
+    InputStream getOrCacheInputStream(InputStream inputStream) throws IOException;
 }

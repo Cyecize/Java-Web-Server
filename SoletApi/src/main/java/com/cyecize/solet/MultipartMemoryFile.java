@@ -11,10 +11,18 @@ public class MultipartMemoryFile implements MemoryFile {
 
     private final byte[] bytes;
 
-    public MultipartMemoryFile(String fileName, String fieldName, byte[] bytes) {
+    private final String contentType;
+
+    public MultipartMemoryFile(String fileName, String fieldName, byte[] bytes, String contentType) {
         this.fileName = fileName;
         this.fieldName = fieldName;
         this.bytes = bytes;
+        this.contentType = contentType;
+    }
+
+    @Override
+    public String getContentType() {
+        return this.contentType;
     }
 
     @Override

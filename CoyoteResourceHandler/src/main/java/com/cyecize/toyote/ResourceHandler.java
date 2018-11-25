@@ -9,6 +9,7 @@ import com.cyecize.toyote.services.AppNameCollectorImpl;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,9 +79,9 @@ public class ResourceHandler implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(String s, OutputStream outputStream) {
+    public void handleRequest(InputStream inputStream, OutputStream outputStream) {
         try {
-            HttpRequest request = new HttpRequestImpl(s);
+            HttpRequest request = new HttpRequestImpl(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
             HttpResponse response = new HttpResponseImpl();
 
             String applicationName = this.getApplicationName(request.getRequestURL());

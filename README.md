@@ -33,9 +33,11 @@ Technologies used
 	
 	* JavaDelight org.javadelight:delight-fileupload used in Broccolina for multipart request parsing.
 	
-	* Gson (com.google.code.gson) used in SummerMVC
+	* Gson (com.google.code.gson) used in SummerMVC.
 	
-	* jTwig (org.jtwig) used as a templating engine in SummerMVC;
+	* Apache Commons (codec) used in SommerMVC for md5 hashing.
+	
+	* jTwig (org.jtwig) used as a templating engine in SummerMVC.
 	
 How to run the app?
 ------------------

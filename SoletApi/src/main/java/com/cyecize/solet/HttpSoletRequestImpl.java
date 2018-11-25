@@ -1,15 +1,12 @@
 package com.cyecize.solet;
 
 import com.cyecize.http.HttpRequestImpl;
-import delight.fileupload.FileUpload;
+import com.cyecize.solet.util.MultipartFileUpload;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,25 +58,26 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
         if (!this.getMethod().equalsIgnoreCase("POST") || !this.getHeaders().containsKey(CONTENT_TYPE) || !this.getHeaders().get(CONTENT_TYPE).startsWith("multipart/")) {
             return;
         }
-        FileItemIterator parsedBodyParams = FileUpload.parse(requestContent.getBytes(StandardCharsets.UTF_8), this.getHeaders().get(CONTENT_TYPE));
+
         try {
+            FileItemIterator parsedBodyParams = MultipartFileUpload.parse(this.readInputStream(this.getInputStream()), this.getHeaders().get(CONTENT_TYPE));
+
             while (parsedBodyParams.hasNext()) {
                 FileItemStream bodyParam = parsedBodyParams.next();
-
                 InputStream in = bodyParam.openStream();
                 byte[] paramContent = this.readInputStream(in);
-                boolean isParamNull = this.isMultipartFileNull(paramContent, 4096);
+                boolean isParamNull = this.isMultipartFileNull(paramContent);
 
                 if (bodyParam.isFormField()) {
-                    String field = null;
                     if (!isParamNull) {
-                        field = new String(paramContent, StandardCharsets.UTF_8);
+                        super.addBodyParameter(bodyParam.getFieldName(), new String(paramContent, StandardCharsets.UTF_8));
+                    } else {
+                        super.addBodyParameter(bodyParam.getFieldName(), null);
                     }
-                    super.addBodyParameter(bodyParam.getFieldName(), field);
                 } else {
                     MemoryFile memoryFile = null;
                     if (!isParamNull) {
-                        memoryFile = new MultipartMemoryFile(bodyParam.getName(), bodyParam.getFieldName(), paramContent);
+                        memoryFile = new MultipartMemoryFile(bodyParam.getName(), bodyParam.getFieldName(), paramContent, bodyParam.getContentType());
                     }
                     this.uploadedFiles.put(bodyParam.getFieldName(), memoryFile);
                 }
@@ -92,31 +90,10 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
     }
 
     private byte[] readInputStream(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        BufferedInputStream in = new BufferedInputStream(inputStream);
-        byte[] buffer = new byte[4096];
-        while (true) {
-            int remaining = in.read(buffer);
-            outputStream.write(buffer);
-            if (remaining <= 0) {
-                break;
-            }
-        }
-        return outputStream.toByteArray();
+        return inputStream.readAllBytes();
     }
 
-    private boolean isMultipartFileNull(final byte[] fileBytes, int bufferSize) {
-        if (fileBytes.length > bufferSize) {
-            System.out.println("buffer is more than 4096, " + fileBytes.length);
-            return false;
-        }
-        int hits = 0;
-        for (byte b : fileBytes) {
-            if (b != 0) {
-                hits++;
-            }
-        }
-        System.out.println("hits are " + hits);
-        return (hits == 0);
+    private boolean isMultipartFileNull(final byte[] fileBytes) {
+        return fileBytes.length <= 0;
     }
 }

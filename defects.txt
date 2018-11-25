@@ -3,7 +3,7 @@ Javache
 
 Javache-api
 	- Reader and Postman are not very good friends.
-	- Reader for inputStream is slow (it is not using biffer because where is an issue with Socket inputStream and buffered reading)
+	- Reader for inputStream is slow (it is not using buffer because there is an issue with Socket inputStream and buffered reading)
 Http
 
 SoletApi

@@ -14,6 +14,7 @@ import com.cyecize.summer.areas.validation.interfaces.BindingResult;
 import com.cyecize.summer.areas.validation.models.BindingResultImpl;
 import com.cyecize.summer.areas.validation.models.FieldError;
 import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
+import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
@@ -66,27 +67,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public final void init(SoletConfig soletConfig) {
-        if (soletConfig.getAttribute(SOLET_CFG_WORKING_DIR) != null) {
-            this.workingDir = (String) soletConfig.getAttribute(SOLET_CFG_WORKING_DIR);
-            this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
-            this.methodInvokingService = new ActionMethodInvokingServiceImpl(
-                    this.dependencyContainer,
-                    (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
-                    (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));
-
-            this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
-            this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
-
-            Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
-
-            this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
-        }
-        super.init(soletConfig);
-    }
-
-    @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         this.addPlatformDependencies(request, response);
         dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
@@ -124,13 +104,39 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         dependencyContainer.addPlatformBean(new RedirectedBindingResult((List<FieldError>) request.getSession().getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID)));
     }
 
-    private void whitePageException(HttpSoletResponse response, Exception ex) {
+    private void whitePageException(HttpSoletResponse response, Throwable ex) {
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         response.setContent(String.format("Uncaught exception \"%s\". Check the console.", ex.getMessage()));
         ex.printStackTrace();
     }
 
+    @SuppressWarnings("unchecked")
+    private void initApplication(SoletConfig soletConfig) {
+        this.workingDir = (String) soletConfig.getAttribute(SOLET_CFG_WORKING_DIR);
+        this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
+        this.methodInvokingService = new ActionMethodInvokingServiceImpl(
+                this.dependencyContainer,
+                new ObjectBindingServiceImpl(this.dependencyContainer),
+                (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
+                (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));
+
+        this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
+        this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
+
+        Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
+
+        this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
+    }
+
     //override these methods and make them final to prevent the app from overriding and breaking the code.
+    @Override
+    public final void init(SoletConfig soletConfig) {
+        if (soletConfig.getAttribute(SOLET_CFG_WORKING_DIR) != null) {
+            this.initApplication(soletConfig);
+        }
+        super.init(soletConfig);
+    }
+
     @Override
     protected final void doGet(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         this.processRequest(request, response);

@@ -7,6 +7,7 @@ import com.cyecize.javache.services.LoggingService;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 public class ConnectionHandlerImpl implements ConnectionHandler {
@@ -39,6 +40,10 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
             this.clientSocket.close();
             this.cachingService.evictCache();
         } catch (Throwable e) {
+            if (e instanceof SocketTimeoutException) {
+                this.loggingService.error(e.getMessage());
+                return;
+            }
             this.loggingService.error(e.getMessage());
             this.loggingService.printStackTrace(e.getStackTrace());
         }

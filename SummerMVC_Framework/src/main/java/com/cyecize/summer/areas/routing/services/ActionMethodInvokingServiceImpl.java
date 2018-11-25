@@ -1,21 +1,17 @@
 package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.solet.HttpSoletRequest;
-import com.cyecize.solet.MemoryFile;
-import com.cyecize.solet.SoletConfig;
 import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
 import com.cyecize.summer.areas.routing.exceptions.HttpNotFoundException;
-import com.cyecize.summer.areas.routing.interfaces.MultipartFile;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
-import com.cyecize.summer.areas.routing.models.MultipartFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.validation.services.ObjectBindingService;
 import com.cyecize.summer.common.annotations.Controller;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
-import com.cyecize.summer.constants.IocConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
@@ -31,6 +27,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     private final DependencyContainer dependencyContainer;
 
+    private final ObjectBindingService bindingService;
+
     private Map<String, Set<ActionMethod>> actionMethods;
 
     private Map<Class<?>, Object> controllers;
@@ -39,8 +37,9 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     private HttpSoletRequest currentRequest;
 
-    public ActionMethodInvokingServiceImpl(DependencyContainer dependencyContainer, Map<String, Set<ActionMethod>> actionMethods, Map<Class<?>, Object> controllers) {
+    public ActionMethodInvokingServiceImpl(DependencyContainer dependencyContainer, ObjectBindingService bindingService, Map<String, Set<ActionMethod>> actionMethods, Map<Class<?>, Object> controllers) {
         this.dependencyContainer = dependencyContainer;
+        this.bindingService = bindingService;
         this.actionMethods = actionMethods;
         this.controllers = controllers;
         this.dataResolver = new PrimitiveTypeDataResolver();
@@ -58,7 +57,6 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     @Override
     public ActionInvokeResult invokeMethod(ActionMethod actionMethod) {
-
         Map<String, Object> pathVariables = this.getPathVariables(actionMethod);
         Object methodResult = this.invokeAction(actionMethod, pathVariables);
 
@@ -98,6 +96,12 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         }
     }
 
+    /**
+     * Finds action method requested params by looking in the platform beans.
+     * If @PathVariable is present, it looks in the pathVariables instead.
+     * If the object is not found, then it is considered to be a bindingModel.
+     * If the object is bindingModel, it is populated and validated if needed.
+     */
     private Object[] getMethodParameters(ActionMethod actionMethod, Map<String, Object> pathVariables) {
         Parameter[] parameters = actionMethod.getMethod().getParameters();
         Object[] parameterInstances = new Object[parameters.length];
@@ -117,38 +121,13 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             if (parameterInstances[i] != null) continue;
             try {
                 Object instanceOfBindingModel = parameter.getType().getConstructor().newInstance();
-                this.populateBindingModel(instanceOfBindingModel);
+                this.bindingService.populateBindingModel(instanceOfBindingModel);
                 parameterInstances[i] = instanceOfBindingModel;
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException cause) {
                 throw new RuntimeException(String.format(CANNOT_INSTANTIATE_CLASS_FORMAT, parameter.getType().getName()), cause);
             }
         }
         return parameterInstances;
-    }
-
-    private void populateBindingModel(Object bindingModel) {
-        HttpSoletRequest request = this.currentRequest;
-        if (request.getBodyParameters() == null || request.getBodyParameters().size() < 1) {
-            return;
-        }
-        Arrays.stream(bindingModel.getClass().getDeclaredFields()).forEach(f -> {
-            f.setAccessible(true);
-            Object parsedVal = null;
-            if (f.getType() == MultipartFile.class) {
-                MemoryFile memoryFile = request.getUploadedFiles().get(f.getName());
-                if (memoryFile != null) {
-                    parsedVal = new MultipartFileImpl(dependencyContainer.getObject(SoletConfig.class).getAttribute(IocConstants.SOLET_CFG_ASSETS_DIR) + "", memoryFile);
-                }
-            } else {
-                parsedVal = this.dataResolver.resolve(f.getType(), request.getBodyParameters().get(f.getName()));
-            }
-
-            try {
-                f.set(bindingModel, parsedVal);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     private Map<String, Object> getPathVariables(ActionMethod actionMethod) {

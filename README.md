@@ -23,7 +23,10 @@ Similar to  Tomcat, Javache can
 
 Broccolina and Toyote jar files are placed in a folder where javache will read and execute them upon running.
 
-Summer MVC is really simple but it does have a templating engine IOC (@Service, @Bean), Path variables, BindingModels and so on.
+Summer MVC is has a templating engine, Dependency Container, Path variables, BindingModels, Validation, Security, Interceptors
+and so on.
+
+Multipart encoding is also supported.
 
 Technologies used
 ---------------------

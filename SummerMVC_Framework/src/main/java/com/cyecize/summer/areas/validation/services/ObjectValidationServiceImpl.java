@@ -2,6 +2,7 @@ package com.cyecize.summer.areas.validation.services;
 
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.Constraint;
+import com.cyecize.summer.areas.validation.constraints.FieldMatchConstraint;
 import com.cyecize.summer.areas.validation.constraints.NotEmptyConstraint;
 import com.cyecize.summer.areas.validation.constraints.NotNullConstraint;
 import com.cyecize.summer.areas.validation.exceptions.ValidationException;
@@ -107,5 +108,6 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
     private void addPlatformValidators() {
         this.classValidatorMap.put(NotNullConstraint.class, new NotNullConstraint());
         this.classValidatorMap.put(NotEmptyConstraint.class, new NotEmptyConstraint());
+        this.classValidatorMap.put(FieldMatchConstraint.class, new FieldMatchConstraint());
     }
 }

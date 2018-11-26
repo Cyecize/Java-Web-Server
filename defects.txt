@@ -15,3 +15,5 @@ Toyote
 Summer
 	- Loading 2 apps in javache with the same package name will result in 
 	replacing the first app classes with an instance of the second app.
+	
+	- @PathVariable's isRequired is not yet implemented.

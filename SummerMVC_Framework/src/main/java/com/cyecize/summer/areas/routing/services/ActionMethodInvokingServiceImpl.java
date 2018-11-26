@@ -7,11 +7,16 @@ import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.validation.annotations.Valid;
+import com.cyecize.summer.areas.validation.exceptions.ValidationException;
+import com.cyecize.summer.areas.validation.interfaces.BindingResult;
 import com.cyecize.summer.areas.validation.services.ObjectBindingService;
+import com.cyecize.summer.areas.validation.services.ObjectValidationService;
 import com.cyecize.summer.common.annotations.Controller;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import org.eclipse.xtext.xbase.lib.Exceptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
@@ -29,6 +34,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     private final ObjectBindingService bindingService;
 
+    private final ObjectValidationService validationService;
+
     private Map<String, Set<ActionMethod>> actionMethods;
 
     private Map<Class<?>, Object> controllers;
@@ -37,9 +44,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     private HttpSoletRequest currentRequest;
 
-    public ActionMethodInvokingServiceImpl(DependencyContainer dependencyContainer, ObjectBindingService bindingService, Map<String, Set<ActionMethod>> actionMethods, Map<Class<?>, Object> controllers) {
+    public ActionMethodInvokingServiceImpl(DependencyContainer dependencyContainer, ObjectBindingService bindingService, ObjectValidationService validationService, Map<String, Set<ActionMethod>> actionMethods, Map<Class<?>, Object> controllers) {
         this.dependencyContainer = dependencyContainer;
         this.bindingService = bindingService;
+        this.validationService = validationService;
         this.actionMethods = actionMethods;
         this.controllers = controllers;
         this.dataResolver = new PrimitiveTypeDataResolver();
@@ -122,6 +130,9 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             try {
                 Object instanceOfBindingModel = parameter.getType().getConstructor().newInstance();
                 this.bindingService.populateBindingModel(instanceOfBindingModel);
+                if (parameter.isAnnotationPresent(Valid.class)) {
+                    this.validationService.validateBindingModel(instanceOfBindingModel, this.dependencyContainer.getObject(BindingResult.class));
+                }
                 parameterInstances[i] = instanceOfBindingModel;
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException cause) {
                 throw new RuntimeException(String.format(CANNOT_INSTANTIATE_CLASS_FORMAT, parameter.getType().getName()), cause);

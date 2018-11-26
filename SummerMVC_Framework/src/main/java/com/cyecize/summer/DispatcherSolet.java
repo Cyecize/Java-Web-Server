@@ -15,6 +15,7 @@ import com.cyecize.summer.areas.validation.models.BindingResultImpl;
 import com.cyecize.summer.areas.validation.models.FieldError;
 import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
 import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
+import com.cyecize.summer.areas.validation.services.ObjectValidationServiceImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
@@ -113,17 +114,19 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @SuppressWarnings("unchecked")
     private void initApplication(SoletConfig soletConfig) {
         this.workingDir = (String) soletConfig.getAttribute(SOLET_CFG_WORKING_DIR);
+        Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
+
         this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                 this.dependencyContainer,
                 new ObjectBindingServiceImpl(this.dependencyContainer),
+                new ObjectValidationServiceImpl(components.get(COMPONENT_MAP_VALIDATORS), dependencyContainer),
                 (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
                 (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));
 
         this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
         this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
 
-        Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
 
         this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
     }

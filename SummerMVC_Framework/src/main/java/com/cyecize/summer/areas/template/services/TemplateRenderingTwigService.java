@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.template.services;
 
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
+import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.functions.JTwigFieldErrorsFunction;
 import com.cyecize.summer.areas.template.functions.JTwigHasRoleFunction;
 import com.cyecize.summer.areas.template.functions.JTwigPathFunction;
@@ -17,6 +18,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 public class TemplateRenderingTwigService implements TemplateRenderingService {
+
+    private static final String GLOBAL_VAR_USER = "user";
 
     private static final String TEMPLATE_NOT_FOUND_FORMAT = "Template \"%s\" not found under resources/templates/%s";
 
@@ -40,12 +43,20 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
         if (view.startsWith("/")) {
             view = view.substring(1);
         }
+        this.addGlobalVars(model);
         try {
             JtwigTemplate template = JtwigTemplate.fileTemplate(this.templatesDir + view, this.twigEnvironmentConfig);
             return template.render(model);
         } catch (JtwigException ex) {
             throw new ViewNotFoundException(String.format(TEMPLATE_NOT_FOUND_FORMAT, view, view), ex);
         }
+    }
+
+    /**
+     * Add global variables that will be accessible across all views.
+     */
+    private void addGlobalVars(Model model) {
+        model.addAttribute(GLOBAL_VAR_USER, this.dependencyContainer.getObject(Principal.class).getUser());
     }
 
     private void initTwigEnvironment() {

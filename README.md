@@ -59,7 +59,7 @@ Your app has to be .jar and has to be structured like so:
 
 * lib - you can put the .jar libraries here or put them instead in javache's lib folder.
 
-To better understand, you can extract some of the provided example applications.
+To better understand, you can extract some of the provided example applications or read the documentation inside Documentation folder.
 
 In the exams folder you can find a working javache demo with everything set up.
 You just need to run a command.

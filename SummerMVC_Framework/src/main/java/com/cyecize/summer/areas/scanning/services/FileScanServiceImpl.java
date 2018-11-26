@@ -49,18 +49,13 @@ public class FileScanServiceImpl implements FileScanService {
                 this.scanDir(file, packageName);
             }
         } else if (dir.getName().contains(".class")) { //file is class
-            var className = packageName + dir.getName().replace(".class", "");
+            String className = packageName + dir.getName().replace(".class", "");
             Class<?> cls = Class.forName(className);
             this.availableClasses.add(cls);
         }
     }
 
     private String getScanFolder(Class cls) {
-        String name = cls.getName()
-                .replace(cls.getSimpleName(), "")
-                .replace(".", "/");
-        return cls.getResource("").toString()
-                .replace("file:/", "")
-                .replace(name, "");
+        return cls.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1);
     }
 }

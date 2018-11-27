@@ -109,5 +109,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
         this.classValidatorMap.put(FieldMatchConstraint.class, new FieldMatchConstraint());
         this.classValidatorMap.put(MaxLengthConstraint.class, new MaxLengthConstraint());
         this.classValidatorMap.put(MinLengthConstraint.class, new MinLengthConstraint());
+        this.classValidatorMap.put(MaxConstraint.class, new MaxConstraint());
+        this.classValidatorMap.put(MinConstraint.class, new MinConstraint());
     }
 }

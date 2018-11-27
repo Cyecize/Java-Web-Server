@@ -1,5 +1,6 @@
 package com.cyecize.http;
 
+import java.util.List;
 import java.util.Map;
 
 public interface HttpRequest {
@@ -27,6 +28,8 @@ public interface HttpRequest {
     Map<String, String> getQueryParameters();
 
     Map<String, String> getBodyParameters();
+
+    Map<String, List<String>> getBodyParametersAsList();
 
     Map<String, HttpCookie> getCookies();
 

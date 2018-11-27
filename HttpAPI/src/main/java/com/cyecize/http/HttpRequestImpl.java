@@ -2,10 +2,7 @@ package com.cyecize.http;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HttpRequestImpl implements HttpRequest {
 
@@ -20,6 +17,8 @@ public class HttpRequestImpl implements HttpRequest {
     private Map<String, String> queryParameters;
 
     private Map<String, String> bodyParameters;
+
+    private Map<String, List<String>> bodyParametersAsList;
 
     private Map<String, HttpCookie> cookies;
 
@@ -55,6 +54,10 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public void addBodyParameter(String parameter, String value) {
         this.bodyParameters.put(parameter, value);
+        if (!this.bodyParametersAsList.containsKey(parameter)) {
+            this.bodyParametersAsList.put(parameter, new ArrayList<>());
+        }
+        this.bodyParametersAsList.get(parameter).add(value);
     }
 
     @Override
@@ -90,6 +93,11 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public Map<String, String> getBodyParameters() {
         return this.bodyParameters;
+    }
+
+    @Override
+    public Map<String, List<String>> getBodyParametersAsList() {
+        return this.bodyParametersAsList;
     }
 
     @Override
@@ -144,6 +152,7 @@ public class HttpRequestImpl implements HttpRequest {
     private void initBodyParameters(String requestContent) {
         if (this.getMethod().equals("POST")) {
             this.bodyParameters = new HashMap<>();
+            this.bodyParametersAsList = new HashMap<>();
 
             List<String> requestParams = Arrays.asList(requestContent.split("\\r\\n"));
 

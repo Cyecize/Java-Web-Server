@@ -6,7 +6,7 @@
 
     <groupId>com.cyecize</groupId>
     <artifactId>http</artifactId>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <build>
         <plugins>
             <plugin>

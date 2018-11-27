@@ -9,7 +9,10 @@ import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.cyecize.summer.constants.IocConstants.*;
 
@@ -39,6 +42,8 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
             //add other types here
             if (field.getType() == MultipartFile.class) {
                 parsedVal = this.handleMultipartField(field, request);
+            } else if (field.getType() == List.class) {
+                parsedVal = this.handleListField(field, request);
             } else {
                 parsedVal = this.handlePrimitiveField(field, request);
             }
@@ -61,6 +66,26 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
     private Object handlePrimitiveField(Field field, HttpSoletRequest request) {
         return this.dataResolver.resolve(field.getType(), request.getBodyParameters().get(field.getName()));
+    }
+
+    private List<Object> handleListField(Field field, HttpSoletRequest request) {
+        List<Object> parsedParams = new ArrayList<>();
+        if (request.getBodyParametersAsList().get(field.getName()) == null) return parsedParams;
+
+        Class<?> fieldGenericType = String.class;
+        try {
+            fieldGenericType = ((Class) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0]);
+        } catch (ClassCastException ignored) {
+        }
+
+        List<String> paramsForField = request.getBodyParametersAsList().get(field.getName());
+
+        for (String param : paramsForField) {
+            Object parsedParam = this.dataResolver.resolve(fieldGenericType, param);
+            parsedParams.add(parsedParam);
+        }
+
+        return parsedParams;
     }
 
     private String getAssetsDir() {

@@ -11,6 +11,7 @@ SoletApi
 Broccolina
 
 Toyote
+	- Toyote shows META-INF content which is not secure.
 
 Summer
 	- Loading 2 apps in javache with the same package name will result in 

@@ -6,5 +6,5 @@ import java.lang.reflect.Field;
 
 public interface DataAdapter<T> {
 
-    T adaptField(HttpSoletRequest request, Field field);
+    T resolveField(Field field, HttpSoletRequest request);
 }

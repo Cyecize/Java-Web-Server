@@ -18,4 +18,6 @@ public class IocConstants {
 
     public static final String COMPONENT_MAP_VALIDATORS = "Validators";
 
+    public static final String COMPONENT_MAP_DATA_ADAPTERS = "DataAdapters";
+
 }

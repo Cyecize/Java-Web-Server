@@ -119,7 +119,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                 this.dependencyContainer,
-                new ObjectBindingServiceImpl(this.dependencyContainer),
+                new ObjectBindingServiceImpl(this.dependencyContainer, components.get(COMPONENT_MAP_DATA_ADAPTERS)),
                 new ObjectValidationServiceImpl(components.get(COMPONENT_MAP_VALIDATORS), dependencyContainer),
                 (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
                 (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));

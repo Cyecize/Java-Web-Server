@@ -16,6 +16,8 @@ public interface DependencyContainer {
 
     <T> T reloadComponent(T component);
 
+    <T> T reloadComponent(T component, ServiceLifeSpan lifeSpan);
+
     <T> T getObject(Class<T> objType);
 
     Set<Object> getServicesAndBeans();

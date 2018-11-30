@@ -8,6 +8,8 @@ import com.cyecize.summer.areas.routing.models.MultipartFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
+import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -51,7 +53,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
             //add other types here
             String fieldGenericType = this.getFieldGenericType(field);
             if (this.dataAdapters.containsKey(this.getFieldGenericType(field))) {
-                parsedVal = this.dataAdapters.get(fieldGenericType).resolveField(field, request);
+                parsedVal = this.handleCustomTypeField(field, request);
             } else if (field.getType() == MultipartFile.class) {
                 parsedVal = this.handleMultipartField(field, request);
             } else if (field.getType() == List.class) {
@@ -66,6 +68,14 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
                 e.printStackTrace();
             }
         });
+    }
+
+    private Object handleCustomTypeField(Field field, HttpSoletRequest request) {
+        DataAdapter dataAdapter = this.dependencyContainer.reloadComponent(
+                this.dataAdapters.get(this.getFieldGenericType(field)),
+                ServiceLifeSpan.REQUEST
+        );
+        return dataAdapter.resolveField(field, request);
     }
 
     private String getFieldGenericType(Field field) {

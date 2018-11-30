@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
+import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.annotations.Service;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
@@ -57,24 +58,33 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
-    public Object reloadComponent(Object component) {
+    @SuppressWarnings("unchecked")
+    public <T> T reloadComponent(T component) {
         try {
             Class componentClass = component.getClass();
-            Constructor<?> constructor = componentClass.getConstructors()[0];
+            Constructor<T> constructor = componentClass.getConstructors()[0];
             if (constructor.getParameterCount() < 1) {
-                return constructor.newInstance();
+                return (T) constructor.newInstance();
             }
             Object[] paramInstances = new Object[constructor.getParameterCount()];
             Class<?>[] paramTypes = constructor.getParameterTypes();
             for (int i = 0; i < paramTypes.length; i++) {
                 paramInstances[i] = this.getObject(paramTypes[i]);
             }
-            return constructor.newInstance(paramInstances);
+            return (T) constructor.newInstance(paramInstances);
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             //should not be reached
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public <T> T reloadComponent(T component, ServiceLifeSpan lifeSpan) {
+        if (component.getClass().getAnnotation(Component.class).lifespan() != lifeSpan) {
+            return component;
+        }
+        return this.reloadComponent(component);
     }
 
     @Override

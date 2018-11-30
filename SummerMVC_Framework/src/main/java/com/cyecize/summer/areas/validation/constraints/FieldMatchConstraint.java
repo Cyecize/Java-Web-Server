@@ -14,9 +14,12 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
 
     private String fieldName;
 
+    private boolean inverted;
+
     @Override
     public void initialize(FieldMatch constraintAnnotation) {
         this.fieldName = constraintAnnotation.fieldToMatch();
+        this.inverted = constraintAnnotation.inverted();
     }
 
     @Override
@@ -37,9 +40,15 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
         }
 
         if (matchingVal == null) {
+            if (this.inverted) {
+                return fieldVal != null;
+            }
             return fieldVal == null;
         }
 
+        if (this.inverted) {
+            return !matchingVal.equals(fieldVal);
+        }
         return matchingVal.equals(fieldVal);
     }
 }

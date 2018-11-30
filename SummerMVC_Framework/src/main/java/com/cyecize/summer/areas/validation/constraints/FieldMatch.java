@@ -15,4 +15,6 @@ public @interface FieldMatch {
     String message() default "Fields do not match";
 
     String fieldToMatch();
+
+    boolean inverted() default false;
 }

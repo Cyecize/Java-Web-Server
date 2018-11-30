@@ -3,7 +3,8 @@ package com.cyecize.summer.areas.validation.constraints;
 import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.common.annotations.Component;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 @Component
 public class MaxLengthConstraint implements ConstraintValidator<MaxLength, Object> {
@@ -17,10 +18,16 @@ public class MaxLengthConstraint implements ConstraintValidator<MaxLength, Objec
 
     @Override
     public boolean isValid(Object field, Object bindingModel) {
-        if (field instanceof List) {
-            return ((List) field).size() <= this.maxLen;
-        }
         if (field == null) return 0 <= this.maxLen;
+
+        if (Collection.class.isAssignableFrom(field.getClass())) {
+            return ((Collection) field).size() <= this.maxLen;
+        }
+
+        if (Map.class.isAssignableFrom(field.getClass())) {
+            return ((Map) field).size() <= this.maxLen;
+        }
+
         return (field + "").length() <= this.maxLen;
     }
 }

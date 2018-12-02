@@ -2,6 +2,7 @@ package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 public interface DependencyContainer {
@@ -21,6 +22,8 @@ public interface DependencyContainer {
     <T> T getObject(Class<T> objType);
 
     Set<Object> getServicesAndBeans();
+
+    Set<Object> getServicesByAnnotation(Class<? extends Annotation> annotationType);
 
     Set<Object> getPlatformBeans();
 }

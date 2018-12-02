@@ -5,6 +5,7 @@ import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.annotations.Service;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -99,6 +100,13 @@ public class DependencyContainerImpl implements DependencyContainer {
     @Override
     public Set<Object> getServicesAndBeans() {
         return this.allServicesAndBeans;
+    }
+
+    @Override
+    public Set<Object> getServicesByAnnotation(Class<? extends Annotation> annotationType) {
+        return this.allServicesAndBeans.stream()
+                .filter(s -> s.getClass().isAnnotationPresent(annotationType))
+                .collect(Collectors.toSet());
     }
 
     @Override

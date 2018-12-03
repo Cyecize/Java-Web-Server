@@ -144,7 +144,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     private Map<String, Object> getPathVariables(ActionMethod actionMethod) {
         Map<String, Object> pathVariables = new HashMap<>();
         Pattern routePattern = Pattern.compile(actionMethod.getPattern());
-        Matcher routeMatcher = routePattern.matcher(this.currentRequest.getRequestURL());
+        Matcher routeMatcher = routePattern.matcher(this.currentRequest.getRelativeRequestURL());
         routeMatcher.find(); //always true
 
         Arrays.stream(actionMethod.getMethod().getParameters()).forEach(p -> {

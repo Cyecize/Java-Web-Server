@@ -15,15 +15,15 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
 
     private static final String CONTENT_TYPE = "Content-Type";
 
-    private InputStream inputStream;
+    private byte[] bytes;
 
     private String contextPath;
 
     private Map<String, MemoryFile> uploadedFiles;
 
-    public HttpSoletRequestImpl(String requestContent, InputStream requestStream) {
+    public HttpSoletRequestImpl(String requestContent, byte[] bytes) {
         super(requestContent);
-        this.inputStream = requestStream;
+        this.bytes = bytes;
         this.uploadedFiles = new HashMap<>();
         this.setContextPath("");
         this.initMultipartRequest(requestContent);
@@ -46,7 +46,7 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
 
     @Override
     public InputStream getInputStream() {
-        return this.inputStream;
+        return new ByteArrayInputStream(this.bytes);
     }
 
     @Override

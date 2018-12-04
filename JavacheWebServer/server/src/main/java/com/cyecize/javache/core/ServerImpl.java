@@ -44,8 +44,9 @@ public class ServerImpl implements Server {
                 Thread thread = new Thread(new ConnectionHandlerImpl(
                         clientSocket,
                         this.requestHandlerLoadingService.getRequestHandlers(),
-                        new InputStreamCachingServiceImpl(), this.loggingService)
-                );
+                        new InputStreamCachingServiceImpl(),
+                        this.loggingService
+                ));
                 thread.start();
             } catch (SocketTimeoutException ignored) {
             }

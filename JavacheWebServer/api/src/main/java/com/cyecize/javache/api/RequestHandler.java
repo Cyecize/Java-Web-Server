@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface RequestHandler {
-    void handleRequest(InputStream inputStream, OutputStream responseStream) throws IOException;
+    void handleRequest(byte[] requestContent, OutputStream responseStream) throws IOException;
 
     boolean hasIntercepted();
 }

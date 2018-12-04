@@ -79,9 +79,9 @@ public class ResourceHandler implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream) {
+    public void handleRequest(byte[] inputStream, OutputStream outputStream) {
         try {
-            HttpRequest request = new HttpRequestImpl(new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+            HttpRequest request = new HttpRequestImpl(new String(inputStream, StandardCharsets.UTF_8));
             HttpResponse response = new HttpResponseImpl();
 
             String applicationName = this.getApplicationName(request.getRequestURL());

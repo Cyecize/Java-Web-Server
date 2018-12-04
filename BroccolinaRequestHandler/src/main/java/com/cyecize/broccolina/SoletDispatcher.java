@@ -47,10 +47,8 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream) throws IOException {
-        byte[] bytes = inputStream.readAllBytes();
-
-        HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), new ByteArrayInputStream(bytes));
+    public void handleRequest(byte[] bytes, OutputStream outputStream) throws IOException {
+        HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), bytes);
         HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
         this.resolveCurrentRequestAppName(request);
 

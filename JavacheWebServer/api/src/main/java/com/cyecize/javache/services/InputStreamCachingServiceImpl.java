@@ -13,11 +13,11 @@ public final class InputStreamCachingServiceImpl implements InputStreamCachingSe
     }
 
     @Override
-    public InputStream getOrCacheInputStream(InputStream inputStream) throws IOException {
+    public byte[] getOrCacheInputStream(InputStream inputStream) throws IOException {
         if (this.bytes == null) {
             this.bytes = new Reader().readAllBytes(inputStream);
         }
-        return new ByteArrayInputStream(this.bytes);
+        return this.bytes;
     }
 
     @Override

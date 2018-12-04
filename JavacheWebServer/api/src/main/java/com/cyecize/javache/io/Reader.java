@@ -14,10 +14,21 @@ public final class Reader {
     public byte[] readAllBytes(InputStream inputStream) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        do {
-            int b = inputStream.read();
-            outputStream.write(b);
-        } while (inputStream.available() > 0);
+        byte[] buffer = new byte[4096];
+
+        int read;
+        int remaining = buffer.length + 1;
+        while ((read = inputStream.read(buffer, 0, Math.min(buffer.length, remaining))) != -1) {
+            outputStream.write(buffer, 0, read);
+            if (inputStream.available() <= 0) {
+                break;
+            }
+
+            long time = System.nanoTime() + 50000;
+            while (time > System.nanoTime()) {
+                //stupid await
+            }
+        }
 
         return outputStream.toByteArray();
     }

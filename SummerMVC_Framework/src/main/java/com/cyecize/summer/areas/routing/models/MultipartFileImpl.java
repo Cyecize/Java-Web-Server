@@ -55,6 +55,7 @@ public class MultipartFileImpl implements MultipartFile {
         FileOutputStream outputStream = new FileOutputStream(path.toFile());
         this.memoryFile.getInputStream().transferTo(outputStream);
 
+        this.memoryFile.getInputStream().close();
         outputStream.close();
         return pathToFile;
     }

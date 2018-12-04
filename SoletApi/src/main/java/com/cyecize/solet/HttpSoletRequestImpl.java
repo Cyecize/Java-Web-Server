@@ -1,6 +1,7 @@
 package com.cyecize.solet;
 
 import com.cyecize.http.HttpRequestImpl;
+import com.cyecize.solet.service.TemporaryStorageService;
 import com.cyecize.solet.util.MultipartFileUpload;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -19,11 +20,14 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
 
     private String contextPath;
 
+    private final TemporaryStorageService temporaryStorageService;
+
     private Map<String, MemoryFile> uploadedFiles;
 
-    public HttpSoletRequestImpl(String requestContent, byte[] bytes) {
+    public HttpSoletRequestImpl(String requestContent, byte[] bytes, TemporaryStorageService temporaryStorageService) {
         super(requestContent);
         this.bytes = bytes;
+        this.temporaryStorageService = temporaryStorageService;
         this.uploadedFiles = new HashMap<>();
         this.setContextPath("");
         this.initMultipartRequest(requestContent);
@@ -60,40 +64,28 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
         }
 
         try {
-            FileItemIterator parsedBodyParams = MultipartFileUpload.parse(this.readInputStream(this.getInputStream()), this.getHeaders().get(CONTENT_TYPE));
+            FileItemIterator parsedBodyParams = MultipartFileUpload.parse(this.bytes, this.getHeaders().get(CONTENT_TYPE));
 
             while (parsedBodyParams.hasNext()) {
                 FileItemStream bodyParam = parsedBodyParams.next();
-                InputStream in = bodyParam.openStream();
-                byte[] paramContent = this.readInputStream(in);
-                boolean isParamNull = this.isMultipartFileNull(paramContent);
 
                 if (bodyParam.isFormField()) {
-                    if (!isParamNull) {
+                    InputStream in = bodyParam.openStream();
+                    byte[] paramContent = in.readAllBytes();
+
+                    if (paramContent.length > 0) {
+                        System.out.println("added " + bodyParam.getFieldName());
                         super.addBodyParameter(bodyParam.getFieldName(), new String(paramContent, StandardCharsets.UTF_8));
                     } else {
                         super.addBodyParameter(bodyParam.getFieldName(), null);
                     }
+                    in.close();
                 } else {
-                    MemoryFile memoryFile = null;
-                    if (!isParamNull) {
-                        memoryFile = new MultipartMemoryFile(bodyParam.getName(), bodyParam.getFieldName(), paramContent, bodyParam.getContentType());
-                    }
-                    this.uploadedFiles.put(bodyParam.getFieldName(), memoryFile);
+                    this.uploadedFiles.put(bodyParam.getFieldName(), this.temporaryStorageService.saveMultipartFile(bodyParam));
                 }
-
-                in.close();
             }
         } catch (FileUploadException | IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private byte[] readInputStream(InputStream inputStream) throws IOException {
-        return inputStream.readAllBytes();
-    }
-
-    private boolean isMultipartFileNull(final byte[] fileBytes) {
-        return fileBytes.length <= 0;
     }
 }

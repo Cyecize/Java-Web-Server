@@ -5,11 +5,10 @@ import com.cyecize.http.HttpStatus;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
 import com.cyecize.solet.*;
+import com.cyecize.solet.service.TemporaryStorageService;
+import com.cyecize.solet.service.TemporaryStorageServiceImpl;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,11 @@ public class SoletDispatcher implements RequestHandler {
 
     private static final String ASSETS_FOLDER_NAME = "assets/";
 
+    private static final String TEMP_FOLDER_NAME = "temp/";
+
     private final String workingDir;
+
+    private String tempDir;
 
     private Map<String, HttpSolet> soletMap;
 
@@ -44,35 +47,42 @@ public class SoletDispatcher implements RequestHandler {
         this.sessionManagementService = new SessionManagementServiceImpl();
         this.initializeSoletMap();
         this.currentRequestAppName = "";
+        this.initTempDir();
     }
 
     @Override
     public void handleRequest(byte[] bytes, OutputStream outputStream) throws IOException {
-        HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), bytes);
-        HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
-        this.resolveCurrentRequestAppName(request);
+        TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
 
-        this.sessionManagementService.initSessionIfExistent(request);
-        HttpSolet solet = this.findSoletCandidate(request);
-        if (solet == null /*|| request.isResource()*/) {
-            this.hasIntercepted = false;
-            return;
+        try {
+            HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), bytes, temporaryStorageService);
+            HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
+            this.resolveCurrentRequestAppName(request);
+
+            this.sessionManagementService.initSessionIfExistent(request);
+            HttpSolet solet = this.findSoletCandidate(request);
+            if (solet == null /*|| request.isResource()*/) {
+                this.hasIntercepted = false;
+                return;
+            }
+
+            if (!this.runSolet(solet, request, response)) {
+                this.hasIntercepted = false;
+                return;
+            }
+
+            if (response.getStatusCode() == null) {
+                response.setStatusCode(HttpStatus.OK);
+            }
+
+            this.sessionManagementService.sendSessionIfExistent(request, response);
+            this.sessionManagementService.clearInvalidSessions();
+            new Writer().writeData(response.getResponse(), response.getOutputStream());
+            response = null;
+            this.hasIntercepted = true;
+        } finally {
+            temporaryStorageService.removeTemporaryFiles();
         }
-
-        if (!this.runSolet(solet, request, response)) {
-            this.hasIntercepted = false;
-            return;
-        }
-
-        if (response.getStatusCode() == null) {
-            response.setStatusCode(HttpStatus.OK);
-        }
-
-        this.sessionManagementService.sendSessionIfExistent(request, response);
-        this.sessionManagementService.clearInvalidSessions();
-        new Writer().writeData(response.getResponse(), response.getOutputStream());
-        response = null;
-        this.hasIntercepted = true;
     }
 
     @Override
@@ -140,6 +150,15 @@ public class SoletDispatcher implements RequestHandler {
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
+        }
+    }
+
+    private void initTempDir() {
+        this.tempDir = this.workingDir + TEMP_FOLDER_NAME;
+
+        File workingDir = new File(this.tempDir);
+        if (!workingDir.exists()) {
+            workingDir.mkdir();
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.cyecize.solet;
 
-import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class MultipartMemoryFile implements MemoryFile {
@@ -9,14 +10,14 @@ public class MultipartMemoryFile implements MemoryFile {
 
     private final String fieldName;
 
-    private final byte[] bytes;
+    private final String filePath;
 
     private final String contentType;
 
-    public MultipartMemoryFile(String fileName, String fieldName, byte[] bytes, String contentType) {
+    public MultipartMemoryFile(String fileName, String fieldName, String filePath, String contentType) {
         this.fileName = fileName;
         this.fieldName = fieldName;
-        this.bytes = bytes;
+        this.filePath = filePath;
         this.contentType = contentType;
     }
 
@@ -37,11 +38,24 @@ public class MultipartMemoryFile implements MemoryFile {
 
     @Override
     public InputStream getInputStream() {
-        return new ByteArrayInputStream(this.bytes);
+        try {
+            return new FileInputStream(this.filePath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public byte[] getBytes() {
-        return this.bytes;
+        try {
+            InputStream inputStream = this.getInputStream();
+            if (inputStream != null) {
+                return inputStream.readAllBytes();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 }

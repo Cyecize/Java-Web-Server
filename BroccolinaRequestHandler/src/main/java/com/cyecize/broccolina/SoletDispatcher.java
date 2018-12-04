@@ -4,8 +4,6 @@ import com.cyecize.broccolina.services.*;
 import com.cyecize.http.HttpStatus;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
-import com.cyecize.javache.services.InputStreamCachingService;
-import com.cyecize.javache.services.InputStreamCachingServiceImpl;
 import com.cyecize.solet.*;
 
 import java.io.ByteArrayInputStream;
@@ -65,6 +63,10 @@ public class SoletDispatcher implements RequestHandler {
 
         try {
             solet.service(request, response);
+            if (!solet.hasIntercepted()) {
+                this.hasIntercepted = false;
+                return;
+            }
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
@@ -79,7 +81,6 @@ public class SoletDispatcher implements RequestHandler {
         new Writer().writeData(response.getResponse(), response.getOutputStream());
         response = null;
         this.hasIntercepted = true;
-        System.gc();
     }
 
     @Override
@@ -102,6 +103,9 @@ public class SoletDispatcher implements RequestHandler {
         request.setContextPath(this.currentRequestAppName);
     }
 
+    /**
+     * Search by constant route, then by regex and finally look for "/*" type routes.
+     */
     private HttpSolet findSoletCandidate(HttpSoletRequest request) {
         String requestUrl = request.getRequestURL();
         Pattern applicationRouteMatchPattern = Pattern.compile(Pattern.quote(this.currentRequestAppName) + "\\/[a-zA-Z0-9]+\\/");
@@ -116,10 +120,6 @@ public class SoletDispatcher implements RequestHandler {
             if (this.soletMap.containsKey(applicationRoute)) {
                 return this.soletMap.get(applicationRoute);
             }
-        }
-
-        if (request.isResource()) {
-            return null;
         }
 
         if (this.soletMap.containsKey(this.currentRequestAppName + "/*")) {

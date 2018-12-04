@@ -1,6 +1,5 @@
 package com.cyecize.summer.areas.security.interceptors;
 
-import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
@@ -9,6 +8,7 @@ import com.cyecize.summer.areas.security.enums.AuthorizationType;
 import com.cyecize.summer.areas.security.exceptions.NoSecurityConfigurationException;
 import com.cyecize.summer.areas.security.exceptions.UnauthorizedException;
 import com.cyecize.summer.areas.security.models.Principal;
+import com.cyecize.summer.areas.security.models.SecuredArea;
 import com.cyecize.summer.areas.security.models.SecurityConfig;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
@@ -39,6 +39,10 @@ public class SecurityInterceptor implements InterceptorAdapter {
                 response.sendRedirect(request.getContextPath() + this.securityConfig.getLogoutRedirectURL());
                 return false;
             }
+
+            if (!this.handleSecuredAreas(request, response)) {
+                return false;
+            }
         }
 
         if (!(handler instanceof ActionMethod)) {
@@ -60,6 +64,37 @@ public class SecurityInterceptor implements InterceptorAdapter {
         return true;
     }
 
+    /**
+     * Scans the secured areas.
+     * If Route matches secured area, check if the user is logged in and redirect to login if not.
+     * If the user is logged in, check if the required role is present and throw Exception if it not present.
+     */
+    private boolean handleSecuredAreas(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {
+        SecuredArea securedArea = this.securityConfig.getSecuredAreas().stream()
+                .filter(sa -> sa.getRoute().matcher(request.getRelativeRequestURL()).find())
+                .findFirst().orElse(null);
+
+        if (securedArea == null) {
+            return true;
+        }
+
+        if (!principal.isUserPresent()) {
+            this.handleNotLoggedIn(request, response);
+            return false;
+        }
+
+        if (!this.principal.hasAuthority(securedArea.getAuthority())) {
+            this.handleNotPrivileged(request, response);
+        }
+
+        return true;
+    }
+
+    /**
+     * If User is not logged in and authorization is required, redirect to login with refer callback.
+     * If User is logged in, but Anonymous is required, consider it as HTTP 401.
+     * If User is logged, and role is required, check if the user has that role and Handle HTTP 401 if role is absent.
+     */
     private boolean handleAnnotation(PreAuthorize annotation, HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         if (this.securityConfig == null) throw new NoSecurityConfigurationException(NO_SECURITY_CONFIG_MSG);
 

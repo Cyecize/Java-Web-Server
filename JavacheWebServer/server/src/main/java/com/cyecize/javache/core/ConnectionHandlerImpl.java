@@ -45,7 +45,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
                 return;
             }
             this.loggingService.error(e.getMessage());
-            this.loggingService.printStackTrace(e.getStackTrace());
+            e.printStackTrace();
         }
     }
 
@@ -65,7 +65,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
             this.clientSocketOutputStream = this.clientSocket.getOutputStream();
         } catch (IOException e) {
             loggingService.error(e.getMessage());
-            loggingService.printStackTrace(e.getStackTrace());
+            e.printStackTrace();
         }
     }
 }

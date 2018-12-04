@@ -50,9 +50,15 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     private void processRequest(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         ActionMethod method = this.methodInvokingService.findAction();
+        if (method == null) {
+            this.setHasIntercepted(false);
+            return;
+        }
+
         if (!this.interceptorService.preHandle(request, response, method, false)) {
             return;
         }
+
         ActionInvokeResult result = this.methodInvokingService.invokeMethod(method);
         this.methodResultHandler.handleActionResult(result);
         this.interceptorService.postHandle(request, response, result, this.dependencyContainer.getObject(Model.class));
@@ -69,6 +75,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+        super.setHasIntercepted(true);
         this.addPlatformDependencies(request, response);
         dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
         try {

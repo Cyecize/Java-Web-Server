@@ -1,5 +1,9 @@
 package com.cyecize.summer.areas.security.models;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 public class SecurityConfig {
 
     private String loginURL;
@@ -10,8 +14,10 @@ public class SecurityConfig {
 
     private String logoutRedirectURL;
 
-    public SecurityConfig() {
+    private List<SecuredArea> securedAreas;
 
+    public SecurityConfig() {
+        this.initSecuredAreas();
     }
 
     public SecurityConfig setLoginURL(String loginURL) {
@@ -48,5 +54,23 @@ public class SecurityConfig {
 
     public String getLogoutRedirectURL() {
         return logoutRedirectURL;
+    }
+
+    public SecurityConfig addSecuredArea(SecuredArea securedArea) {
+        this.securedAreas.add(securedArea);
+        return this;
+    }
+
+    public List<SecuredArea> getSecuredAreas() {
+        return securedAreas;
+    }
+
+    /**
+     * Init secured area and add META-INF to the list with a role that is unique and will never exist
+     * so that no user can access the directory.
+     */
+    private void initSecuredAreas() {
+        this.securedAreas = new ArrayList<>();
+        this.securedAreas.add(new SecuredArea("/META-INF", UUID.randomUUID().toString()));
     }
 }

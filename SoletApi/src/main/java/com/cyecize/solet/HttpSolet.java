@@ -12,5 +12,7 @@ public interface HttpSolet {
 
     boolean isInitialized();
 
+    boolean hasIntercepted();
+
     SoletConfig getSoletConfig();
 }

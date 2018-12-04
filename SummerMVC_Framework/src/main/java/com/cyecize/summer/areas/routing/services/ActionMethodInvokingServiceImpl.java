@@ -58,7 +58,9 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
         ActionMethod actionMethod = this.findActionMethod();
         if (actionMethod == null) {
-            throw new HttpNotFoundException(this.currentRequest.getRequestURL());
+            if (!this.currentRequest.isResource()) {
+                throw new HttpNotFoundException(this.currentRequest.getRequestURL());
+            }
         }
         return actionMethod;
     }

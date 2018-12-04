@@ -9,6 +9,8 @@ public abstract class BaseHttpSolet implements HttpSolet {
 
     private boolean isInitialized;
 
+    private boolean hasIntercepted;
+
     private SoletConfig soletConfig;
 
     protected String appNamePrefix;
@@ -17,6 +19,7 @@ public abstract class BaseHttpSolet implements HttpSolet {
 
     protected BaseHttpSolet() {
         this.isInitialized = false;
+        this.setHasIntercepted(true);
         this.appNamePrefix = "";
     }
 
@@ -49,6 +52,10 @@ public abstract class BaseHttpSolet implements HttpSolet {
         response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "DELETE", request.getRequestURL())));
     }
 
+    protected void setHasIntercepted(boolean hasIntercepted) {
+        this.hasIntercepted = hasIntercepted;
+    }
+
     @Override
     public void init(SoletConfig soletConfig) {
         this.isInitialized = true;
@@ -68,6 +75,11 @@ public abstract class BaseHttpSolet implements HttpSolet {
     @Override
     public boolean isInitialized() {
         return this.isInitialized;
+    }
+
+    @Override
+    public boolean hasIntercepted() {
+        return this.hasIntercepted;
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.concurrent.FutureTask;
 
 public class ServerImpl implements Server {
 
@@ -40,21 +39,14 @@ public class ServerImpl implements Server {
         this.loggingService.info(String.format(LISTENING_MESSAGE_FORMAT, this.port));
 
         while (true) {
-            try (Socket clientSocket = serverSocket.accept()) {
-                clientSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
-
-                ConnectionHandler connectionHandler
-                        = new ConnectionHandlerImpl(clientSocket,
-                        this.requestHandlerLoadingService
-                                .getRequestHandlers(),
-                        new InputStreamCachingServiceImpl(),
-                        this.loggingService);
-
-                FutureTask<?> task = new FutureTask<>(connectionHandler, null);
-                task.run();
-
-                //for debugging disable async
-                //connectionHandler.run();
+            try {
+                Socket clientSocket = serverSocket.accept();
+                Thread thread = new Thread(new ConnectionHandlerImpl(
+                        clientSocket,
+                        this.requestHandlerLoadingService.getRequestHandlers(),
+                        new InputStreamCachingServiceImpl(), this.loggingService)
+                );
+                thread.start();
             } catch (SocketTimeoutException ignored) {
             }
         }

@@ -47,7 +47,7 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     @Override
-    public synchronized void handleRequest(InputStream inputStream, OutputStream outputStream) throws IOException {
+    public void handleRequest(InputStream inputStream, OutputStream outputStream) throws IOException {
         byte[] bytes = inputStream.readAllBytes();
 
         HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), new ByteArrayInputStream(bytes));
@@ -61,15 +61,9 @@ public class SoletDispatcher implements RequestHandler {
             return;
         }
 
-        try {
-            solet.service(request, response);
-            if (!solet.hasIntercepted()) {
-                this.hasIntercepted = false;
-                return;
-            }
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
+        if (!this.runSolet(solet, request, response)) {
+            this.hasIntercepted = false;
+            return;
         }
 
         if (response.getStatusCode() == null) {
@@ -86,6 +80,17 @@ public class SoletDispatcher implements RequestHandler {
     @Override
     public boolean hasIntercepted() {
         return this.hasIntercepted;
+    }
+
+    private synchronized boolean runSolet(HttpSolet solet, HttpSoletRequest request, HttpSoletResponse response) {
+        try {
+            solet.service(request, response);
+            return solet.hasIntercepted();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        }
+        return true;
     }
 
     private void resolveCurrentRequestAppName(HttpSoletRequest request) {

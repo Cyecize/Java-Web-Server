@@ -42,6 +42,8 @@ public class ServerImpl implements Server {
             try {
                 Socket clientSocket = serverSocket.accept();
                 clientSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
+                clientSocket.setReceiveBufferSize(131072);
+
                 Thread thread = new Thread(new ConnectionHandlerImpl(
                         clientSocket,
                         this.requestHandlerLoadingService.getRequestHandlers(),

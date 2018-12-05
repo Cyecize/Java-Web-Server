@@ -96,9 +96,18 @@ public final class Reader {
         int headersLength = this.getContentLengthForHttpRequest(outputStream);
         int totalLength = length + headersLength;
 
+        if (totalLength > this.maxSize) {
+            throw new RequestReadException(String.format(REQUEST_TOO_LARGE_FORMAT, this.maxSize));
+        }
+
         while (this.totalRead < totalLength) {
             int available = inputStream.available() < 1 ? 1 : inputStream.available();
             this.read(available, inputStream, outputStream);
+        }
+
+        int leftOver = this.getAvailableAwait(inputStream, 1);
+        if (leftOver > 0) {
+            this.read(leftOver, inputStream, outputStream);
         }
     }
 
@@ -148,12 +157,8 @@ public final class Reader {
             if (available <= 0) {
                 return;
             }
-            this.read(available, inputStream, outputStream);
 
-            if (this.totalRead > GIANT_REQUEST_THRESHOLD) {
-                this.readGiantData(inputStream, outputStream);
-                return;
-            }
+            this.read(available, inputStream, outputStream);
         }
     }
 
@@ -177,7 +182,7 @@ public final class Reader {
     private void read(int length, InputStream inputStream, OutputStream outputStream) throws IOException {
         outputStream.write(inputStream.readNBytes(length));
         this.totalRead += length;
-        if (length > this.maxSize) {
+        if (this.totalRead > this.maxSize) {
             throw new RequestReadException(String.format(REQUEST_TOO_LARGE_FORMAT, this.maxSize));
         }
     }

@@ -38,7 +38,7 @@ public class ResourceHandler implements RequestHandler {
         System.out.println("Loaded Toyote");
     }
 
-    private String getApplicationName(String requestUrl) {
+    private synchronized String getApplicationName(String requestUrl) {
         List<String> applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
         for (String applicationName : applicationNames) {
             if (requestUrl.startsWith(applicationName)) {

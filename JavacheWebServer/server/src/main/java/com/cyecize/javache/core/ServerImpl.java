@@ -46,7 +46,8 @@ public class ServerImpl implements Server {
                         clientSocket,
                         this.requestHandlerLoadingService.getRequestHandlers(),
                         new InputStreamCachingServiceImpl(),
-                        this.loggingService
+                        this.loggingService,
+                        this.javacheConfigService
                 ));
                 thread.start();
             } catch (SocketTimeoutException ignored) {

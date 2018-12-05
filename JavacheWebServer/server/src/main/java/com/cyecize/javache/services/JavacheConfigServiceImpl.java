@@ -1,14 +1,12 @@
 package com.cyecize.javache.services;
 
 import com.cyecize.WebConstants;
+import com.cyecize.ConfigConstants;
 import com.cyecize.javache.io.Reader;
+import com.cyecize.javache.utils.PrimitiveTypeDataResolver;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JavacheConfigServiceImpl implements JavacheConfigService {
@@ -17,12 +15,24 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
     private static final String REQUEST_HANDLER_PRIORITY_FILE = CONFIG_FOLDER_PATH + "request-handlers.ini";
 
+    private static final String CONFIG_FILE_PATH = CONFIG_FOLDER_PATH + "config.ini";
+
     private static final String REQUEST_HANDLER_PRIORITY_FILE_NOT_FOUND_FORMAT = "Request Handler priority configuration file does not exist for \"%s\".";
 
     private List<String> requestHandlers;
 
+    private Map<String, Object> configParameters;
+
+    private PrimitiveTypeDataResolver dataResolver;
+
     public JavacheConfigServiceImpl() {
+        this.dataResolver = new PrimitiveTypeDataResolver();
         this.initConfigurations();
+    }
+
+    @Override
+    public <T> T getConfigParam(String paramName, Class<T> type) {
+        return (T) this.configParameters.get(paramName);
     }
 
     @Override
@@ -30,9 +40,16 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         return this.requestHandlers;
     }
 
+    @Override
+    public Map<String, Object> getConfigParams() {
+        return this.configParameters;
+    }
+
     private void initConfigurations() {
         try {
             this.loadRequestHandlerConfig();
+            this.initDefaultConfigParams();
+            this.initConfigParams();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,5 +68,40 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
+    /**
+     * Adds the default parameters that javache web server will use.
+     */
+    private void initDefaultConfigParams() {
+        this.configParameters = new HashMap<>();
+        this.configParameters.put(ConfigConstants.MAX_REQUEST_SIZE, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Reads the config.ini file and filters those settings that are
+     * available as default (set in initDefaultConfigParams)
+     * Then gets the current param type and tries to convert the value to that type.
+     */
+    private void initConfigParams() throws IOException {
+        File configFile = new File(CONFIG_FILE_PATH);
+        if (!configFile.exists() || !configFile.isFile()) {
+            return;
+        }
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(CONFIG_FILE_PATH)));
+        while (bufferedReader.ready()) {
+            String line = bufferedReader.readLine();
+            String[] keyValuePair = line.trim().split(":\\s+");
+            if (keyValuePair.length != 2) {
+                continue;
+            }
+
+            keyValuePair[0] = keyValuePair[0].toUpperCase();
+            if (!this.configParameters.containsKey(keyValuePair[0])) {
+                continue;
+            }
+
+            this.configParameters.put(keyValuePair[0], this.dataResolver.resolve(this.configParameters.get(keyValuePair[0]).getClass(), keyValuePair[1]));
+        }
+    }
 
 }

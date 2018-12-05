@@ -10,6 +10,8 @@ public interface MemoryFile {
 
     String getFieldName();
 
+    String getFilePath();
+
     InputStream getInputStream();
 
     byte[] getBytes();

@@ -7,4 +7,6 @@ public interface InputStreamCachingService {
     void evictCache();
 
     byte[] getOrCacheInputStream(InputStream inputStream) throws IOException;
+
+    byte[] getOrCacheInputStream(InputStream inputStream, int maxRequestLength) throws IOException;
 }

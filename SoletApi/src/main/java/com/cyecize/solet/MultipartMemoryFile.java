@@ -37,6 +37,11 @@ public class MultipartMemoryFile implements MemoryFile {
     }
 
     @Override
+    public String getFilePath() {
+        return this.filePath;
+    }
+
+    @Override
     public InputStream getInputStream() {
         try {
             return new FileInputStream(this.filePath);

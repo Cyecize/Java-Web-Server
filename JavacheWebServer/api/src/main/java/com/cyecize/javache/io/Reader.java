@@ -9,13 +9,13 @@ import java.util.regex.Pattern;
 
 public final class Reader {
 
-    private static final int TIMEOUT = 10;
-
     private static final int BIG_REQUEST_THRESHOLD = 1024;
 
-    private static final int GIANT_REQUEST_THRESHOLD = 1024 * 10;
+    private static final int GIANT_REQUEST_THRESHOLD = 1024 * 100;
 
     private static final String REQUEST_TOO_LARGE_FORMAT = "Request length maximum allowed is %d.";
+
+    private static final Pattern CONTENT_LENGTH_PATTERN = Pattern.compile("Content-Length:\\s+(?<length>[0-9]+)");
 
     private int totalRead;
 
@@ -33,27 +33,29 @@ public final class Reader {
         return this.readAllBytes(inputStream, Integer.MAX_VALUE);
     }
 
+    /**
+     * Reads bytes until there are not bytes left in the input stream.
+     * Then checks if the currently read bytes contain info about the content length and
+     * if there is, proceeds to read bytes until the length is met.
+     * If the total read bytes are over the big data threshold, call bigData handler.
+     */
     public byte[] readAllBytes(InputStream inputStream, int maxSize) throws IOException {
         this.maxSize = maxSize;
         this.totalRead = 0;
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(inputStream.read());
 
+        //Read single byte to activate available() method
+        outputStream.write(inputStream.read());
         int available = inputStream.available();
-        System.out.println("available " + available);
 
         while (true) {
             this.read(available, inputStream, outputStream);
             available = inputStream.available();
-
-            System.out.println("available " + available + ", read " + this.totalRead);
-
             if (available <= 0) {
 
                 int contentLength = this.tryGetContentLength(outputStream.toByteArray());
                 if (contentLength > 0) {
-                    System.out.println("content length present " + contentLength);
                     this.readByContentLength(contentLength, inputStream, outputStream);
                     break;
                 }
@@ -66,23 +68,17 @@ public final class Reader {
                 break;
             }
         }
-
         return outputStream.toByteArray();
     }
 
-    private void read(int length, InputStream inputStream, OutputStream outputStream) throws IOException {
-        outputStream.write(inputStream.readNBytes(length));
-        this.totalRead += length;
-        if (length > this.maxSize) {
-            throw new RequestReadException(String.format(REQUEST_TOO_LARGE_FORMAT, this.maxSize));
-        }
-    }
-
+    /**
+     * Search the currently read bytes for header Content-Length and return its value if present.
+     * Return -1 if no header is present.
+     */
     private int tryGetContentLength(byte[] bytes) {
-        Pattern pattern = Pattern.compile("Content-Length:\\s+(?<length>[0-9]+)");
         String s = new String(bytes);
+        Matcher matcher = CONTENT_LENGTH_PATTERN.matcher(s);
 
-        Matcher matcher = pattern.matcher(s);
         if (matcher.find()) {
             try {
                 return Integer.parseInt(matcher.group("length"));
@@ -93,18 +89,43 @@ public final class Reader {
         return -1;
     }
 
-    private void readByContentLength(int length, InputStream inputStream, OutputStream outputStream) throws IOException {
-        while (this.totalRead < length) {
-            int available = inputStream.available() < 0 ? 1 : inputStream.available();
+    /**
+     * Reads the inputStream, knowing the length of the body and the header section.
+     */
+    private void readByContentLength(int length, InputStream inputStream, ByteArrayOutputStream outputStream) throws IOException {
+        int headersLength = this.getContentLengthForHttpRequest(outputStream);
+        int totalLength = length + headersLength;
+
+        while (this.totalRead < totalLength) {
+            int available = inputStream.available() < 1 ? 1 : inputStream.available();
             this.read(available, inputStream, outputStream);
         }
     }
 
+    /**
+     * Scans the currently read request and adds the total length of the content until CRLF.
+     * Thus, Content-Length of request headers.
+     */
+    private int getContentLengthForHttpRequest(ByteArrayOutputStream currentlyReadBytes) throws IOException {
+        int length = 0;
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(currentlyReadBytes.toByteArray())));
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            if (line.equals("")) {
+                return length;
+            }
+            length += line.length() + 2; //accounting for \r\n
+        }
+        return length;
+    }
+
+    /**
+     * Read data handler for inputStream with length over 1024B and no Content-Length header.
+     * Adds higher timeout value to better with with slower networks.
+     */
     private void readBigData(InputStream inputStream, OutputStream outputStream) throws IOException {
-        System.out.println("big data");
         while (true) {
             int available = this.getAvailableAwait(inputStream, 1500); //1.5s
-            System.out.println("big data available " + available);
             if (available <= 0) {
                 return;
             }
@@ -117,11 +138,13 @@ public final class Reader {
         }
     }
 
+    /**
+     * Read data handler for inputStream with length over 1MB and no Content-Length header.
+     */
     private void readGiantData(InputStream inputStream, OutputStream outputStream) throws IOException {
-        System.out.println("Giant data");
         while (true) {
             int available = this.getAvailableAwait(inputStream, 4000); //4s
-            System.out.println("giant data available " + available);
+
             if (available <= 0) {
                 return;
             }
@@ -134,6 +157,9 @@ public final class Reader {
         }
     }
 
+    /**
+     * Runs a white loop for a given period and checks if the inputStream has available data.
+     */
     private int getAvailableAwait(InputStream inputStream, int awaitMisslis) throws IOException {
         long timeout = System.currentTimeMillis() + awaitMisslis;
         while (timeout > System.currentTimeMillis()) {
@@ -142,5 +168,17 @@ public final class Reader {
             }
         }
         return 0;
+    }
+
+    /**
+     * Read data from inputStream by given length.
+     * Check if the total read data is more than the maximum allowed and throw Exception if it is.
+     */
+    private void read(int length, InputStream inputStream, OutputStream outputStream) throws IOException {
+        outputStream.write(inputStream.readNBytes(length));
+        this.totalRead += length;
+        if (length > this.maxSize) {
+            throw new RequestReadException(String.format(REQUEST_TOO_LARGE_FORMAT, this.maxSize));
+        }
     }
 }

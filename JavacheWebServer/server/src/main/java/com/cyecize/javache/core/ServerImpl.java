@@ -12,7 +12,7 @@ import java.net.SocketTimeoutException;
 
 public class ServerImpl implements Server {
 
-    private static final int SOCKET_TIMEOUT_MILLISECONDS = 5000;
+    private static final int SOCKET_TIMEOUT_MILLISECONDS = 60000;
 
     private static final String LISTENING_MESSAGE_FORMAT = "http://localhost:%d";
 
@@ -41,6 +41,7 @@ public class ServerImpl implements Server {
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
+                clientSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
                 Thread thread = new Thread(new ConnectionHandlerImpl(
                         clientSocket,
                         this.requestHandlerLoadingService.getRequestHandlers(),

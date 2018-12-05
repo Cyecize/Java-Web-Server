@@ -5,12 +5,11 @@ import com.cyecize.solet.MultipartMemoryFile;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.io.FileDeleteStrategy;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -51,12 +50,16 @@ public class TemporaryStorageServiceImpl implements TemporaryStorageService {
 
     @Override
     public void removeTemporaryFiles() {
-        this.currentTempFiles.forEach(dir -> {
-            try {
-                FileDeleteStrategy.FORCE.delete(new File(dir));
-            } catch (IOException e) {
-                e.printStackTrace();
+        Timer timer = new Timer(5000, e -> {
+            for (String currentTempFile : this.currentTempFiles) {
+                try {
+                    FileDeleteStrategy.FORCE.delete(new File(currentTempFile));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
+        timer.setRepeats(false);
+        timer.start();
     }
 }

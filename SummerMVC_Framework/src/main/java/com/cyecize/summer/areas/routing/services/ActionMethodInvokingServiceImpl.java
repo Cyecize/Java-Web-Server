@@ -54,8 +54,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     }
 
     @Override
-    public ActionMethod findAction() throws HttpNotFoundException {
-        this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
+    public ActionMethod findAction(HttpSoletRequest request) throws HttpNotFoundException {
+        this.currentRequest = request;
         ActionMethod actionMethod = this.findActionMethod();
         if (actionMethod == null) {
             if (!this.currentRequest.isResource()) {

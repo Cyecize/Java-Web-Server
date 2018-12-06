@@ -49,7 +49,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     }
 
     private void processRequest(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        ActionMethod method = this.methodInvokingService.findAction();
+        ActionMethod method = this.methodInvokingService.findAction(request);
         if (method == null) {
             this.setHasIntercepted(false);
             return;

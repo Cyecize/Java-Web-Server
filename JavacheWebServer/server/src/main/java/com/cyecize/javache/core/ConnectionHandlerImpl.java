@@ -1,6 +1,6 @@
 package com.cyecize.javache.core;
 
-import com.cyecize.ConfigConstants;
+import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
 
 import com.cyecize.javache.exceptions.RequestReadException;
@@ -73,7 +73,11 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
         }
 
         for (RequestHandler requestHandler : this.requestHandlers) {
-            requestHandler.handleRequest(this.cachingService.getOrCacheInputStream(this.clientSocketInputStream), this.clientSocketOutputStream);
+            requestHandler.handleRequest(
+                    this.cachingService.getOrCacheInputStream(this.clientSocketInputStream),
+                    this.clientSocketOutputStream,
+                    this.configService
+            );
             if (requestHandler.hasIntercepted()) {
                 break;
             }

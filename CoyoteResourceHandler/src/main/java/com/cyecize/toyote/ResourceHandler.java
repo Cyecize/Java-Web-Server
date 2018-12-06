@@ -3,6 +3,7 @@ package com.cyecize.toyote;
 import com.cyecize.http.*;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
+import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.services.AppNameCollector;
 import com.cyecize.toyote.services.AppNameCollectorImpl;
 
@@ -79,7 +80,7 @@ public class ResourceHandler implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(byte[] inputStream, OutputStream outputStream) {
+    public void handleRequest(byte[] inputStream, OutputStream outputStream, JavacheConfigService config) {
         try {
             HttpRequest request = new HttpRequestImpl(new String(inputStream, StandardCharsets.UTF_8));
             HttpResponse response = new HttpResponseImpl();

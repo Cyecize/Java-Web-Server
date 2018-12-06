@@ -25,8 +25,8 @@
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
             <scope>system</scope>
-            <version>1.2.4</version>
-            <systemPath>${basedir}/lib/javache-api-1.2.4.jar</systemPath>
+            <version>1.2.5</version>
+            <systemPath>${basedir}/lib/javache-api-1.2.5.jar</systemPath>
         </dependency>
     </dependencies>
 

@@ -39,6 +39,7 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
         if (URI.endsWith("/")) {
             URI = URI.substring(0, URI.length() - 1);
         }
-        return URI;
+        // prepend // since schema is not present.
+        return "//" + URI;
     }
 }

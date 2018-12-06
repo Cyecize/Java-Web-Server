@@ -2,8 +2,10 @@ package com.cyecize.broccolina;
 
 import com.cyecize.broccolina.services.*;
 import com.cyecize.http.HttpStatus;
+import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
+import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.*;
 import com.cyecize.solet.service.TemporaryStorageService;
 import com.cyecize.solet.service.TemporaryStorageServiceImpl;
@@ -52,11 +54,11 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(byte[] bytes, OutputStream outputStream) throws IOException {
+    public void handleRequest(byte[] bytes, OutputStream outputStream, JavacheConfigService config) throws IOException {
         TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
 
         try {
-            HttpSoletRequest request = new HttpSoletRequestImpl(this.extractRequestContent(bytes), bytes, temporaryStorageService);
+            HttpSoletRequest request = new HttpSoletRequestImpl(this.extractRequestContent(bytes, config), bytes, temporaryStorageService);
             HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
             this.resolveCurrentRequestAppName(request);
 
@@ -95,17 +97,23 @@ public class SoletDispatcher implements RequestHandler {
      * Filter larger requests with Multipart Encoding to save memory
      * by getting only the first 2048 bytes and leaving the rest to the multipart parser.
      */
-    private String extractRequestContent(byte[] bytes) {
+    private String extractRequestContent(byte[] bytes, JavacheConfigService configService) {
+        String requestContent = "";
         if (bytes.length <= 2048) {
-            return new String(bytes, StandardCharsets.UTF_8);
+            requestContent = new String(bytes, StandardCharsets.UTF_8);
+        } else {
+            requestContent = new String(Arrays.copyOf(bytes, 2048), StandardCharsets.UTF_8);
+            if (!requestContent.contains("Content-Type: multipart")) {
+                requestContent = new String(bytes, StandardCharsets.UTF_8);
+            }
         }
 
-        String request = new String(Arrays.copyOf(bytes, 2048), StandardCharsets.UTF_8);
-        if (!request.contains("Content-Type: multipart")) {
-            return new String(bytes, StandardCharsets.UTF_8);
+        //print the content if the SHOW_REQUEST_LOG is set to true
+        if (configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class)) {
+            System.out.println(requestContent);
         }
 
-        return request;
+        return requestContent;
     }
 
     private synchronized boolean runSolet(HttpSolet solet, HttpSoletRequest request, HttpSoletResponse response) {

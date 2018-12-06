@@ -1,7 +1,7 @@
 package com.cyecize.javache.services;
 
 import com.cyecize.WebConstants;
-import com.cyecize.ConfigConstants;
+import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.io.Reader;
 import com.cyecize.javache.utils.PrimitiveTypeDataResolver;
 
@@ -74,6 +74,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
     private void initDefaultConfigParams() {
         this.configParameters = new HashMap<>();
         this.configParameters.put(ConfigConstants.MAX_REQUEST_SIZE, Integer.MAX_VALUE);
+        this.configParameters.put(ConfigConstants.SHOW_REQUEST_LOG, false);
     }
 
     /**

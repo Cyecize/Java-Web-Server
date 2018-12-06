@@ -7,6 +7,7 @@ import com.cyecize.summer.areas.template.functions.JTwigFieldErrorsFunction;
 import com.cyecize.summer.areas.template.functions.JTwigHasRoleFunction;
 import com.cyecize.summer.areas.template.functions.JTwigPathFunction;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.template.functions.JTwigUrlFunction;
 import com.cyecize.summer.common.annotations.Service;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
@@ -102,6 +103,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
                     .add(new JTwigPathFunction(this.appRootDir))
                     .add(new JTwigHasRoleFunction(this.dependencyContainer))
                     .add(new JTwigFieldErrorsFunction(this.dependencyContainer))
+                    .add(new JTwigUrlFunction(this.dependencyContainer))
                 .and()
                 .build();
     }

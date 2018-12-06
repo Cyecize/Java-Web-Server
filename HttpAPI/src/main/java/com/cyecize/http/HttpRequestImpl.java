@@ -76,6 +76,16 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     @Override
+    public String getHost() {
+        return this.getHeaders().getOrDefault("Host", "");
+    }
+
+    @Override
+    public String getRequestURI() {
+        return this.getHost() + this.getRequestURL();
+    }
+
+    @Override
     public HttpSession getSession() {
         return this.session;
     }

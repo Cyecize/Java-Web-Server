@@ -21,6 +21,10 @@ public interface HttpRequest {
 
     String getRequestURL();
 
+    String getHost();
+
+    String getRequestURI();
+
     HttpSession getSession();
 
     Map<String, String> getHeaders();

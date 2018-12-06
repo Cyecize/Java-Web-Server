@@ -74,7 +74,6 @@ public class HttpSoletRequestImpl extends HttpRequestImpl implements HttpSoletRe
                     byte[] paramContent = in.readAllBytes();
 
                     if (paramContent.length > 0) {
-                        System.out.println("added " + bodyParam.getFieldName());
                         super.addBodyParameter(bodyParam.getFieldName(), new String(paramContent, StandardCharsets.UTF_8));
                     } else {
                         super.addBodyParameter(bodyParam.getFieldName(), null);

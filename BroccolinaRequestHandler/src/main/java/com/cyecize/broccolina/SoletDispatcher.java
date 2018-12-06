@@ -10,6 +10,7 @@ import com.cyecize.solet.service.TemporaryStorageServiceImpl;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -55,7 +56,7 @@ public class SoletDispatcher implements RequestHandler {
         TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
 
         try {
-            HttpSoletRequest request = new HttpSoletRequestImpl(new String(bytes, StandardCharsets.UTF_8), bytes, temporaryStorageService);
+            HttpSoletRequest request = new HttpSoletRequestImpl(this.extractRequestContent(bytes), bytes, temporaryStorageService);
             HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
             this.resolveCurrentRequestAppName(request);
 
@@ -88,6 +89,23 @@ public class SoletDispatcher implements RequestHandler {
     @Override
     public boolean hasIntercepted() {
         return this.hasIntercepted;
+    }
+
+    /**
+     * Filter larger requests with Multipart Encoding to save memory
+     * by getting only the first 2048 bytes and leaving the rest to the multipart parser.
+     */
+    private String extractRequestContent(byte[] bytes) {
+        if (bytes.length <= 2048) {
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        String request = new String(Arrays.copyOf(bytes, 2048), StandardCharsets.UTF_8);
+        if (!request.contains("Content-Type: multipart")) {
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        return request;
     }
 
     private synchronized boolean runSolet(HttpSolet solet, HttpSoletRequest request, HttpSoletResponse response) {

@@ -38,6 +38,7 @@ public final class Reader {
      * Then checks if the currently read bytes contain info about the content length and
      * if there is, proceeds to read bytes until the length is met.
      * If the total read bytes are over the big data threshold, call bigData handler.
+     * Finally dispose the mocked outputStream and call the garbage collector if request is too large.
      */
     public byte[] readAllBytes(InputStream inputStream, int maxSize) throws IOException {
         this.maxSize = maxSize;
@@ -68,7 +69,13 @@ public final class Reader {
                 break;
             }
         }
-        return outputStream.toByteArray();
+
+        byte[] bytes = outputStream.toByteArray();
+        outputStream = null;
+        if (bytes.length > GIANT_REQUEST_THRESHOLD) {
+            System.gc();
+        }
+        return bytes;
     }
 
     /**

@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = MaxLengthConstraint.class)
 public @interface MaxLength {
-    int length();
+    long length();
 
     String message() default "String exceeds allowed number of characters";
 }

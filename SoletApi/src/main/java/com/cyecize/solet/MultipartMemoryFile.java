@@ -14,11 +14,19 @@ public class MultipartMemoryFile implements MemoryFile {
 
     private final String contentType;
 
-    public MultipartMemoryFile(String fileName, String fieldName, String filePath, String contentType) {
+    private final long fileLength;
+
+    public MultipartMemoryFile(String fileName, String fieldName, String filePath, String contentType, long fileLength) {
         this.fileName = fileName;
         this.fieldName = fieldName;
         this.filePath = filePath;
         this.contentType = contentType;
+        this.fileLength = fileLength;
+    }
+
+    @Override
+    public long getFileLength() {
+        return this.fileLength;
     }
 
     @Override

@@ -45,7 +45,7 @@ public class TemporaryStorageServiceImpl implements TemporaryStorageService {
         if (transferred <= 0) {
             return null;
         }
-        return new MultipartMemoryFile(fileItemStream.getName(), fileItemStream.getFieldName(), fileCanonicalPath, fileItemStream.getContentType());
+        return new MultipartMemoryFile(fileItemStream.getName(), fileItemStream.getFieldName(), fileCanonicalPath, fileItemStream.getContentType(), transferred);
     }
 
     @Override

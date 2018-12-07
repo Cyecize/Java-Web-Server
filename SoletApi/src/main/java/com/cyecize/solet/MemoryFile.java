@@ -4,6 +4,8 @@ import java.io.InputStream;
 
 public interface MemoryFile {
 
+    long getFileLength();
+
     String getContentType();
 
     String getFileName();

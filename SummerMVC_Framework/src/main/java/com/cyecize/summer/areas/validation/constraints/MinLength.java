@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = MinLengthConstraint.class)
 public @interface MinLength {
-    int length();
+    long length();
 
     String message() default "String too short";
 }

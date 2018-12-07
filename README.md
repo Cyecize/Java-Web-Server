@@ -38,7 +38,7 @@ Technologies used
 	
 	* Gson (com.google.code.gson) used in SummerMVC.
 	
-	* Apache Commons (codec) used in SommerMVC for md5 hashing.
+	* Apache Commons (codec) used in SummerMVC for md5 hashing.
 	
 	* jTwig (org.jtwig) used as a templating engine in SummerMVC.
 	

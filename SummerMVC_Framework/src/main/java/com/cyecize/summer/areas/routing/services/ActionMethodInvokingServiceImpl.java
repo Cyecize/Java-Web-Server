@@ -15,6 +15,7 @@ import com.cyecize.summer.areas.validation.services.ObjectValidationService;
 import com.cyecize.summer.common.annotations.Controller;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
+import com.cyecize.summer.common.annotations.routing.RequestParam;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 
@@ -108,7 +109,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     /**
      * Finds action method requested params by looking in the platform beans.
-     * If @PathVariable is present, it looks in the pathVariables instead.
+     * If @RequestParam is present, it looks for query/body parameter.
+     * If @PathVariable is present, it looks in the pathVariables.
      * If the object is not found, then it is considered to be a bindingModel.
      * If the object is bindingModel, it is populated and validated if needed.
      */
@@ -118,6 +120,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
+            if (parameter.isAnnotationPresent(RequestParam.class)) {
+                parameterInstances[i] = this.handleRequestParam(parameter.getType(), parameter.getAnnotation(RequestParam.class).value());
+                continue;
+            }
             if (parameter.isAnnotationPresent(PathVariable.class)) {
                 parameterInstances[i] = pathVariables.get(parameter.getName());
                 continue;
@@ -141,6 +147,26 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             }
         }
         return parameterInstances;
+    }
+
+    /**
+     * Looks for a parameter in query parameters then in Body parameters.
+     * If a key is present, resolve the value to the desired data type and return the result.
+     */
+    private Object handleRequestParam(Class<?> paramType, String paramName) {
+        Map.Entry<String, String> value = this.currentRequest.getQueryParameters().entrySet().stream().filter(kvp -> kvp.getKey().equals(paramName))
+                .findFirst().orElse(null);
+
+        if (value == null && this.currentRequest.getBodyParameters() != null) {
+            value = this.currentRequest.getBodyParameters().entrySet().stream().filter(kvp -> kvp.getKey().equals(paramName))
+                    .findFirst().orElse(null);
+        }
+
+        if (value == null) {
+            return null;
+        }
+
+        return this.dataResolver.resolve(paramType, value.getValue());
     }
 
     private Map<String, Object> getPathVariables(ActionMethod actionMethod) {

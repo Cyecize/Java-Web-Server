@@ -45,6 +45,11 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         return this.actionsByHttpMethod;
     }
 
+    /**
+     * Iterates controller type and finds all methods with a given annotation.
+     * Then ads the method to a set of methods with the same annotation.
+     * Finally loads all located methods, again by annotationType.
+     */
     private void loadActionMethodsFromController(Class<?> controllerClass) {
         Set<Method> getMethods = new HashSet<>();
         Set<Method> postMethods = new HashSet<>();
@@ -65,6 +70,11 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         exceptionListeners.forEach(m -> this.loadMethod(m, controllerClass, EXCEPTION));
     }
 
+    /**
+     * Checks if method is GET or POST and gets the annotation value.
+     * If no annotation is present (the case with @ExceptionListener), generate a random route.
+     * Create a new actionMethod and add it to the actionsMap.
+     */
     private void loadMethod(Method method, Class<?> controller, String httpMethod) {
         String pathPattern;
         switch (httpMethod) {

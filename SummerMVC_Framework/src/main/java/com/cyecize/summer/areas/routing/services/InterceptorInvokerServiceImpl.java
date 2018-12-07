@@ -46,14 +46,13 @@ public class InterceptorInvokerServiceImpl implements InterceptorInvokerService 
         }
     }
 
+    /**
+     * Reload interceptors with lifeSpan = REQUEST.
+     */
     private void reloadInterceptors() {
         Set<Object> freshInterceptors = new HashSet<>();
         for (Object interceptor : this.interceptors) {
-            if (interceptor.getClass().getAnnotation(Component.class).lifespan() == ServiceLifeSpan.REQUEST) {
-                freshInterceptors.add(this.dependencyContainer.reloadComponent(interceptor));
-            } else {
-                freshInterceptors.add(interceptor);
-            }
+            freshInterceptors.add(this.dependencyContainer.reloadComponent(interceptor, ServiceLifeSpan.REQUEST));
         }
         this.interceptors = freshInterceptors;
     }

@@ -39,6 +39,10 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         this.gson = new Gson();
     }
 
+    /**
+     * Sets Content-Type header from the action result.
+     * Looks for suitable method.
+     */
     @Override
     public void handleActionResult(ActionInvokeResult result) {
         this.response = this.dependencyContainer.getObject(HttpSoletResponse.class);
@@ -46,10 +50,17 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         this.executeSuitableMethod(result);
     }
 
+    /**
+     * Scans the current class for methods who have 1 parameter and that parameter is
+     * assignable from the action result.
+     * Then proceeds to execute that method.
+     * If no suitable method is found, the method handleOtherResponse is called.
+     */
     private void executeSuitableMethod(ActionInvokeResult result) {
         Object methodInvokeResult = result.getInvocationResult();
-        Method suitableMethod = Arrays.stream(this.getClass().getDeclaredMethods())
-                .filter(m -> m.getParameterCount() == 1 && methodInvokeResult.getClass().isAssignableFrom(m.getParameterTypes()[0]))
+        Class<?> actionResultType = methodInvokeResult.getClass();
+        Method suitableMethod = Arrays.stream(ActionMethodResultHandlerImpl.class.getDeclaredMethods())
+                .filter(m -> m.getParameterCount() == 1 && actionResultType.isAssignableFrom(m.getParameterTypes()[0]))
                 .findFirst().orElse(null);
         if (suitableMethod != null) {
             suitableMethod.setAccessible(true);
@@ -63,15 +74,27 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         }
     }
 
+    /**
+     * Sets the response as a Json representation of the return type.
+     */
     private void handleOtherResponse(ActionInvokeResult result) {
         this.response.setContent(this.gson.toJson(result.getInvocationResult()));
     }
 
+    /**
+     * In case of JsonResponse, Stringify the result and set the Content-Type to application/json
+     */
     private void handleJsonResponse(JsonResponse result) {
         this.response.addHeader(CONTENT_TYPE_HEADER, "application/json");
         this.response.setContent(this.gson.toJson(result));
     }
 
+    /**
+     * In case of ModelAndView, Transfer all added parameters to the model,
+     * set the status code from the modelAndView,
+     * adds the view parameter to the model and proceeds to call
+     * handleModelResponse.
+     */
     private void handleModelAndViewResponse(ModelAndView result) throws EmptyViewException, ViewNotFoundException {
         Model model = this.dependencyContainer.getObject(Model.class);
         this.response.setStatusCode(result.getStatus());
@@ -80,6 +103,11 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         this.handleModelResponse(model);
     }
 
+    /**
+     * In case of Model response, check if the view is empty and throw an exception if it is.
+     * If the view contains the redirect value, proceed to handle redirect response
+     * otherwise proceed to handle view response.
+     */
     private void handleModelResponse(Model result) throws EmptyViewException, ViewNotFoundException {
         Object viewName = result.getAttribute(MODEL_VIEW_NAME_KEY);
         if (viewName == null) {
@@ -94,6 +122,10 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         this.handleViewResponse(viewName.toString(), result);
     }
 
+    /**
+     * Checks if response contains template or redirect keywords and handles the actions accordingly.
+     * If there are no matching keywords, sets the response content directly.
+     */
     private void handleStringResponse(String result) throws ViewNotFoundException {
         String[] resultTokens = (result + "").split(ACTION_RETURN_DELIMITER);
         if (resultTokens.length == 2) {
@@ -112,10 +144,16 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         }
     }
 
+    /**
+     * Calls twig service to handle the view.
+     */
     private void handleViewResponse(String view, Model model) throws ViewNotFoundException {
         this.response.setContent(this.renderingService.render(view, model));
     }
 
+    /**
+     * Sends redirect by adding the app Name as a prefix.
+     */
     private void handleRedirectResponse(String location, HttpSoletRequest request) {
         this.response.sendRedirect(request.getContextPath() + location);
     }

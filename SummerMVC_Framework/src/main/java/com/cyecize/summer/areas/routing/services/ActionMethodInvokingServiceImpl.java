@@ -54,6 +54,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         this.dataResolver = new PrimitiveTypeDataResolver();
     }
 
+    /**
+     * Searches and returns action method that matches the request route.
+     * If not matching method is not found and request is not resource, throw HttpNotFoundException
+     */
     @Override
     public ActionMethod findAction(HttpSoletRequest request) throws HttpNotFoundException {
         this.currentRequest = request;
@@ -66,6 +70,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         return actionMethod;
     }
 
+    /**
+     * Extracts path variable from actionMethod, invokes action method
+     * and returns new ActionInvokeResult.
+     */
     @Override
     public ActionInvokeResult invokeMethod(ActionMethod actionMethod) {
         Map<String, Object> pathVariables = this.getPathVariables(actionMethod);
@@ -75,6 +83,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         return new ActionInvokeResult(methodResult, actionMethod.getContentType());
     }
 
+    /**
+     * Adds exception with all parents to the dependencyContainer, then searches for exception listeners.
+     * If listener is found, invoke the method, else return null.
+     */
     @Override
     public ActionInvokeResult invokeMethod(Exception ex) {
         this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
@@ -90,10 +102,16 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         return new ActionInvokeResult(methodResult, actionMethod.getContentType());
     }
 
+    /**
+     * Get the controller for the actionMethod, reload if lifeSpan is REQUEST.
+     * Collect method parameters.
+     * Invoke method and return result, or throw ActionInvocationException if
+     * errors occur.
+     */
     private Object invokeAction(ActionMethod actionMethod, Map<String, Object> pathVariables) {
         Object controller = this.controllers.entrySet().stream()
                 .filter((kvp) -> actionMethod.getControllerClass().isAssignableFrom(kvp.getKey()))
-                .findFirst().orElse(null).getValue();
+                .findFirst().orElse(null).getValue(); //never null
         if (controller.getClass().getAnnotation(Controller.class).lifeSpan() == ServiceLifeSpan.REQUEST) {
             controller = this.dependencyContainer.reloadComponent(controller);
         }
@@ -169,6 +187,12 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         return this.dataResolver.resolve(paramType, value.getValue());
     }
 
+    /**
+     * Get matcher for the given action method.
+     * Find all parameters with @PathVariable annotation and get the value from
+     * the matcher where the group name is the PathVariable.value()
+     * Then resolve that value with dataResolver to any primitive type.
+     */
     private Map<String, Object> getPathVariables(ActionMethod actionMethod) {
         Map<String, Object> pathVariables = new HashMap<>();
         Pattern routePattern = Pattern.compile(actionMethod.getPattern());
@@ -185,6 +209,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         return pathVariables;
     }
 
+    /**
+     * Checks if the request method key is present in the actionMethods map.
+     * Filters the action method whose url matches the request url.
+     */
     private ActionMethod findActionMethod() {
         if (!this.actionMethods.containsKey(this.currentRequest.getMethod().toUpperCase())) {
             return null;
@@ -214,6 +242,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         return null;
     }
 
+    /**
+     * Simple recursive method to get all causes for an exception.
+     * Used in case of the developer listening for a specific cause, no the currently thrown exception.
+     */
     private List<Throwable> getExceptionStack(Throwable ex) {
         List<Throwable> thList = new ArrayList<>();
         if (ex == null) {

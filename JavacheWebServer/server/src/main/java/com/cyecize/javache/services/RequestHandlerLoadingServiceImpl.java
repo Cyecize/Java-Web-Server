@@ -38,6 +38,12 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         return Collections.unmodifiableList(this.requestHandlers);
     }
 
+    /**
+     * Scans the lib folder for jar files and adds them to the classpath.
+     * Then iterates the list of request handlers and for each request handler name
+     * looks for a corresponding jar file in the lib folder.
+     * Then loads that request handler.
+     */
     private void loadLibraryFiles(List<String> requestHandlerPriority) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         File libraryFolder = new File(LIB_FOLDER_PATH);
 
@@ -65,6 +71,13 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         }
     }
 
+    /**
+     * Adds URL to the system classloader assuming that the system
+     * classloader is an instance of URLClassLoader.
+     * This is not the case for java version 9 and above so
+     * at the start of the program a method is run that replaces the new system
+     * classloader with an instance of URLClassLoader.
+     */
     private void addJarFileToClassPath(String canonicalPath) throws MalformedURLException {
         URL url = new URL("jar:file:" + canonicalPath + "!/");
         Class<URLClassLoader> uclType = URLClassLoader.class;
@@ -77,6 +90,10 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         }
     }
 
+    /**
+     * Iterates all entries in a jar file and searches for a
+     * class that is assignable from RequestHandler interface and loads it.
+     */
     private void loadJarFile(JarFile jarFile) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         Enumeration<JarEntry> jarFileEntries = jarFile.entries();
 
@@ -98,17 +115,27 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         }
     }
 
+    /**
+     * Creates an instance of a request handler
+     * and adds the instance to a linkedList.
+     */
     private void loadRequestHandler(Class<RequestHandler> requestHandlerClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        RequestHandler requestHandlerObject = (RequestHandler) requestHandlerClass
+        RequestHandler requestHandlerObject = requestHandlerClass
                 .getDeclaredConstructor(String.class)
                 .newInstance(WebConstants.WORKING_DIRECTORY);
         this.requestHandlers.add(requestHandlerObject);
     }
 
+    /**
+     * Removes the file name extension.
+     */
     private String trimFileNameExtension(File file) {
         return file.getName().substring(0, file.getName().lastIndexOf("."));
     }
 
+    /**
+     * Checks if a file name ends with .jar
+     */
     private boolean isJarFile(File file) {
         return file.isFile() && file.getName().endsWith(".jar");
     }

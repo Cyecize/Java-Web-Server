@@ -18,12 +18,17 @@ public class AppNameCollectorImpl implements AppNameCollector {
 
     @Override
     public List<String> getApplicationNames(String workingDir) {
-        if (this.applicationNames != null)
+        if (this.applicationNames != null) {
             return this.applicationNames;
+        }
+
         this.loadApplicationNames(workingDir + APPLICATIONS_FOLDER_NAME);
         return this.applicationNames;
     }
 
+    /**
+     * Scans folder for jar files and adds jar names to a list.
+     */
     private void loadApplicationNames(String applicationsFolder) {
         this.applicationNames = new ArrayList<>();
 
@@ -38,6 +43,9 @@ public class AppNameCollectorImpl implements AppNameCollector {
         });
     }
 
+    /**
+     * Checks if a file name ends with .jar
+     */
     private boolean isJarFile(File file) {
         return file.isFile() && file.getName().endsWith(".jar");
     }

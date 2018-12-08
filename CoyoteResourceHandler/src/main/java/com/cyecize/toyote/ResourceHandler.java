@@ -39,6 +39,10 @@ public class ResourceHandler implements RequestHandler {
         System.out.println("Loaded Toyote");
     }
 
+    /**
+     * Iterates all application names and finds the one that the requestUrl starts with
+     * or returns ROOT if no app name is matched.
+     */
     private synchronized String getApplicationName(String requestUrl) {
         List<String> applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
         for (String applicationName : applicationNames) {
@@ -53,12 +57,19 @@ public class ResourceHandler implements RequestHandler {
         return requestUrl.replace("/" + appName, "");
     }
 
+    /**
+     * Handles resource not found response.
+     */
     private void notFound(String resourceName, HttpResponse response) {
         response.setStatusCode(HttpStatus.NOT_FOUND);
         response.addHeader("Content-Type", "text/html");
         response.setContent(String.format(RESOURCE_NOT_FOUND_MESSAGE, resourceName));
     }
 
+    /**
+     * Tries to read a file and set its content to the HttpResponse.
+     * If exception is thrown, handle resource not found.
+     */
     private boolean handleResourceRequest(String resourcesFolder, String resourceName, HttpResponse response) {
         try {
             File file = new File(resourcesFolder + File.separator + resourceName);
@@ -79,6 +90,11 @@ public class ResourceHandler implements RequestHandler {
         }
     }
 
+    /**
+     * Creates HttpRequest and HttpResponse.
+     * Generates resource folder.
+     * Writes the response content.
+     */
     @Override
     public void handleRequest(byte[] inputStream, OutputStream outputStream, JavacheConfigService config) {
         try {
@@ -117,17 +133,15 @@ public class ResourceHandler implements RequestHandler {
         return this.hasIntercepted;
     }
 
+    /**
+     * Reads file bytes.
+     */
     private byte[] readAllBytes(File file) throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(file));
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        while (true) {
-            int nBytes = in.read(buffer);
-            if (nBytes <= 0) {
-                break;
-            }
-            out.write(buffer, 0, nBytes);
-        }
-        return out.toByteArray();
+        FileInputStream in = new FileInputStream(file);
+
+        byte[] bytes = in.readAllBytes();
+        in.close();
+
+        return bytes;
     }
 }

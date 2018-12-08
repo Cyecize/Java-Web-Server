@@ -26,6 +26,11 @@ public class FileScanServiceImpl implements FileScanService {
         return this.scanDir;
     }
 
+    /**
+     * Iterates all files in the app startup directory and calls a
+     * method for scanning directory and loading classes.
+     * Finally returns a Set of all classes that were found in the app directory.
+     */
     @Override
     public Set<Class<?>> scanFiles() throws FileScanException {
         File file = new File(this.scanDir);
@@ -42,6 +47,12 @@ public class FileScanServiceImpl implements FileScanService {
         return this.availableClasses;
     }
 
+    /**
+     * Recursive method, starts with empty package name.
+     * If the file is directory, lists its files and call scanDir again with appended
+     * name of the current folder to the back.
+     * If the file is file and file's name ends with .class, get the class and put it in a list of located classes.
+     */
     private void scanDir(File dir, String packageName) throws ClassNotFoundException {
         if (dir.isDirectory()) {
             packageName += dir.getName() + ".";
@@ -55,6 +66,9 @@ public class FileScanServiceImpl implements FileScanService {
         }
     }
 
+    /**
+     * Gets the path of the given class at runtime in a String format.
+     */
     private String getScanFolder(Class cls) {
         return cls.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1);
     }

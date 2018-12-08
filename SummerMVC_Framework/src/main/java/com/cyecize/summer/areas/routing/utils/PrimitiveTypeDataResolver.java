@@ -2,6 +2,10 @@ package com.cyecize.summer.areas.routing.utils;
 
 public class PrimitiveTypeDataResolver {
 
+    /**
+     * Checks if the type matches one of the primitive types and tries to parse the result.
+     * If the type is not primitive, return null.
+     */
     public Object resolve(Class<?> primitiveType, String data) {
         if (primitiveType == byte.class || primitiveType == Byte.class) {
             Object parsed = this.tryParse(() -> Byte.parseByte(data));
@@ -41,7 +45,7 @@ public class PrimitiveTypeDataResolver {
         if (primitiveType == char.class || primitiveType == Character.class) {
             Object parsed = this.tryParse((() -> data.charAt(0)));
             if (parsed != null) return parsed;
-            return (char)0;
+            return (char) 0;
         }
         if (primitiveType == String.class) {
             return data;
@@ -49,6 +53,10 @@ public class PrimitiveTypeDataResolver {
         return null;
     }
 
+    /**
+     * Accepts functional interface and tries to call the function.
+     * If there is an exception, return null.
+     */
     private Object tryParse(TryParse function) {
         try {
             return function.parse();

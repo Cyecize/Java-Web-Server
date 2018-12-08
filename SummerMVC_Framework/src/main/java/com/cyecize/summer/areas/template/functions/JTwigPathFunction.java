@@ -30,6 +30,9 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
         return this.routePrefix + functionRequest.get(0);
     }
 
+    /**
+     * If the .jar file name is different that ROOT, add it to the route prefix.
+     */
     private void initRoutePrefix(String appRootDir) {
         Pattern pattern = Pattern.compile("webapps(\\\\|\\/)(?!ROOT)(?<app>[a-zA-Z0-9-_ ]{1,})(\\\\|\\/)classes");
         Matcher matcher = pattern.matcher(appRootDir);

@@ -48,6 +48,13 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.dependencyContainer.addPlatformBean(new Principal());
     }
 
+    /**
+     * Finds an action method.
+     * Runs interceptors' preHandle.
+     * Invokes method.
+     * Handles invocation result.
+     * Runs interceptors' postHandle.
+     */
     private void processRequest(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         ActionMethod method = this.methodInvokingService.findAction(request);
         if (method == null) {
@@ -64,19 +71,19 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.interceptorService.postHandle(request, response, result, this.dependencyContainer.getObject(Model.class));
     }
 
-    private void processException(Exception ex) {
-        ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
-        if (exResult == null) {
-            this.whitePageException(this.dependencyContainer.getObject(HttpSoletResponse.class), ex);
-            return;
-        }
-        this.methodResultHandler.handleActionResult(exResult);
-    }
-
+    /**
+     * Called on every request.
+     * Adds platform beans.
+     * Reloads services with REQUEST life span.
+     * Runs interceptors' preHandle
+     * Proceeds with the  BaseHttpSolet's service logic.
+     * If Exception is thrown, processException method is called.
+     * Finally sets state to the session and evicts platform beans.
+     */
     @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         super.setHasIntercepted(true);
-        this.addPlatformDependencies(request, response);
+        this.addPlatformBeans(request, response);
         dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
         try {
             if (this.interceptorService.preHandle(request, response, dependencyContainer, true)) {
@@ -96,22 +103,48 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         dependencyContainer.evictPlatformBeans();
     }
 
-    @SuppressWarnings("unchecked")
-    private void addPlatformDependencies(HttpSoletRequest request, HttpSoletResponse response) {
-        dependencyContainer.addPlatformBean(dependencyContainer);
-        dependencyContainer.addPlatformBean(request);
-        dependencyContainer.addPlatformBean(response);
-        dependencyContainer.addPlatformBean(this.getSoletConfig());
-        dependencyContainer.addPlatformBean(request.getSession());
-        dependencyContainer.addPlatformBean(this.renderingService);
-        dependencyContainer.addPlatformBean(new Model((Map<String, Object>) request.getSession().getAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID)));
-        dependencyContainer.addPlatformBean(new ModelAndView());
-        dependencyContainer.addPlatformBean(new RedirectAttributes());
-        dependencyContainer.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
-        dependencyContainer.addPlatformBean(new BindingResultImpl());
-        dependencyContainer.addPlatformBean(new RedirectedBindingResult((List<FieldError>) request.getSession().getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID)));
+    /**
+     * Looks for exception listeners and calls whitePageError, if no listener is found.
+     * If a listener is found, proceeds to handle the actionResult.
+     */
+    private void processException(Exception ex) {
+        ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
+        if (exResult == null) {
+            this.whitePageException(this.dependencyContainer.getObject(HttpSoletResponse.class), ex);
+            return;
+        }
+        this.methodResultHandler.handleActionResult(exResult);
     }
 
+    /**
+     * Adds platform beans on every request, including the dependency container itself.
+     */
+    @SuppressWarnings("unchecked")
+    private void addPlatformBeans(HttpSoletRequest request, HttpSoletResponse response) {
+        this.addPlatformBean(this.dependencyContainer);
+        this.addPlatformBean(request);
+        this.addPlatformBean(response);
+        this.addPlatformBean(this.getSoletConfig());
+        this.addPlatformBean(request.getSession());
+        this.addPlatformBean(this.renderingService);
+        this.addPlatformBean(new Model((Map<String, Object>) request.getSession().getAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID)));
+        this.addPlatformBean(new ModelAndView());
+        this.addPlatformBean(new RedirectAttributes());
+        this.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
+        this.addPlatformBean(new BindingResultImpl());
+        this.addPlatformBean(new RedirectedBindingResult((List<FieldError>) request.getSession().getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID)));
+    }
+
+    /**
+     * Add platform bean
+     */
+    private void addPlatformBean(Object bean) {
+        this.dependencyContainer.addPlatformBean(bean);
+    }
+
+    /**
+     * Called when no exceptionListener has been found for a given exception.
+     */
     private void whitePageException(HttpSoletResponse response, Throwable ex) {
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         response.setContent(String.format("Uncaught exception \"%s\". Check the console.", ex.getMessage()));

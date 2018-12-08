@@ -70,6 +70,11 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         });
     }
 
+    /**
+     * Gets the data adapter from the dataAdapters map by the field's generic type.
+     * Reloads the data resolver if needed.
+     * Returns the result of the data adapter.
+     */
     private Object handleCustomTypeField(Field field, HttpSoletRequest request) {
         DataAdapter dataAdapter = this.dependencyContainer.reloadComponent(
                 this.dataAdapters.get(this.getFieldGenericType(field)),
@@ -78,10 +83,17 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         return dataAdapter.resolveField(field, request);
     }
 
+    /**
+     * Gets field generic type if present or just the field type.
+     */
     private String getFieldGenericType(Field field) {
         return field.getGenericType().getTypeName();
     }
 
+    /**
+     * Checks if the request contains a memory file with the same name as the field name.
+     * Returns a MultipartFileImpl if present or otherwise returns null.
+     */
     private MultipartFile handleMultipartField(Field field, HttpSoletRequest request) {
         MemoryFile memoryFile = request.getUploadedFiles().get(field.getName());
         if (memoryFile != null) {
@@ -90,10 +102,20 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         return null;
     }
 
+    /**
+     * Calls dataResolver to convert the body parameter that matches the field name.
+     */
     private Object handlePrimitiveField(Field field, HttpSoletRequest request) {
         return this.dataResolver.resolve(field.getType(), request.getBodyParameters().get(field.getName()));
     }
 
+    /**
+     * Returns empty list if the value in the body parameters is null for that field.
+     * Tries to get the generic type of the list or defaults to String.
+     * Gets the list variant for that fieldName and for each available value
+     * calls dataResolver to convert the String to the desired type.
+     * Returns the list of converted values.
+     */
     private List<Object> handleListField(Field field, HttpSoletRequest request) {
         List<Object> parsedParams = new ArrayList<>();
         if (request.getBodyParametersAsList().get(field.getName()) == null) return parsedParams;
@@ -114,6 +136,9 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         return parsedParams;
     }
 
+    /**
+     * Gets the asset directory of javache web server.
+     */
     private String getAssetsDir() {
         if (this.assetsDir == null) {
             this.assetsDir = this.dependencyContainer.getObject(SoletConfig.class).getAttribute(SOLET_CFG_ASSETS_DIR) + "";
@@ -121,6 +146,11 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         return this.assetsDir;
     }
 
+    /**
+     * Iterates the set of data adapters and for each object gets its
+     * generic type and adds the adapter to a map of data adapters where the key is the
+     * generic type.
+     */
     private void setDataAdapters(Set<Object> adapters) {
         this.dataAdapters = new HashMap<>();
         for (Object adapter : adapters) {

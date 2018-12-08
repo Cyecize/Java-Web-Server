@@ -30,6 +30,11 @@ public class DependencyContainerImpl implements DependencyContainer {
         this.allServicesAndBeans.addAll(services);
     }
 
+    /**
+     * Gets classes with the given lifeSpan.
+     * Filters out the currently instantiated services that have the given serviceLifeSpan.
+     * Iterates the classes that need to be loaded and reloads them.
+     */
     @Override
     public void reloadServices(ServiceLifeSpan lifeSpan) {
         List<Class<?>> classesToReload = this.getOrCacheClassesByLifespan(lifeSpan);
@@ -45,7 +50,6 @@ public class DependencyContainerImpl implements DependencyContainer {
             // successfully initialized before in the ServiceLoadingService
             ex.printStackTrace();
         }
-        System.gc();
     }
 
     @Override
@@ -58,6 +62,10 @@ public class DependencyContainerImpl implements DependencyContainer {
         this.platformBeans = new HashSet<>();
     }
 
+    /**
+     * Gets the fist constructor of the given component.
+     * Collects all required parameters (if any) and returns new instance of the component.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T reloadComponent(T component) {
@@ -80,6 +88,10 @@ public class DependencyContainerImpl implements DependencyContainer {
         return null;
     }
 
+    /**
+     * Reloads component only if the lifeSpan if the component is equal
+     * to the required lifeSpan.
+     */
     @Override
     public <T> T reloadComponent(T component, ServiceLifeSpan lifeSpan) {
         if (component.getClass().getAnnotation(Component.class).lifespan() != lifeSpan) {
@@ -88,6 +100,11 @@ public class DependencyContainerImpl implements DependencyContainer {
         return this.reloadComponent(component);
     }
 
+    /**
+     * Iterates platform beans to find assignable object for objType parameter.
+     * If there is none, looks in allServicesAndBeans.
+     * Returns the type or null if the type is not found.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getObject(Class<T> objType) {
@@ -114,6 +131,11 @@ public class DependencyContainerImpl implements DependencyContainer {
         return this.platformBeans;
     }
 
+    /**
+     * Checks if there is an already loaded service. If there is, return it.
+     * Otherwise get the first constructor and collect its parameters (if any)
+     * return an instance of the service type.
+     */
     private Object loadService(Class<?> serviceClass, ServiceLifeSpan serviceLifeSpan) throws ServiceLoadException {
         Object alreadyLoadedService = this.findAlreadyLoadedService(serviceClass);
         if (alreadyLoadedService != null) {
@@ -131,6 +153,12 @@ public class DependencyContainerImpl implements DependencyContainer {
         return this.instantiateService(constructor, paramInstances);
     }
 
+    /**
+     * Looks for assignable object for a given parameter.
+     * First checks the already loaded services.
+     * If there is no assignable object in the already loaded services, checks
+     * in the cached types. If a class is found, load that class and return it.
+     */
     private Object findAssignableService(Class<?> param, ServiceLifeSpan lifeSpan) throws ServiceLoadException {
         for (Object service : this.allServicesAndBeans) {
             if (param.isAssignableFrom(service.getClass())) {
@@ -145,12 +173,18 @@ public class DependencyContainerImpl implements DependencyContainer {
         return null; //This should only be reached by platform services
     }
 
+    /**
+     * Iterate loaded services/beans and find assignable object for a given type.
+     */
     private Object findAlreadyLoadedService(Class<?> serviceClass) {
         return this.allServicesAndBeans.stream()
                 .filter(s -> serviceClass.isAssignableFrom(s.getClass()))
                 .findFirst().orElse(null);
     }
 
+    /**
+     * Instantiate class with given constructor and optional parameters.
+     */
     private Object instantiateService(Constructor<?> serviceConstructor, Object... params) throws ServiceLoadException {
         try {
             Object service = serviceConstructor.newInstance(params);
@@ -161,6 +195,10 @@ public class DependencyContainerImpl implements DependencyContainer {
         }
     }
 
+    /**
+     * Adds services to a map with key of ServiceLifeSpan and returns the matching classes.
+     * If the check has been performed, returns the value of the map to enhance performance.
+     */
     private List<Class<?>> getOrCacheClassesByLifespan(ServiceLifeSpan lifeSpan) {
         if (this.cachedClassesByLifeSpan.containsKey(lifeSpan)) {
             return this.cachedClassesByLifeSpan.get(lifeSpan);
@@ -175,6 +213,10 @@ public class DependencyContainerImpl implements DependencyContainer {
         return classes;
     }
 
+    /**
+     * Checks if serviceType contains annotation @Service and if it has, compares
+     * the lifeSpan with the given one.
+     */
     private boolean isServiceToBeReloaded(Class<?> serviceClass, ServiceLifeSpan lifeSpan) {
         if (!serviceClass.isAnnotationPresent(Service.class)) {
             return false;

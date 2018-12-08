@@ -31,6 +31,11 @@ public class ComponentLoadingServiceImpl implements ComponentLoadingService {
         this.components.put(COMPONENT_MAP_DATA_ADAPTERS, new HashSet<>());
     }
 
+    /**
+     * Finds and loads all @Component annotated classes.
+     * Iterates the collection and adds each component to its group based on its type.
+     * Returns a map where the key is the type of component and the value is a set of components.
+     */
     @Override
     public Map<String, Set<Object>> getComponents() throws ServiceLoadException, PostConstructException {
         try {
@@ -55,7 +60,7 @@ public class ComponentLoadingServiceImpl implements ComponentLoadingService {
         if (component instanceof ConstraintValidator) {
             this.components.get(COMPONENT_MAP_VALIDATORS).add(component);
         }
-        if (component instanceof DataAdapter){
+        if (component instanceof DataAdapter) {
             this.components.get(COMPONENT_MAP_DATA_ADAPTERS).add(component);
         }
         //add more here

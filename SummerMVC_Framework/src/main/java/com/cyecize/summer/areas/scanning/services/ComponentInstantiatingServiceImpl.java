@@ -33,6 +33,11 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
         return loadedClasses.stream().filter(c -> c.isAnnotationPresent(annotation)).collect(Collectors.toSet());
     }
 
+    /**
+     * Iterates componentClasses and adds the instantiated object to a set.
+     * Calls postConstruct for objects with @PostConstruct method and returns the set of loaded
+     * components.
+     */
     @Override
     public Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException, PostConstructException {
         Set<Object> instances = new HashSet<>();
@@ -43,6 +48,11 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
         return instances;
     }
 
+    /**
+     * Check if the class is interface and throw exception if it is.
+     * Gets the first constructor and collects its parameters if any.
+     * Returns instance of the componentClass.
+     */
     private Object loadComponent(Class<?> componentClasses) throws ComponentInstantiationException {
         if (componentClasses.isInterface()) {
             throw new ComponentInstantiationException(CANNOT_INSTANTIATE_INTERFACE);
@@ -61,6 +71,9 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
         return this.instantiateComponent(constructor, constructorParams);
     }
 
+    /**
+     * Reflection call to create an instance of an objects with optional parameters.
+     */
     private Object instantiateComponent(Constructor<?> constructor, Object... params) throws ComponentInstantiationException {
         try {
             return constructor.newInstance(params);
@@ -69,6 +82,11 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
         }
     }
 
+    /**
+     * Iterates all instantiated services/beans and returns object that matches the parameter type.
+     *
+     * @throws ComponentInstantiationException if no parameter exists.
+     */
     private Object findDependencyInstance(Class<?> dependency) throws ComponentInstantiationException {
         for (Object loadedService : this.loadedServicesAndBeans) {
             if (dependency.isAssignableFrom(loadedService.getClass())) {

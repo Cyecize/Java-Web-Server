@@ -33,6 +33,9 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
         this.setClassValidatorMap(validators);
     }
 
+    /**
+     * Iterate all fields of the given object and for each field perform validation.
+     */
     @Override
     public void validateBindingModel(Object bindingModel, BindingResult bindingResult) {
         try {
@@ -45,6 +48,14 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * Iterates all annotations for the given field.
+     * If an annotation is annotated with @Constraint, get the constraint validator.
+     * If the constraintValidator is null, throw ValidationException.
+     * Reload the validator if lifeSpan == REQUEST
+     *
+     * If the validator returns false, add new FieldError to the bindingResult.
+     */
     private void validateField(Field field, Object bindingModel, BindingResult bindingResult) {
         try {
             field.setAccessible(true);
@@ -62,9 +73,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                     throw new ValidationException(String.format(ADD_ANNOTATION_TO_CLASS_FORMAT, constraint.validatedBy().getName()));
                 }
 
-                if (constraint.validatedBy().getAnnotation(Component.class).lifespan() == ServiceLifeSpan.REQUEST) {
-                    validator = this.dependencyContainer.reloadComponent(validator);
-                }
+                validator = this.dependencyContainer.reloadComponent(validator, ServiceLifeSpan.REQUEST);
 
                 validator.initialize(currentAnnotation);
 
@@ -80,6 +89,11 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
         }
     }
 
+    /**
+     * Gets the message method of a given annotation using reflection.
+     *
+     * @throws ValidationException if the annotation is missing the message method.
+     */
     private String getAnnotationMessage(Annotation annotation) {
         try {
             Method message = annotation.annotationType().getDeclaredMethod("message");
@@ -92,6 +106,10 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
         }
     }
 
+    /**
+     * Converts the set of objects to a map of Class and ConstraintValidator
+     * Then calls the addPlatformValidators method.
+     */
     private void setClassValidatorMap(Set<Object> validators) {
         this.classValidatorMap = new HashMap<>();
         for (Object validator : validators) {

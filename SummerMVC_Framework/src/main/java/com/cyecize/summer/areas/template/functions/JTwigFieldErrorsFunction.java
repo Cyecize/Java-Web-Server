@@ -21,6 +21,11 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
         return "formErrors";
     }
 
+    /**
+     * If there are no parameters, return all errors.
+     * If there is one parameter of type String, return errors for a given field.
+     * Else throw JtwigException
+     */
     @Override
     public Object execute(FunctionRequest functionRequest) {
         RedirectedBindingResult bindingResult = this.dependencyContainer.getObject(RedirectedBindingResult.class);

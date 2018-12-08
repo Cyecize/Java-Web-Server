@@ -21,6 +21,11 @@ public class BeanLoadingServiceImpl implements BeanLoadingService {
         this.loadedBeans = new HashSet<>();
     }
 
+    /**
+     * Tries to find and load beans.
+     *
+     * @throws BeanLoadException if something happens.
+     */
     @Override
     public Set<Object> loadBeans(Set<Class<?>> availableClasses) throws BeanLoadException {
         try {
@@ -32,17 +37,29 @@ public class BeanLoadingServiceImpl implements BeanLoadingService {
         return this.loadedBeans;
     }
 
+    /**
+     * Iterates all loaded bean config classes and scans them for @Bean annotated methods.
+     * Iterates those methods and adds the result of the invoked method to the loadedBeans list.
+     *
+     * @throws InvocationTargetException if the method has any parameters.
+     */
     private void findAndLoadBeans() throws InvocationTargetException, IllegalAccessException {
         for (Object beanConfigClass : this.loadedBeanConfigInstances) {
             Method[] beanAnnotatedMethods = Arrays.stream(beanConfigClass.getClass().getDeclaredMethods())
                     .filter(m -> m.isAnnotationPresent(Bean.class) && m.getReturnType() != void.class && m.getReturnType() != Void.class)
                     .toArray(Method[]::new);
             for (Method beanAnnotatedMethod : beanAnnotatedMethods) {
-                loadedBeans.add(beanAnnotatedMethod.invoke(beanConfigClass));
+                this.loadedBeans.add(beanAnnotatedMethod.invoke(beanConfigClass));
             }
         }
     }
 
+    /**
+     * Iterates all available classes and filters those with @BeanConfig annotation.
+     * Tries to instantiate the class and add it to the list of loaded beans.
+     *
+     * @throws BeanLoadException if the constructor is invalid.
+     */
     private void findBeanConfigClasses(Set<Class<?>> availableClasses) throws BeanLoadException {
         for (Class<?> cls : availableClasses) {
             if (cls.isAnnotationPresent(BeanConfig.class)) {

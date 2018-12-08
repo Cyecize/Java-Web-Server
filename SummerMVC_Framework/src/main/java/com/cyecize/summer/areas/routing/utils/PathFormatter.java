@@ -12,6 +12,10 @@ public class PathFormatter {
 
     }
 
+    /**
+     * Replaces all {varName} instances in a route with a more suitable regex for matching
+     * and extracting PathVariables (?<varName>[a-zA-Z0-9_-]+)
+     */
     public String formatPath(String path) {
         Pattern pathParameterPattern = Pattern.compile(PATH_PARAMETER_PATTERN);
         Matcher pathParameterMatcher = pathParameterPattern.matcher(path);

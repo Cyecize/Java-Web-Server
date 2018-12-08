@@ -21,6 +21,11 @@ public class JTwigHasRoleFunction extends SimpleJtwigFunction {
         return "hasRole";
     }
 
+    /**
+     * If the there is more or less than 1 parameter of the parameters is not String, throw JtwigException
+     * Else get the principal from the dependency container and check if a user is present
+     * and if the user has the given role.
+     */
     @Override
     public Object execute(FunctionRequest functionRequest) {
         if (functionRequest.getArguments().size() != 1 || !(functionRequest.get(0) instanceof String)) {

@@ -49,6 +49,15 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         return this.applicationNames;
     }
 
+    /**
+     * Starts scanning apps from javache's webapps folder.
+     * Iterates over every jar file in the folder and for each jar file,
+     * calls the jarUnzipService to extract the file.
+     * Extracts the app name, creates an asset directory and
+     * starts an application scan.
+     * <p>
+     * Returns map of loaded solets.
+     */
     @Override
     public Map<String, HttpSolet> loadApplications() throws IOException {
         try {
@@ -72,6 +81,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         return this.solets;
     }
 
+    /**
+     * Loads application libraries.
+     * Loads application classes.
+     * Adds the application name to the applicationNames list.
+     */
     private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         String classesRootFolderPath = applicationRootFolderPath + APPLICATION_CLASSES_FOLDER_NAME + File.separator;
         String librariesRootFolderPath = applicationRootFolderPath + APPLICATION_LIB_FOLDER_NAME + File.separator;
@@ -81,6 +95,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         this.applicationNames.add("/" + applicationName);
     }
 
+    /**
+     * If the directory does not exist, return.
+     * Adds the directory to the classpath.
+     * Starts a recursion for loading classes and finding solets.
+     */
     private void loadApplicationClasses(String classesRootFolderPath, String currentApplicationName) throws IOException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         File classesRootDirectory = new File(classesRootFolderPath);
         if (!classesRootDirectory.exists() || !classesRootDirectory.isDirectory()) {
@@ -90,6 +109,14 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         this.loadClass(classesRootDirectory, "", currentApplicationName);
     }
 
+    /**
+     * Recursive method for loading classes, starts with empty packageName.
+     * If the file is directory, iterate all files inside and call loadClass with the current file name
+     * appended to the packageName.
+     * <p>
+     * If the file is file and the file name ends with .class, load it and check if the class
+     * is assignable from BaseHttpSolet. If it is, load the solet.
+     */
     private void loadClass(File currentFile, String packageName, String applicationName) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if (currentFile.isDirectory()) {
             for (File childFile : currentFile.listFiles()) {
@@ -113,6 +140,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
     }
 
+    /**
+     * Creates an instance of the solet.
+     * If the application name is different than ROOT.jar, add the appName to the route.
+     * Put the solet in a solet map with a key being the soletRoute.
+     */
     private void loadSolet(Class<BaseHttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         HttpSolet soletInstance = soletClass.getDeclaredConstructor().newInstance();
         WebSolet soletAnnotation = this.getSoletAnnotation(soletInstance.getClass());
@@ -124,6 +156,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         if (!applicationName.equals(ROOT_APPLICATION_FILE_NAME)) {
             soletRoute = "/" + applicationName + soletRoute;
         }
+
         if (!soletInstance.isInitialized()) {
             soletInstance.init(new SoletConfigImpl());
         }
@@ -133,6 +166,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         this.solets.put(soletRoute, soletInstance);
     }
 
+    /**
+     * Recursive method for getting @WebSolet annotation from a given class.
+     * Recursion is required since only parent class could have @WebSolet annotation
+     * and not the child.
+     */
     private WebSolet getSoletAnnotation(Class<?> soletClass) {
         WebSolet solet = soletClass.getAnnotation(WebSolet.class);
         if (solet == null && soletClass.getSuperclass() != null) {
@@ -141,6 +179,10 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         return solet;
     }
 
+    /**
+     * Iterates the given directory's files and filters jar files
+     * then adds them to the system classpath.
+     */
     private void loadApplicationLibraries(String librariesRootFolderPath) {
 
         File libraryFolder = new File(librariesRootFolderPath);
@@ -157,6 +199,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                 });
     }
 
+    /**
+     * Creates a proper URL for directory and adds it to the system classloader.
+     */
     private void addDirectoryToClassPath(String canonicalPath) {
         try {
             this.addUrlToClassPath(new URL("file:/" + canonicalPath));
@@ -164,6 +209,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
     }
 
+    /**
+     * Creates a proper URL format for .jar files and adds it to the system classloader.
+     */
     private void addJarFileToClassPath(String canonicalPath) {
         try {
             this.addUrlToClassPath(new URL("jar:file:" + canonicalPath + "!/"));
@@ -171,6 +219,12 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
     }
 
+    /**
+     * Adds a URL to the current system classloader.
+     * This method works by default on Java 8.
+     * On newer versions it is required to first replace the system classloader with an instance of
+     * URLClassLoader. This is done at the start of Javache.
+     */
     private void addUrlToClassPath(URL url) {
         try {
             URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
@@ -184,6 +238,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
     }
 
+    /**
+     * Creates asset directory for the current app in javache's assets directory.
+     */
     private void makeAppAssetDir(String dir) {
         File file = new File(dir);
         if (!file.exists()) {
@@ -191,6 +248,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
     }
 
+    /**
+     * Checks if a file's name ends with .jar
+     */
     private boolean isJarFile(File file) {
         return file.isFile() && file.getName().endsWith(".jar");
     }

@@ -53,6 +53,21 @@ public class SoletDispatcher implements RequestHandler {
         this.initTempDir();
     }
 
+    /**
+     * Creates temporaryStorageService
+     * Creates HttpSoletRequest and HttpSoletResponse.
+     * Resolves the current request's app name.
+     * <p>
+     * Initializes the session.
+     * Finds a matching solet and runs it.
+     * If no solet is found or solet has not intercepted, sets the hasIntercepted field to false.
+     * <p>
+     * Sends a session cookie.
+     * Clears invalid sessions.
+     * Writes the response.
+     * <p>
+     * Finally removes any temp files if available.
+     */
     @Override
     public void handleRequest(byte[] bytes, OutputStream outputStream, JavacheConfigService config) throws IOException {
         TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
@@ -116,6 +131,11 @@ public class SoletDispatcher implements RequestHandler {
         return requestContent;
     }
 
+    /**
+     * This method is synchronized because otherwise There is an interference with the request and response objects.
+     * Calls the run method of the solet
+     * returns whether the solet has intercepted the request.
+     */
     private synchronized boolean runSolet(HttpSolet solet, HttpSoletRequest request, HttpSoletResponse response) {
         try {
             solet.service(request, response);
@@ -127,6 +147,11 @@ public class SoletDispatcher implements RequestHandler {
         return true;
     }
 
+    /**
+     * Checks if the request's route starts with any of the loaded application names.
+     * If that is the case, set the currentRequestAppName to the matching appName.
+     * Otherwise set the currentRequestAppName to ""
+     */
     private void resolveCurrentRequestAppName(HttpSoletRequest request) {
         boolean isAppNameFound = false;
         for (String applicationName : this.applicationNames) {
@@ -168,6 +193,10 @@ public class SoletDispatcher implements RequestHandler {
         return null;
     }
 
+    /**
+     * Gets all available solets and applicationNames.
+     * Prints the loaded applications.
+     */
     private void initializeSoletMap() {
         try {
             this.soletMap = this.applicationLoadingService.loadApplications();
@@ -179,6 +208,9 @@ public class SoletDispatcher implements RequestHandler {
         }
     }
 
+    /**
+     * Create javache's temporary directory if it doesn't exist.
+     */
     private void initTempDir() {
         this.tempDir = this.workingDir + TEMP_FOLDER_NAME;
 

@@ -56,6 +56,9 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
         fileAsJarArchive.close();
     }
 
+    /**
+     * Recursive method for deleting a folder.
+     */
     private void deleteFolder(File folder) {
         for (File file : folder.listFiles()) {
             if (file.isDirectory()) {

@@ -7,6 +7,14 @@
     <groupId>com.cyecize</groupId>
     <artifactId>javache-embedded</artifactId>
     <version>1.0</version>
+
+    <repositories>
+        <repository>
+            <id>javache-repo</id>
+            <url>file://${basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -17,31 +25,68 @@
                     <target>11</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <!--<exclude>mysql:mysql-connector-java</exclude>-->
+                                    <!--<exclude>cyecize:http</exclude>-->
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>javache</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+            <!--<systemPath>${basedir}/lib/javache-1.0.jar</systemPath>-->
+        </dependency>
+
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
             <version>1.2.5</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/javache-api-1.2.5.jar</systemPath>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${basedir}/lib/javache-api-1.2.5.jar</systemPath>-->
         </dependency>
+
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>broccolina</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/broccolina-1.0.jar</systemPath>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${basedir}/lib/broccolina-1.0.jar</systemPath>-->
         </dependency>
+
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>toyote</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/toyote-1.0.jar</systemPath>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${basedir}/lib/toyote-1.0.jar</systemPath>-->
         </dependency>
+
     </dependencies>
 
 </project>
+        <!-- Run this to install a local lib -->
+        <!--mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-1.0.jar -DgroupId=com.cyecize -DartifactId=javache -Dversion=1.0 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\ceci\.m2\repository-->

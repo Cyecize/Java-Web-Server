@@ -66,7 +66,7 @@ You just need to run a command.
 
 More info
 -------------
-If you are having trouble running the app, contact me at ceci2205@abv.bg
+If you are having trouble running the app, contact me at ceci2205@abv.bg .
 
 Credits
 -------

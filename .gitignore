@@ -16,8 +16,12 @@
 /JavacheWebServer/server/.idea/**
 /JavacheWebServer/server/out/**
 /JavacheWebServer/server/target/**
+/JavacheWebServer/server-embedded/.idea/**
+/JavacheWebServer/server-embedded/out/**
+/JavacheWebServer/server-embedded/target/**
 /SummerMVC_Framework/.idea/**
 /SummerMVC_Framework/out/**
 /SummerMVC_Framework/target/**
 SummerMVC_Framework/summer.iml
 CoyoteResourceHandler/toyote.iml
+JavacheWebServer/server-embedded/Javache Embedded.iml

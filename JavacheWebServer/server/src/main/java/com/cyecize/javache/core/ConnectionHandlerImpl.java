@@ -75,8 +75,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
         for (RequestHandler requestHandler : this.requestHandlers) {
             requestHandler.handleRequest(
                     this.cachingService.getOrCacheInputStream(this.clientSocketInputStream),
-                    this.clientSocketOutputStream,
-                    this.configService
+                    this.clientSocketOutputStream
             );
             if (requestHandler.hasIntercepted()) {
                 break;

@@ -1,6 +1,7 @@
 package com.cyecize.toyote;
 
 import com.cyecize.http.*;
+import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
 import com.cyecize.javache.services.JavacheConfigService;
@@ -20,22 +21,32 @@ public class ResourceHandler implements RequestHandler {
 
     private static final String RESOURCE_NOT_FOUND_MESSAGE = "<h1 style=\"text-align: center;\">The resource - \"%s\" you are looking for cannot be found.</h1>";
 
-    private static final String WEB_APPS_DIR_NAME = "webapps";
-
-    private static final String WEB_ASSETS_DIR_NAME = "assets";
-
-    private static final String CLASSES_FOLDER_NAME = "classes";
-
     private final String serverRootFolderPath;
+
+    private final JavacheConfigService configService;
 
     private boolean hasIntercepted;
 
     private AppNameCollector appNameCollector;
 
-    public ResourceHandler(String serverRootFolderPath) {
+    private String webappsDirName;
+
+    private String assetsDirName;
+
+    private String classesDirName;
+
+    private String mainAppName;
+
+    public ResourceHandler(String serverRootFolderPath, JavacheConfigService configService) {
+        this(serverRootFolderPath, new AppNameCollectorImpl(configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class)), configService);
+    }
+
+    public ResourceHandler(String serverRootFolderPath, AppNameCollector appNameCollector, JavacheConfigService configService) {
         this.serverRootFolderPath = serverRootFolderPath;
+        this.appNameCollector = appNameCollector;
+        this.configService = configService;
         this.hasIntercepted = false;
-        this.appNameCollector = new AppNameCollectorImpl();
+        this.initDirectories();
         System.out.println("Loaded Toyote");
     }
 
@@ -46,11 +57,11 @@ public class ResourceHandler implements RequestHandler {
     private synchronized String getApplicationName(String requestUrl) {
         List<String> applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
         for (String applicationName : applicationNames) {
-            if (requestUrl.startsWith(applicationName)) {
+            if (requestUrl.startsWith(applicationName) && applicationName.length() > 0) {
                 return applicationName.substring(1);
             }
         }
-        return "ROOT";
+        return this.mainAppName;
     }
 
     private String getResourceName(String requestUrl, String appName) {
@@ -96,24 +107,23 @@ public class ResourceHandler implements RequestHandler {
      * Writes the response content.
      */
     @Override
-    public void handleRequest(byte[] inputStream, OutputStream outputStream, JavacheConfigService config) {
+    public void handleRequest(byte[] inputStream, OutputStream outputStream) {
         try {
             HttpRequest request = new HttpRequestImpl(new String(inputStream, StandardCharsets.UTF_8));
             HttpResponse response = new HttpResponseImpl();
 
             String applicationName = this.getApplicationName(request.getRequestURL());
             String resourceName = this.getResourceName(request.getRequestURL(), applicationName);
+
             String resourcesFolder = this.serverRootFolderPath
-                    + WEB_APPS_DIR_NAME
-                    + File.separator
+                    + this.webappsDirName
                     + applicationName
                     + File.separator
-                    + CLASSES_FOLDER_NAME;
+                    + this.classesDirName;
 
             if (!this.handleResourceRequest(resourcesFolder, resourceName, response)) {
                 resourcesFolder = this.serverRootFolderPath
-                        + WEB_ASSETS_DIR_NAME
-                        + File.separator
+                        + this.assetsDirName
                         + applicationName;
                 this.handleResourceRequest(resourcesFolder, resourceName, response);
             }
@@ -137,11 +147,15 @@ public class ResourceHandler implements RequestHandler {
      * Reads file bytes.
      */
     private byte[] readAllBytes(File file) throws IOException {
-        FileInputStream in = new FileInputStream(file);
+        try (FileInputStream in = new FileInputStream(file)) {
+            return in.readAllBytes();
+        }
+    }
 
-        byte[] bytes = in.readAllBytes();
-        in.close();
-
-        return bytes;
+    private void initDirectories() {
+        this.webappsDirName = this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
+        this.assetsDirName = this.configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class);
+        this.classesDirName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
+        this.mainAppName = this.configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
     }
 }

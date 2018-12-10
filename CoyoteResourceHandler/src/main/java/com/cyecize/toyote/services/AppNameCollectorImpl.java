@@ -7,13 +7,15 @@ import java.util.List;
 
 public class AppNameCollectorImpl implements AppNameCollector {
 
-    private static final String APPLICATIONS_FOLDER_NAME = "webapps/";
     private static final String APPLICATIONS_FOLDER_NON_EXISTENT = "Invalid applications folder \"%s\"";
+
+    private final String applicationsFolderName;
 
     private List<String> applicationNames;
 
-    public AppNameCollectorImpl() {
+    public AppNameCollectorImpl(String applicationsFolderName) {
 
+        this.applicationsFolderName = applicationsFolderName;
     }
 
     @Override
@@ -22,7 +24,7 @@ public class AppNameCollectorImpl implements AppNameCollector {
             return this.applicationNames;
         }
 
-        this.loadApplicationNames(workingDir + APPLICATIONS_FOLDER_NAME);
+        this.loadApplicationNames(workingDir + this.applicationsFolderName);
         return this.applicationNames;
     }
 

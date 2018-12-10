@@ -21,10 +21,13 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
     private static final String INVALID_FOLDER_MESSAGE = "Library Folder does not exist or it's not a folder!";
 
+    private final JavacheConfigService configService;
+
     private List<RequestHandler> requestHandlers;
 
-    public RequestHandlerLoadingServiceImpl() {
+    public RequestHandlerLoadingServiceImpl(JavacheConfigService configService) {
 
+        this.configService = configService;
     }
 
     @Override
@@ -121,8 +124,8 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
      */
     private void loadRequestHandler(Class<RequestHandler> requestHandlerClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         RequestHandler requestHandlerObject = requestHandlerClass
-                .getDeclaredConstructor(String.class)
-                .newInstance(WebConstants.WORKING_DIRECTORY);
+                .getDeclaredConstructor(String.class, JavacheConfigService.class)
+                .newInstance(WebConstants.WORKING_DIRECTORY, this.configService);
         this.requestHandlers.add(requestHandlerObject);
     }
 

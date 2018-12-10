@@ -21,9 +21,9 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
     private List<String> requestHandlers;
 
-    private Map<String, Object> configParameters;
-
     private PrimitiveTypeDataResolver dataResolver;
+
+    protected Map<String, Object> configParameters;
 
     public JavacheConfigServiceImpl() {
         this.dataResolver = new PrimitiveTypeDataResolver();
@@ -55,7 +55,10 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         }
     }
 
-    private void loadRequestHandlerConfig() throws IOException {
+    /**
+     * Looks for file that contains request handler names and priority.
+     */
+    protected void loadRequestHandlerConfig() throws IOException {
         File priorityConfigFile = new File(REQUEST_HANDLER_PRIORITY_FILE);
 
         if (!priorityConfigFile.exists() || !priorityConfigFile.isFile()) {
@@ -75,6 +78,10 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters = new HashMap<>();
         this.configParameters.put(ConfigConstants.MAX_REQUEST_SIZE, Integer.MAX_VALUE);
         this.configParameters.put(ConfigConstants.SHOW_REQUEST_LOG, false);
+        this.configParameters.put(ConfigConstants.ASSETS_DIR_NAME, "assets/");
+        this.configParameters.put(ConfigConstants.WEB_APPS_DIR_NAME, "webapps/");
+        this.configParameters.put(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, "classes");
+        this.configParameters.put(ConfigConstants.MAIN_APP_JAR_NAME, "ROOT");
     }
 
     /**

@@ -26,6 +26,10 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
         this.requestHandlers = new LinkedList<>();
     }
 
+    /**
+     * Manually loads request handlers that are otherwise loaded using reflection in the real
+     * javache web server.
+     */
     @Override
     public void loadRequestHandlers(List<String> list) {
 

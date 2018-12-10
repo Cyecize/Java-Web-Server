@@ -6,7 +6,7 @@
 
     <groupId>com.cyecize</groupId>
     <artifactId>toyote</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <build>
         <plugins>
             <plugin>
@@ -34,10 +34,9 @@
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
             <scope>system</scope>
-            <version>1.2.5</version>
-            <systemPath>${basedir}/lib/javache-api-1.2.5.jar</systemPath>
+            <version>1.2.6</version>
+            <systemPath>${basedir}/lib/javache-api-1.2.6.jar</systemPath>
         </dependency>
-
     </dependencies>
 
 </project>

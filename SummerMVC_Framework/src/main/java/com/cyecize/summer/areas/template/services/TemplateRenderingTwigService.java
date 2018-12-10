@@ -100,7 +100,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
                     .withOutputCharset(StandardCharsets.UTF_8)
                 .and()
                 .functions()
-                    .add(new JTwigPathFunction(this.appRootDir))
+                    .add(new JTwigPathFunction(this.dependencyContainer))
                     .add(new JTwigHasRoleFunction(this.dependencyContainer))
                     .add(new JTwigFieldErrorsFunction(this.dependencyContainer))
                     .add(new JTwigUrlFunction(this.dependencyContainer))

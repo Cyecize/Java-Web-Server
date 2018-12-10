@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.6</version>
             <!--<scope>system</scope>-->
             <!--<systemPath>${basedir}/lib/javache-api-1.2.5.jar</systemPath>-->
         </dependency>
@@ -72,7 +72,7 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>broccolina</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
             <!--<scope>system</scope>-->
             <!--<systemPath>${basedir}/lib/broccolina-1.0.jar</systemPath>-->
         </dependency>
@@ -80,13 +80,27 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>toyote</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
             <!--<scope>system</scope>-->
             <!--<systemPath>${basedir}/lib/toyote-1.0.jar</systemPath>-->
+        </dependency>
+
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>solet</artifactId>
+            <version>1.2.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/solet-1.2.0.jar</systemPath>
         </dependency>
 
     </dependencies>
 
 </project>
         <!-- Run this to install a local lib -->
-        <!--mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-1.0.jar -DgroupId=com.cyecize -DartifactId=javache -Dversion=1.0 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\ceci\.m2\repository-->
+        <!-- You need to run those commands every time you make a change in one of the jars -->
+        <!-- If you get error that httpSolet is missing upon mvn package, build the app first from the IDE and then mvn package -->
+
+        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-1.0.jar -DgroupId=com.cyecize -DartifactId=javache -Dversion=1.0 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
+        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-api-1.2.6.jar -DgroupId=com.cyecize -DartifactId=javache-api -Dversion=1.2.6 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
+        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/broccolina-1.1.jar -DgroupId=com.cyecize -DartifactId=broccolina -Dversion=1.1 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
+        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/toyote-1.1.jar -DgroupId=com.cyecize -DartifactId=toyote -Dversion=1.1 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->

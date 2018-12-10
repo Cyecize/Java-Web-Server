@@ -20,34 +20,47 @@ import java.util.regex.Pattern;
 
 public class SoletDispatcher implements RequestHandler {
 
-    private static final String APPLICATIONS_FOLDER_NAME = "webapps/";
-
-    private static final String ASSETS_FOLDER_NAME = "assets/";
-
     private static final String TEMP_FOLDER_NAME = "temp/";
 
     private final String workingDir;
 
+    private final JavacheConfigService configService;
+
+    private final ApplicationLoadingService applicationLoadingService;
+
     private String tempDir;
+
+    private String rootAppName;
+
+    private SessionManagementService sessionManagementService;
 
     private Map<String, HttpSolet> soletMap;
 
     private List<String> applicationNames;
 
-    private ApplicationLoadingService applicationLoadingService;
-
-    private SessionManagementService sessionManagementService;
-
     private boolean hasIntercepted;
 
     private String currentRequestAppName;
 
-    public SoletDispatcher(String workingDir) {
+    public SoletDispatcher(String workingDir, JavacheConfigService configService) {
+        this(
+                workingDir,
+                new ApplicationLoadingServiceImpl(
+                        new ApplicationScanningServiceImpl(workingDir + configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class), new JarFileUnzipServiceImpl()),
+                        configService,
+                        workingDir + configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class)
+                ),
+                configService
+        );
+    }
+
+    public SoletDispatcher(String workingDir, ApplicationLoadingService applicationLoadingService, JavacheConfigService configService) {
         this.workingDir = workingDir;
-        this.hasIntercepted = false;
-        this.applicationLoadingService = new ApplicationLoadingServiceImpl(new JarFileUnzipServiceImpl(),
-                this.workingDir + APPLICATIONS_FOLDER_NAME, this.workingDir + ASSETS_FOLDER_NAME);
+        this.configService = configService;
+        this.applicationLoadingService = applicationLoadingService;
         this.sessionManagementService = new SessionManagementServiceImpl();
+        this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
+        this.hasIntercepted = false;
         this.initializeSoletMap();
         this.currentRequestAppName = "";
         this.initTempDir();
@@ -69,11 +82,11 @@ public class SoletDispatcher implements RequestHandler {
      * Finally removes any temp files if available.
      */
     @Override
-    public void handleRequest(byte[] bytes, OutputStream outputStream, JavacheConfigService config) throws IOException {
+    public void handleRequest(byte[] bytes, OutputStream outputStream) throws IOException {
         TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
 
         try {
-            HttpSoletRequest request = new HttpSoletRequestImpl(this.extractRequestContent(bytes, config), bytes, temporaryStorageService);
+            HttpSoletRequest request = new HttpSoletRequestImpl(this.extractRequestContent(bytes), bytes, temporaryStorageService);
             HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
             this.resolveCurrentRequestAppName(request);
 
@@ -112,7 +125,7 @@ public class SoletDispatcher implements RequestHandler {
      * Filter larger requests with Multipart Encoding to save memory
      * by getting only the first 2048 bytes and leaving the rest to the multipart parser.
      */
-    private String extractRequestContent(byte[] bytes, JavacheConfigService configService) {
+    private String extractRequestContent(byte[] bytes) {
         String requestContent = "";
         if (bytes.length <= 2048) {
             requestContent = new String(bytes, StandardCharsets.UTF_8);
@@ -124,7 +137,7 @@ public class SoletDispatcher implements RequestHandler {
         }
 
         //print the content if the SHOW_REQUEST_LOG is set to true
-        if (configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class)) {
+        if (this.configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class)) {
             System.out.println(requestContent);
         }
 
@@ -155,12 +168,13 @@ public class SoletDispatcher implements RequestHandler {
     private void resolveCurrentRequestAppName(HttpSoletRequest request) {
         boolean isAppNameFound = false;
         for (String applicationName : this.applicationNames) {
-            if (request.getRequestURL().startsWith(applicationName)) {
+            if (request.getRequestURL().startsWith(applicationName) && !applicationName.equals(this.rootAppName)) {
                 this.currentRequestAppName = applicationName;
                 isAppNameFound = true;
                 break;
             }
         }
+
         if (!isAppNameFound) {
             this.currentRequestAppName = "";
         }

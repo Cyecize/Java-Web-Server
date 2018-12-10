@@ -1,20 +1,19 @@
 package com.cyecize.summer.areas.template.functions;
 
+import com.cyecize.solet.HttpSoletRequest;
+import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import org.jtwig.exceptions.JtwigException;
 import org.jtwig.functions.FunctionRequest;
 import org.jtwig.functions.SimpleJtwigFunction;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JTwigPathFunction extends SimpleJtwigFunction {
 
     private static final String INVALID_PARAM_ERROR = "Path function expects one parameter of type string.";
 
-    private String routePrefix = "";
+    private final DependencyContainer dependencyContainer;
 
-    public JTwigPathFunction(String appRootDir) {
-        this.initRoutePrefix(appRootDir);
+    public JTwigPathFunction(DependencyContainer dependencyContainer) {
+        this.dependencyContainer = dependencyContainer;
     }
 
     @Override
@@ -27,17 +26,24 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
         if (functionRequest.getArguments().size() != 1 || !(functionRequest.get(0) instanceof String)) {
             throw new JtwigException(INVALID_PARAM_ERROR);
         }
-        return this.routePrefix + functionRequest.get(0);
+        return this.createPrefix() + functionRequest.get(0);
     }
 
     /**
-     * If the .jar file name is different that ROOT, add it to the route prefix.
+     * Gets app name by replacing the relative URL with "" on the absolute URL.
      */
-    private void initRoutePrefix(String appRootDir) {
-        Pattern pattern = Pattern.compile("webapps(\\\\|\\/)(?!ROOT)(?<app>[a-zA-Z0-9-_ ]{1,})(\\\\|\\/)classes");
-        Matcher matcher = pattern.matcher(appRootDir);
-        if (matcher.find()) {
-            this.routePrefix = "/" + matcher.group("app");
+    private String createPrefix() {
+        HttpSoletRequest request = this.dependencyContainer.getObject(HttpSoletRequest.class);
+        String appName = request.getRequestURL().replace(request.getRelativeRequestURL(), "");
+        if (appName.length() < 1) {
+            return appName;
         }
+        if (appName.endsWith("/")) {
+            appName = appName.substring(0, appName.length() - 1);
+        }
+        if (!appName.startsWith("/")) {
+            appName = "/" + appName;
+        }
+        return appName;
     }
 }

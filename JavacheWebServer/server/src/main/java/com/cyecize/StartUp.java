@@ -2,10 +2,7 @@ package com.cyecize;
 
 import com.cyecize.javache.core.Server;
 import com.cyecize.javache.core.ServerImpl;
-import com.cyecize.javache.services.JavacheConfigServiceImpl;
-import com.cyecize.javache.services.LoggingService;
-import com.cyecize.javache.services.LoggingServiceImpl;
-import com.cyecize.javache.services.RequestHandlerLoadingServiceImpl;
+import com.cyecize.javache.services.*;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -24,7 +21,8 @@ public class StartUp {
             port = Integer.parseInt(args[0]);
         }
 
-        Server server = new ServerImpl(port, loggingService, new RequestHandlerLoadingServiceImpl(), new JavacheConfigServiceImpl());
+        JavacheConfigService configService = new JavacheConfigServiceImpl();
+        Server server = new ServerImpl(port, loggingService, new RequestHandlerLoadingServiceImpl(configService), configService);
 
         try {
             server.run();
@@ -40,7 +38,7 @@ public class StartUp {
         which means that there is no method "addUrl"
         by doing this we change the default classLoader with URLClassLoader
      */
-    private static void replaceSystemClassLoader() throws IllegalAccessException {
+    public static void replaceSystemClassLoader() throws IllegalAccessException {
         Field scl = Arrays.stream(ClassLoader.class.getDeclaredFields())
                 .filter(f -> f.getType() == ClassLoader.class && !f.getName().equals("parent"))
                 .findFirst().orElse(null);

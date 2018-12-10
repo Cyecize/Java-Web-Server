@@ -20,11 +20,9 @@ public class EmbeddedJavacheConfigService extends JavacheConfigServiceImpl {
     }
 
     /**
-     * Set runtime config if any.
+     * transfer runtime config map to global map.
      */
     private void setConfig(Map<String, Object> config) {
-        for (Map.Entry<String, Object> entry : config.entrySet()) {
-            super.configParameters.put(entry.getKey(), entry.getValue());
-        }
+        super.configParameters.putAll(config);
     }
 }

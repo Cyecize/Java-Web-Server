@@ -98,7 +98,8 @@
 </project>
         <!-- Run this to install a local lib -->
         <!-- You need to run those commands every time you make a change in one of the jars -->
-        <!-- If you get error that httpSolet is missing upon mvn package, build the app first from the IDE and then mvn package -->
+        <!-- This is required becase we are using local dependencies on a local repository so we need to install them in the .m2 folder -->
+        <!-- -DlocalRepositoryPath= will vary so make sure you change it with your maven cache folder (on Windows usually .m2 folder in user files) -->
 
         <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-1.0.jar -DgroupId=com.cyecize -DartifactId=javache -Dversion=1.0 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
         <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-api-1.2.6.jar -DgroupId=com.cyecize -DartifactId=javache-api -Dversion=1.2.6 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->

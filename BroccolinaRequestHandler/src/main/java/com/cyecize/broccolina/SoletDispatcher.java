@@ -46,7 +46,7 @@ public class SoletDispatcher implements RequestHandler {
         this(
                 workingDir,
                 new ApplicationLoadingServiceImpl(
-                        new ApplicationScanningServiceImpl(workingDir + configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class), new JarFileUnzipServiceImpl()),
+                        new ApplicationScanningServiceImpl(workingDir, new JarFileUnzipServiceImpl(), configService),
                         configService,
                         workingDir + configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class)
                 ),

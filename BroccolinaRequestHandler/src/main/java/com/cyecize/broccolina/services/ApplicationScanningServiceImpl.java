@@ -1,5 +1,7 @@
 package com.cyecize.broccolina.services;
 
+import com.cyecize.javache.ConfigConstants;
+import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
@@ -16,21 +18,28 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private static final String APPLICATION_LIB_FOLDER_NAME = "lib";
 
-    private static final String APPLICATION_CLASSES_FOLDER_NAME = "classes";
-
-    private final String applicationsFolderPath;
+    private final String workingDir;
 
     private final JarFileUnzipService jarFileUnzipService;
+
+    private final JavacheConfigService configService;
 
     private List<String> applicationNames;
 
     private Map<String, List<Class<HttpSolet>>> soletClasses;
 
-    public ApplicationScanningServiceImpl(String applicationsFolderPath, JarFileUnzipService jarFileUnzipService) {
-        this.applicationsFolderPath = applicationsFolderPath;
+    private String applicationsFolderPath;
+
+    private String compileOutputFolderName;
+
+    public ApplicationScanningServiceImpl(String workingDir, JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
+        this.workingDir = workingDir;
         this.jarFileUnzipService = jarFileUnzipService;
+        this.configService = configService;
+
         this.applicationNames = new ArrayList<>();
         this.soletClasses = new HashMap<>();
+        this.initDirectories();
     }
 
     @Override
@@ -69,7 +78,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * Adds the application name to the applicationNames list.
      */
     private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException {
-        String classesRootFolderPath = applicationRootFolderPath + APPLICATION_CLASSES_FOLDER_NAME + File.separator;
+        String classesRootFolderPath = applicationRootFolderPath + this.compileOutputFolderName + File.separator;
         String librariesRootFolderPath = applicationRootFolderPath + APPLICATION_LIB_FOLDER_NAME + File.separator;
 
         this.loadApplicationLibraries(librariesRootFolderPath);
@@ -109,7 +118,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
                 return;
             }
 
-            String className = (packageName.replace(APPLICATION_CLASSES_FOLDER_NAME + ".", "")) + currentFile
+            String className = (packageName.replace(this.compileOutputFolderName + ".", "")) + currentFile
                     .getName()
                     .replace(".class", "")
                     .replace("/", ".");
@@ -190,5 +199,13 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      */
     private boolean isJarFile(File file) {
         return file.isFile() && file.getName().endsWith(".jar");
+    }
+
+    /**
+     * Initializes directory values
+     */
+    private void initDirectories() {
+        this.compileOutputFolderName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
+        this.applicationsFolderPath = this.workingDir + this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
     }
 }

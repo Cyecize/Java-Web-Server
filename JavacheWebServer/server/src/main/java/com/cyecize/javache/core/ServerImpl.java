@@ -63,6 +63,7 @@ public class ServerImpl implements Server {
         } catch (Exception e) {
             this.loggingService.error(e.getMessage());
             this.loggingService.printStackTrace(e.getStackTrace());
+            e.printStackTrace();
         }
     }
 }

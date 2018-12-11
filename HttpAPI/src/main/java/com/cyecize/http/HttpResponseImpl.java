@@ -103,7 +103,7 @@ public class HttpResponseImpl implements HttpResponse {
     }
 
     private String resolveCharset(String contentType) {
-        if (contentType.contains("charset")) {
+        if (contentType == null || contentType.contains("charset")) {
             return contentType;
         } else {
             return contentType + "; charset=utf8";

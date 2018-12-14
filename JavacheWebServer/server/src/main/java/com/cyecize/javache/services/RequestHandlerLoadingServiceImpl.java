@@ -5,6 +5,7 @@ import com.cyecize.javache.api.RequestHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -123,10 +124,13 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
      * and adds the instance to a linkedList.
      */
     private void loadRequestHandler(Class<RequestHandler> requestHandlerClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        RequestHandler requestHandlerObject = requestHandlerClass
-                .getDeclaredConstructor(String.class, JavacheConfigService.class)
-                .newInstance(WebConstants.WORKING_DIRECTORY, this.configService);
-        this.requestHandlers.add(requestHandlerObject);
+        RequestHandler requestHandler;
+        try {
+            requestHandler = requestHandlerClass.getDeclaredConstructor(String.class, JavacheConfigService.class).newInstance(WebConstants.WORKING_DIRECTORY, this.configService);
+        } catch (NoSuchMethodException ignored) {
+            requestHandler = requestHandlerClass.getConstructor().newInstance();
+        }
+        this.requestHandlers.add(requestHandler);
     }
 
     /**

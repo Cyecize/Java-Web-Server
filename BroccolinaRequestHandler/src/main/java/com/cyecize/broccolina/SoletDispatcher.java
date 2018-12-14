@@ -32,6 +32,8 @@ public class SoletDispatcher implements RequestHandler {
 
     private String rootAppName;
 
+    private boolean showRequestContent;
+
     private SessionManagementService sessionManagementService;
 
     private Map<String, HttpSolet> soletMap;
@@ -64,6 +66,7 @@ public class SoletDispatcher implements RequestHandler {
         this.initializeSoletMap();
         this.currentRequestAppName = "";
         this.initTempDir();
+        this.showRequestContent = configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class);
     }
 
     /**
@@ -110,6 +113,7 @@ public class SoletDispatcher implements RequestHandler {
             this.sessionManagementService.clearInvalidSessions();
             new Writer().writeData(response.getResponse(), response.getOutputStream());
             response = null;
+            request = null;
             this.hasIntercepted = true;
         } finally {
             temporaryStorageService.removeTemporaryFiles();
@@ -137,7 +141,7 @@ public class SoletDispatcher implements RequestHandler {
         }
 
         //print the content if the SHOW_REQUEST_LOG is set to true
-        if (this.configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class)) {
+        if (this.showRequestContent) {
             System.out.println(requestContent);
         }
 

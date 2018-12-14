@@ -9,6 +9,7 @@ import com.cyecize.toyote.services.AppNameCollector;
 import com.cyecize.toyote.services.AppNameCollectorImpl;
 
 import java.io.*;
+import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +30,8 @@ public class ResourceHandler implements RequestHandler {
 
     private AppNameCollector appNameCollector;
 
+    private List<String> applicationNames;
+
     private String webappsDirName;
 
     private String assetsDirName;
@@ -47,6 +50,7 @@ public class ResourceHandler implements RequestHandler {
         this.configService = configService;
         this.hasIntercepted = false;
         this.initDirectories();
+        this.applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
         System.out.println("Loaded Toyote");
     }
 
@@ -54,9 +58,8 @@ public class ResourceHandler implements RequestHandler {
      * Iterates all application names and finds the one that the requestUrl starts with
      * or returns ROOT if no app name is matched.
      */
-    private synchronized String getApplicationName(String requestUrl) {
-        List<String> applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
-        for (String applicationName : applicationNames) {
+    private String getApplicationName(String requestUrl) {
+        for (String applicationName : this.applicationNames) {
             if (requestUrl.startsWith(applicationName) && applicationName.length() > 0) {
                 return applicationName.substring(1);
             }
@@ -130,12 +133,17 @@ public class ResourceHandler implements RequestHandler {
 
             new Writer().writeBytes(response.getBytes(), outputStream);
             response = null;
+            request = null;
             this.hasIntercepted = true;
         } catch (IOException e) {
-            e.printStackTrace();
             this.hasIntercepted = false;
+
+            if (e instanceof SocketException) {
+                return;
+            }
+
+            e.printStackTrace();
         }
-        System.gc();
     }
 
     @Override

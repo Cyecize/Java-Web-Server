@@ -1,5 +1,6 @@
 package com.cyecize.summer.areas.template.services;
 
+import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.annotations.TemplateService;
@@ -27,6 +28,8 @@ import java.util.Map;
 public class TemplateRenderingTwigService implements TemplateRenderingService {
 
     private static final String GLOBAL_VAR_USER = "user";
+
+    private static final String GLOBAL_VAR_REQUEST = "request";
 
     private static final String TEMPLATE_NOT_FOUND_FORMAT = "Template \"%s\" not found under resources/templates/%s";
 
@@ -72,6 +75,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
         this.reloadTemplateServices();
 
         model.addAttribute(GLOBAL_VAR_USER, this.dependencyContainer.getObject(Principal.class).getUser());
+        model.addAttribute(GLOBAL_VAR_REQUEST, this.dependencyContainer.getObject(HttpSoletRequest.class));
 
         for (Map.Entry<String, Object> serviceEntry : this.templateServices.entrySet()) {
             model.addAttribute(serviceEntry.getKey(), serviceEntry.getValue());

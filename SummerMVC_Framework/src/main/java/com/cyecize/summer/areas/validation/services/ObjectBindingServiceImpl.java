@@ -7,6 +7,7 @@ import com.cyecize.summer.areas.routing.interfaces.MultipartFile;
 import com.cyecize.summer.areas.routing.models.MultipartFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
@@ -23,7 +24,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
     private final DependencyContainer dependencyContainer;
 
-    private Map<String, DataAdapter> dataAdapters;
+    private Map<String, List<DataAdapter>> dataAdapters;
 
     private PrimitiveTypeDataResolver dataResolver;
 
@@ -71,15 +72,30 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
     }
 
     /**
-     * Gets the data adapter from the dataAdapters map by the field's generic type.
+     * Gets the data adapter from @ConvertedBy annotation if present.
+     * Else gets the data adapter from the dataAdapters map by the field's generic type.
      * Reloads the data resolver if needed.
+     * Returns null if no converter is found.
      * Returns the result of the data adapter.
      */
     private Object handleCustomTypeField(Field field, HttpSoletRequest request) {
-        DataAdapter dataAdapter = this.dependencyContainer.reloadComponent(
-                this.dataAdapters.get(this.getFieldGenericType(field)),
-                ServiceLifeSpan.REQUEST
-        );
+        DataAdapter dataAdapter = null;
+        if (field.isAnnotationPresent(ConvertedBy.class)) {
+            Class<?> convertedClass = field.getAnnotation(ConvertedBy.class).value();
+
+            dataAdapter = this.dataAdapters.get(this.getFieldGenericType(field)).stream()
+                    .filter(da -> convertedClass.isAssignableFrom(da.getClass()))
+                    .findFirst().orElse(null);
+        } else {
+            dataAdapter = this.dataAdapters.get(this.getFieldGenericType(field)).get(0);
+        }
+
+        if (dataAdapter == null) {
+            return null;
+        }
+
+        dataAdapter = this.dependencyContainer.reloadComponent(dataAdapter, ServiceLifeSpan.REQUEST);
+
         return dataAdapter.resolveField(field, request);
     }
 
@@ -149,14 +165,17 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
     /**
      * Iterates the set of data adapters and for each object gets its
      * generic type and adds the adapter to a map of data adapters where the key is the
-     * generic type.
+     * generic type and the value is a list of data adapters for that type.
      */
     private void setDataAdapters(Set<Object> adapters) {
         this.dataAdapters = new HashMap<>();
         for (Object adapter : adapters) {
             try {
                 String genericType = ((ParameterizedType) adapter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
-                this.dataAdapters.put(genericType, (DataAdapter) adapter);
+                if (!this.dataAdapters.containsKey(genericType)) {
+                    this.dataAdapters.put(genericType, new ArrayList<>());
+                }
+                this.dataAdapters.get(genericType).add((DataAdapter) adapter);
             } catch (Throwable e) {
                 throw new RuntimeException(NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT, e);
             }

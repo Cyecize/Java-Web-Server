@@ -85,6 +85,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * In case of JsonResponse, Stringify the result and set the Content-Type to application/json
      */
     private void handleJsonResponse(JsonResponse result) {
+        this.response.setStatusCode(result.getStatusCode());
         this.response.addHeader(CONTENT_TYPE_HEADER, "application/json");
         this.response.setContent(this.gson.toJson(result));
     }

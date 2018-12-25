@@ -1,9 +1,10 @@
 Javache
-	- Sockets are not async.
+	- Sockets are not async. -> Fixed
 
 Javache-api
-	- Reader and Postman are not very good friends.
+	- Reader and Postman are not very good friends. -> Part Fixed
 	- Reader for inputStream is slow (it is not using buffer because there is an issue with Socket inputStream and buffered reading)
+		-> Fixed 
 Http
 
 SoletApi
@@ -12,6 +13,7 @@ Broccolina
 
 Toyote
 	- Toyote shows META-INF content which is not secure.
+		-> Fixed in Summer MVC with secure areas.
 
 Summer
 	- Loading 2 apps in javache with the same package name will result in 

@@ -70,7 +70,7 @@ If you are having trouble running the app, contact me at ceci2205@abv.bg .
 
 Credits
 -------
-This project was a lab work in my university but it had some problems mainly with dependencies and the 
+This project was a lab work in my university but it had some fundamental problems mainly with workflow, how applications were loaded, dependencies and the 
 difficulty to run the application so I decided to rewrite the whole project and add some more
-functionality.
+functionality like Dependency Container and also add Documentation.
 

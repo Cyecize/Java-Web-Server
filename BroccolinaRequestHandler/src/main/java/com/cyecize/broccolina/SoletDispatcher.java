@@ -4,6 +4,7 @@ import com.cyecize.broccolina.services.*;
 import com.cyecize.http.HttpStatus;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
+import com.cyecize.javache.exceptions.RequestReadException;
 import com.cyecize.javache.io.Writer;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.*;
@@ -19,6 +20,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SoletDispatcher implements RequestHandler {
+
+    private static final String REQUEST_READ_EXCEPTION_FORMAT = "Could not parse Http Request:\n %s";
 
     private static final String TEMP_FOLDER_NAME = "temp/";
 
@@ -89,7 +92,14 @@ public class SoletDispatcher implements RequestHandler {
         TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
 
         try {
-            HttpSoletRequest request = new HttpSoletRequestImpl(this.extractRequestContent(bytes), bytes, temporaryStorageService);
+            HttpSoletRequest request;
+            String requestContent = this.extractRequestContent(bytes);
+            try {
+                request = new HttpSoletRequestImpl(requestContent, bytes, temporaryStorageService);
+            } catch (Exception ex) { //assume the exception is due to parse error
+                throw new RequestReadException(String.format(REQUEST_READ_EXCEPTION_FORMAT, showRequestContent), ex);
+            }
+
             HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
             this.resolveCurrentRequestAppName(request);
 

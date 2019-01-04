@@ -54,6 +54,16 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
                 this.loggingService.error(e.getMessage());
                 return;
             }
+
+            if (e instanceof RequestReadException) {
+                try {
+                    this.handleRequestReadException((RequestReadException) e);
+                    return;
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
             this.loggingService.error(e.getMessage());
             e.printStackTrace();
         }

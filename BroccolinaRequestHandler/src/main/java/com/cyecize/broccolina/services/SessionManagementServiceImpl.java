@@ -18,8 +18,8 @@ public class SessionManagementServiceImpl implements SessionManagementService {
      * Gets looks for a cookie representing the sessionId.
      * If the cookie is not present, adds a new session to the HttpRequest.
      * If the cookie is present, checks if a session with that id exists.
-     *      If no session exists or the session is not valid,
-     *      removes the cookie and a new session to the HttpRequest.
+     * If no session exists or the session is not valid,
+     * removes the cookie and a new session to the HttpRequest.
      * if the session is valid, sets the session to the HttpRequest.
      */
     @Override
@@ -66,5 +66,10 @@ public class SessionManagementServiceImpl implements SessionManagementService {
     @Override
     public void clearInvalidSessions() {
         this.sessionStorage.refreshSessions();
+    }
+
+    @Override
+    public HttpSessionStorage getSessionStorage() {
+        return this.sessionStorage;
     }
 }

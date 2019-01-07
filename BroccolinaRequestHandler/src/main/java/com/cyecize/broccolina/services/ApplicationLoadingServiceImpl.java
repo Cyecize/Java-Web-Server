@@ -3,7 +3,7 @@ package com.cyecize.broccolina.services;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.HttpSolet;
-import com.cyecize.solet.SoletConfigImpl;
+import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.WebSolet;
 
 import java.io.File;
@@ -17,17 +17,16 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private final ApplicationScanningService scanningService;
 
-    private final JavacheConfigService configService;
-
     private final String assetsDir;
 
     private String rootAppName;
 
     private Map<String, HttpSolet> solets;
 
+    private SoletConfig soletConfig;
+
     public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService, String assetsDir) {
         this.scanningService = scanningService;
-        this.configService = configService;
         this.assetsDir = assetsDir;
         this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
         this.solets = new HashMap<>();
@@ -47,7 +46,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
      * Returns a map of solet route and solet instance.
      */
     @Override
-    public Map<String, HttpSolet> loadApplications() throws IOException {
+    public Map<String, HttpSolet> loadApplications(SoletConfig soletConfig) throws IOException {
+        this.soletConfig = soletConfig;
         try {
             Map<String, List<Class<HttpSolet>>> soletClasses = this.scanningService.findSoletClasses();
             for (Map.Entry<String, List<Class<HttpSolet>>> entry : soletClasses.entrySet()) {
@@ -69,7 +69,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     /**
      * Creates an instance of the solet.
-     * If the application name is different than ROOT.jar, add the appName to the route.
+     * If the application name is different than the javache specified main jar name (ROOT.jar by default), add the appName to the route.
      * Put the solet in a solet map with a key being the soletRoute.
      */
     private void loadSolet(Class<HttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -85,7 +85,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
 
         if (!soletInstance.isInitialized()) {
-            soletInstance.init(new SoletConfigImpl());
+            soletInstance.init(this.soletConfig);
         }
 
         if (!applicationName.equals("") && !applicationName.equals(this.rootAppName)) {

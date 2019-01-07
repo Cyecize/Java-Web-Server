@@ -16,6 +16,8 @@ import static com.cyecize.summer.constants.IocConstants.*;
 
 public class SummerBootApplication {
 
+    public static DependencyContainer dependencyContainer = null;
+
     public static <T extends DispatcherSolet> void run(T startupSolet) {
         FileScanService fileScanService = new FileScanServiceImpl(startupSolet.getClass());
         PostConstructInvokingService postConstructInvokingService = new PostConstructInvokingServiceImpl();

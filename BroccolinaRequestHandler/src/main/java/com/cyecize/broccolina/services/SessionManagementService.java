@@ -2,6 +2,7 @@ package com.cyecize.broccolina.services;
 
 import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpResponse;
+import com.cyecize.http.HttpSessionStorage;
 
 public interface SessionManagementService {
 
@@ -10,4 +11,6 @@ public interface SessionManagementService {
     void sendSessionIfExistent(HttpRequest request, HttpResponse response);
 
     void clearInvalidSessions();
+
+    HttpSessionStorage getSessionStorage();
 }

@@ -222,12 +222,23 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     /**
+     * Create SoletConfig instance and add objects.
+     * This Solet Config will be used for initializing every solet.
+     */
+    private SoletConfig createSoletConfig() {
+        SoletConfig soletConfig = new SoletConfigImpl();
+        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY, this.sessionManagementService.getSessionStorage());
+        //TODO add more items here
+        return soletConfig;
+    }
+
+    /**
      * Gets all available solets and applicationNames.
      * Prints the loaded applications.
      */
     private void initializeSoletMap() {
         try {
-            this.soletMap = this.applicationLoadingService.loadApplications();
+            this.soletMap = this.applicationLoadingService.loadApplications(this.createSoletConfig());
             this.applicationNames = this.applicationLoadingService.getApplicationNames();
             System.out.println("Loaded Applications: " + String.join(", ", this.applicationNames));
         } catch (Exception ex) {

@@ -23,6 +23,7 @@ import com.cyecize.summer.common.models.RedirectAttributes;
 import com.cyecize.summer.constants.RoutingConstants;
 import com.cyecize.summer.constants.SecurityConstants;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static com.cyecize.summer.constants.IocConstants.*;
@@ -46,6 +47,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         super();
         this.dependencyContainer = new DependencyContainerImpl();
         this.dependencyContainer.addPlatformBean(new Principal());
+        SummerBootApplication.dependencyContainer = this.dependencyContainer;
     }
 
     /**
@@ -157,6 +159,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
 
         this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
+        this.dependencyContainer.addServices(Set.of(soletConfig));
+
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                 this.dependencyContainer,
                 new ObjectBindingServiceImpl(this.dependencyContainer, components.get(COMPONENT_MAP_DATA_ADAPTERS)),
@@ -167,7 +171,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
         this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
 
-
         this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
     }
 
@@ -176,8 +179,25 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     public final void init(SoletConfig soletConfig) {
         if (soletConfig.getAttribute(SOLET_CFG_WORKING_DIR) != null) {
             this.initApplication(soletConfig);
+            super.init(soletConfig);
+
+            //set the field to false so broccolina can init the app with additional parameters
+            try {
+                Field isInitialized = BaseHttpSolet.class.getDeclaredField("isInitialized");
+                isInitialized.setAccessible(true);
+                isInitialized.set(this, false);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            return;
         }
-        super.init(soletConfig);
+
+        if (this.getSoletConfig() != null) {
+            soletConfig.getAllAttributes().forEach(super.getSoletConfig()::setAttribute);
+        } else {
+            super.init(soletConfig);
+        }
     }
 
     @Override

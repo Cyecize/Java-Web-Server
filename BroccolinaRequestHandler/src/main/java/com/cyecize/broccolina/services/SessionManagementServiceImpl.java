@@ -1,7 +1,10 @@
 package com.cyecize.broccolina.services;
 
+import com.cyecize.broccolina.BroccolinaConstants;
 import com.cyecize.http.*;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class SessionManagementServiceImpl implements SessionManagementService {
@@ -55,7 +58,9 @@ public class SessionManagementServiceImpl implements SessionManagementService {
 
         if (request.getSession().isValid()) {
             HttpCookie cookie = new HttpCookieImpl(SESSION_COOKIE_NAME, request.getSession().getId());
-            cookie.setPath("/");
+
+            //set the path to "/" and set the expire date to one day
+            cookie.setPath("/; expires=" + DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().plusDays(BroccolinaConstants.SESSION_EXPIRE_DAYS)));
             response.addCookie(cookie);
         } else {
             response.addCookie(SESSION_COOKIE_NAME, "removed; expires=" + new Date(0).toString());

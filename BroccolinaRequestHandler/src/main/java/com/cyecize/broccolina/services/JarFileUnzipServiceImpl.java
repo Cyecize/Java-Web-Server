@@ -1,5 +1,7 @@
 package com.cyecize.broccolina.services;
 
+import com.cyecize.broccolina.utils.FileUtils;
+
 import java.io.*;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -13,19 +15,26 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
     @Override
     public void unzipJar(File jarFile) throws IOException {
+        this.unzipJar(jarFile, true, jarFile.getCanonicalPath().replace(".jar", ""));
+    }
+
+    @Override
+    public void unzipJar(File jarFile, boolean overwriteExistingFiles, String outputDirectory) throws IOException {
         String rootCanonicalPath = jarFile.getCanonicalPath();
 
         JarFile fileAsJarArchive = new JarFile(rootCanonicalPath);
 
         Enumeration<JarEntry> jarEntries = fileAsJarArchive.entries();
 
-        File jarFolder = new File(rootCanonicalPath.replace(".jar", ""));
+        File jarFolder = new File(outputDirectory);
 
-        if (jarFolder.exists() && jarFolder.isDirectory()) {
-            deleteFolder(jarFolder);
+        if (jarFolder.exists() && jarFolder.isDirectory() && overwriteExistingFiles) {
+            this.deleteFolder(jarFolder);
         }
 
-        jarFolder.mkdir();
+        if (!jarFolder.exists()) {
+            jarFolder.mkdir();
+        }
 
         while (jarEntries.hasMoreElements()) {
             JarEntry currentEntry = jarEntries.nextElement();
@@ -40,14 +49,11 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
             InputStream in = new BufferedInputStream(fileAsJarArchive.getInputStream(currentEntry));
             OutputStream out = new BufferedOutputStream(new FileOutputStream(currentEntryAsFile));
-            byte[] buffer = new byte[2048];
-            while (true) {
-                int nBytes = in.read(buffer);
-                if (nBytes <= 0) {
-                    break;
-                }
-                out.write(buffer, 0, nBytes);
+
+            if (overwriteExistingFiles || !currentEntryAsFile.exists() || (currentEntryAsFile.exists()) && !FileUtils.filesMatch(in, new FileInputStream(currentEntryAsFile))) {
+                in.transferTo(out);
             }
+
             out.flush();
             out.close();
             in.close();

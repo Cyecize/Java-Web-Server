@@ -7,15 +7,17 @@ import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 public class EmbeddedApplicationScanningService implements ApplicationScanningService {
 
-    private static final String CLASSES_PACKAGE_PREFIX = "classes.";
-
     private final JavacheConfigService configService;
 
     private final String workingDir;
+
+    private boolean isRootDir;
 
     private String rootAppName;
 
@@ -27,6 +29,8 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
         this.soletClasses = new HashMap<>();
         this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
         this.soletClasses.put(this.rootAppName, new ArrayList<>());
+        this.isRootDir = true;
+        this.loadLibraries();
     }
 
     /**
@@ -53,23 +57,61 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
      */
     private void loadClass(File currentFile, String packageName) throws ClassNotFoundException {
         if (currentFile.isDirectory()) {
+
+            //If the folder is the root dir, do not append package name since the name is outside the java packages.
+            boolean appendPackage = !this.isRootDir;
+
+            //Since the root dir is reached only once, set it to false.
+            this.isRootDir = false;
+
             for (File childFile : currentFile.listFiles()) {
-                this.loadClass(childFile, (packageName + currentFile.getName() + "."));
+                if (appendPackage) {
+                    this.loadClass(childFile, (packageName + currentFile.getName() + "."));
+                } else {
+                    this.loadClass(childFile, (packageName));
+                }
             }
         } else {
             if (!currentFile.getName().endsWith(".class")) {
                 return;
             }
 
-            String className = packageName.replace(CLASSES_PACKAGE_PREFIX, "") + currentFile
+            String className = packageName + currentFile
                     .getName()
                     .replace(".class", "")
                     .replace("/", ".");
+
 
             Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
 
             if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
                 this.soletClasses.get(this.rootAppName).add(currentClassFile);
+            }
+        }
+    }
+
+    /**
+     * Checks if there is folder that matches the folder name in the config file (lib by default)
+     * Iterates all elements and adds the .jar files to the system's classpath.
+     */
+    private void loadLibraries() {
+        String workingDir = this.workingDir;
+        if (!workingDir.endsWith("/") && !workingDir.endsWith("\\")) {
+            workingDir += "/";
+        }
+        File libFolder = new File(workingDir + this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class));
+
+        if (!libFolder.exists()) {
+            return;
+        }
+
+        for (File file : libFolder.listFiles()) {
+            if (file.getName().endsWith(".jar")) {
+                try {
+                    this.addUrlToClassPath(new URL("jar:file:" + file.getCanonicalPath() + "!/"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

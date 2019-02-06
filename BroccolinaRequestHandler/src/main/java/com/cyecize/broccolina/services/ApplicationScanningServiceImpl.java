@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 
 public class ApplicationScanningServiceImpl implements ApplicationScanningService {
 
-    private static final String APPLICATION_LIB_FOLDER_NAME = "lib";
-
     private final String workingDir;
 
     private final JarFileUnzipService jarFileUnzipService;
@@ -31,6 +29,8 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     private String applicationsFolderPath;
 
     private String compileOutputFolderName;
+
+    private String applicationLibFolderName;
 
     public ApplicationScanningServiceImpl(String workingDir, JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
         this.workingDir = workingDir;
@@ -73,13 +73,21 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     }
 
     /**
+     * Default implementation for adding URL to the classLoader.
+     */
+    @Override
+    public void addUrlToClassPath(URL url) {
+        ApplicationScanningService.super.addUrlToClassPath(url);
+    }
+
+    /**
      * Loads application libraries.
      * Loads application classes.
      * Adds the application name to the applicationNames list.
      */
     private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException {
         String classesRootFolderPath = applicationRootFolderPath + this.compileOutputFolderName + File.separator;
-        String librariesRootFolderPath = applicationRootFolderPath + APPLICATION_LIB_FOLDER_NAME + File.separator;
+        String librariesRootFolderPath = applicationRootFolderPath + this.applicationLibFolderName + File.separator;
 
         this.loadApplicationLibraries(librariesRootFolderPath);
         this.loadApplicationClasses(classesRootFolderPath, applicationName);
@@ -176,25 +184,6 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     }
 
     /**
-     * Adds a URL to the current system classloader.
-     * This method works by default on Java 8.
-     * On newer versions it is required to first replace the system classloader with an instance of
-     * URLClassLoader. This is done at the start of Javache.
-     */
-    private void addUrlToClassPath(URL url) {
-        try {
-            URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
-            Class<URLClassLoader> sysClassLoaderType = URLClassLoader.class;
-
-            Method method = sysClassLoaderType.getDeclaredMethod("addURL", URL.class);
-            method.setAccessible(true);
-            method.invoke(sysClassLoaderInstance, url);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    /**
      * Checks if a file's name ends with .jar
      */
     private boolean isJarFile(File file) {
@@ -207,5 +196,6 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     private void initDirectories() {
         this.compileOutputFolderName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
         this.applicationsFolderPath = this.workingDir + this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
+        this.applicationLibFolderName = this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
     }
 }

@@ -2,6 +2,7 @@ package com.cyecize.javache.embedded.services;
 
 import com.cyecize.broccolina.SoletDispatcher;
 import com.cyecize.broccolina.services.ApplicationLoadingServiceImpl;
+import com.cyecize.broccolina.services.ApplicationScanningService;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.services.JavacheConfigService;
@@ -18,11 +19,14 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
 
     private final JavacheConfigService configService;
 
+    private final ApplicationScanningService scanningService;
+
     private LinkedList<RequestHandler> requestHandlers;
 
-    public EmbeddedRequestHandlerLoadingService(String workingDir, JavacheConfigService configService) {
+    public EmbeddedRequestHandlerLoadingService(String workingDir, JavacheConfigService configService, ApplicationScanningService scanningService) {
         this.workingDir = workingDir;
         this.configService = configService;
+        this.scanningService = scanningService;
         this.requestHandlers = new LinkedList<>();
     }
 
@@ -37,7 +41,7 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
                 new SoletDispatcher(
                         this.workingDir,
                         new ApplicationLoadingServiceImpl(
-                                new EmbeddedApplicationScanningService(configService, workingDir),
+                                this.scanningService,
                                 this.configService,
                                 this.workingDir + configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class)
                         ),

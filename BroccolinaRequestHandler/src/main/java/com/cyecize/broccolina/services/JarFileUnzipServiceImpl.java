@@ -50,7 +50,15 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
             InputStream in = new BufferedInputStream(fileAsJarArchive.getInputStream(currentEntry));
             OutputStream out = new BufferedOutputStream(new FileOutputStream(currentEntryAsFile));
 
-            if (overwriteExistingFiles || !currentEntryAsFile.exists() || (currentEntryAsFile.exists()) && !FileUtils.filesMatch(in, new FileInputStream(currentEntryAsFile))) {
+            //Declare the input stream here so I can close it later.
+//            InputStream outputFileInputStream = null;
+//            if (currentEntryAsFile.exists()) {
+//                outputFileInputStream = new FileInputStream(currentEntryAsFile);
+//            }
+
+            //TODO: profide fix for checking if files are the same.
+            if (overwriteExistingFiles || !currentEntryAsFile.exists() /*|| (currentEntryAsFile.exists() && !FileUtils.filesMatch(in, outputFileInputStream))*/) {
+               // outputFileInputStream.close();
                 in.transferTo(out);
             }
 

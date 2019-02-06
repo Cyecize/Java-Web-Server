@@ -1,11 +1,13 @@
 package com.cyecize.javache.embedded;
 
 import com.cyecize.StartUp;
+import com.cyecize.broccolina.services.ApplicationScanningService;
 import com.cyecize.broccolina.services.JarFileUnzipService;
 import com.cyecize.broccolina.services.JarFileUnzipServiceImpl;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.core.Server;
 import com.cyecize.javache.core.ServerImpl;
+import com.cyecize.javache.embedded.services.EmbeddedApplicationScanningService;
 import com.cyecize.javache.embedded.services.EmbeddedJavacheConfigService;
 import com.cyecize.javache.embedded.services.EmbeddedRequestHandlerLoadingService;
 import com.cyecize.javache.services.JavacheConfigService;
@@ -56,12 +58,14 @@ public class JavacheEmbedded {
             //There is not "classes" folder inside the jar file so we set it to empty.
             config.put(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, "");
 
-            //Because if how Broccolina and Toyote read their request handlers, we want to go one step back.
+            //Because of how Broccolina and Toyote read their request handlers, we want to go one step back.
             config.put(ConfigConstants.WEB_APPS_DIR_NAME, "../");
 
             JavacheConfigService configService = new EmbeddedJavacheConfigService(config);
 
-            Server server = new ServerImpl(port, loggingService, new EmbeddedRequestHandlerLoadingService(workingDir, configService), configService);
+            ApplicationScanningService scanningService = new EmbeddedApplicationScanningService(configService, workingDir);
+
+            Server server = new ServerImpl(port, loggingService, new EmbeddedRequestHandlerLoadingService(workingDir, configService, scanningService), configService);
             server.run();
 
         } catch (Exception ex) {

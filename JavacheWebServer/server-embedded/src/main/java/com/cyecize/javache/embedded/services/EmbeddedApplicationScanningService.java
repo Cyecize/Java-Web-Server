@@ -11,11 +11,11 @@ import java.util.*;
 
 public class EmbeddedApplicationScanningService implements ApplicationScanningService {
 
-    private static final String CLASSES_PACKAGE_PREFIX = "classes.";
-
     private final JavacheConfigService configService;
 
     private final String workingDir;
+
+    private boolean isRootDir;
 
     private String rootAppName;
 
@@ -27,6 +27,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
         this.soletClasses = new HashMap<>();
         this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
         this.soletClasses.put(this.rootAppName, new ArrayList<>());
+        this.isRootDir = true;
     }
 
     /**
@@ -53,15 +54,26 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
      */
     private void loadClass(File currentFile, String packageName) throws ClassNotFoundException {
         if (currentFile.isDirectory()) {
+
+            //If the folder is the root dir, do not append package name since the name is outside the java packages.
+            boolean appendPackage = !this.isRootDir;
+
+            //Since the root dir is reached only once, set it to false.
+            this.isRootDir = false;
+
             for (File childFile : currentFile.listFiles()) {
-                this.loadClass(childFile, (packageName + currentFile.getName() + "."));
+                if (appendPackage) {
+                    this.loadClass(childFile, (packageName + currentFile.getName() + "."));
+                } else {
+                    this.loadClass(childFile, (packageName));
+                }
             }
         } else {
             if (!currentFile.getName().endsWith(".class")) {
                 return;
             }
 
-            String className = packageName.replace(CLASSES_PACKAGE_PREFIX, "") + currentFile
+            String className = packageName + currentFile
                     .getName()
                     .replace(".class", "")
                     .replace("/", ".");

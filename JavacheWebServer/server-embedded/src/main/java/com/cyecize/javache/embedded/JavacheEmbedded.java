@@ -1,6 +1,8 @@
 package com.cyecize.javache.embedded;
 
 import com.cyecize.StartUp;
+import com.cyecize.broccolina.services.JarFileUnzipService;
+import com.cyecize.broccolina.services.JarFileUnzipServiceImpl;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.core.Server;
 import com.cyecize.javache.core.ServerImpl;
@@ -10,6 +12,7 @@ import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.javache.services.LoggingServiceImpl;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +39,13 @@ public class JavacheEmbedded {
             StartUp.replaceSystemClassLoader();
 
             String workingDir = mainClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1);
+
+            if (workingDir.endsWith(".jar")) {
+                JarFileUnzipService unzipService = new JarFileUnzipServiceImpl();
+                unzipService.unzipJar(new File(workingDir), false, workingDir.replace(".jar", ""));
+                workingDir = workingDir.replace(".jar", "");
+            }
+
             System.out.println(String.format("Working Directory: %s", workingDir));
 
             final LoggingService loggingService = new LoggingServiceImpl();

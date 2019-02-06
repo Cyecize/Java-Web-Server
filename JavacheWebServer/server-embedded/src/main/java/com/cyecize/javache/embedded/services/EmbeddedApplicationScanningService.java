@@ -7,6 +7,8 @@ import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 public class EmbeddedApplicationScanningService implements ApplicationScanningService {
@@ -28,6 +30,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
         this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
         this.soletClasses.put(this.rootAppName, new ArrayList<>());
         this.isRootDir = true;
+        this.loadLibraries();
     }
 
     /**
@@ -78,10 +81,37 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
                     .replace(".class", "")
                     .replace("/", ".");
 
+
             Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
 
             if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
                 this.soletClasses.get(this.rootAppName).add(currentClassFile);
+            }
+        }
+    }
+
+    /**
+     * Checks if there is folder that matches the folder name in the config file (lib by default)
+     * Iterates all elements and adds the .jar files to the system's classpath.
+     */
+    private void loadLibraries() {
+        String workingDir = this.workingDir;
+        if (!workingDir.endsWith("/") && !workingDir.endsWith("\\")) {
+            workingDir += "/";
+        }
+        File libFolder = new File(workingDir + this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class));
+
+        if (!libFolder.exists()) {
+            return;
+        }
+
+        for (File file : libFolder.listFiles()) {
+            if (file.getName().endsWith(".jar")) {
+                try {
+                    this.addUrlToClassPath(new URL("jar:file:" + file.getCanonicalPath() + "!/"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

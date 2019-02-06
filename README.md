@@ -28,6 +28,14 @@ and so on.
 
 Multipart encoding is also supported.
 
+Embedded Web Server
+-------------------
+Javache Embedded is an embedded version of Javache web server, which provides better debugging, faster built times.
+
+Another benefit of the embedded server is that it can be used to create desktop applications with html, css and javaScript.
+For example we can have an embedded browser (CEF) that will be in the same app and it will browse on localhost and the server
+behind will act as it is a normal browser and will return views or JSON data. This is a much better approach for creating desktop applications for people that are more familiar with HTML rather than Java FX / Swing.
+
 Technologies used
 ---------------------
 	* Java 11

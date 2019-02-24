@@ -9,16 +9,18 @@ import com.cyecize.summer.areas.routing.utils.PathFormatter;
 import com.cyecize.summer.areas.scanning.exceptions.*;
 import com.cyecize.summer.areas.scanning.services.*;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static com.cyecize.summer.constants.IocConstants.*;
 
 public class SummerBootApplication {
 
-    public static DependencyContainer dependencyContainer = null;
+    public static DependencyContainer dependencyContainer = new DependencyContainerImpl();
 
-    public static <T extends DispatcherSolet> void run(T startupSolet) {
+    public static <T extends DispatcherSolet> void run(T startupSolet, Consumer<Collection<Class<?>>> loadedClassesHandler) {
         FileScanService fileScanService = new FileScanServiceImpl(startupSolet.getClass());
         PostConstructInvokingService postConstructInvokingService = new PostConstructInvokingServiceImpl();
         BeanLoadingService beanLoadingService = new BeanLoadingServiceImpl();
@@ -47,6 +49,12 @@ public class SummerBootApplication {
             soletConfig.setAttribute(SOLET_CFG_WORKING_DIR, fileScanService.getAppRootDir());
             soletConfig.setAttribute(SOLET_CFG_COMPONENTS, loadedComponents);
 
+            dependencyContainer.addServices(loadedServicesAndBeans);
+
+            if (loadedClassesHandler != null) {
+                loadedClassesHandler.accept(loadedClasses);
+            }
+
             startupSolet.init(soletConfig);
 
             loadedClasses = null;
@@ -63,5 +71,9 @@ public class SummerBootApplication {
             serviceLoadingService = null;
             methodScanningService = null;
         }
+    }
+
+    public static <T extends DispatcherSolet> void run(T startupSolet) {
+        run(startupSolet, null);
     }
 }

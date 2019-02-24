@@ -45,9 +45,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     protected DispatcherSolet() {
         super();
-        this.dependencyContainer = new DependencyContainerImpl();
+        this.dependencyContainer = SummerBootApplication.dependencyContainer;
         this.dependencyContainer.addPlatformBean(new Principal());
-        SummerBootApplication.dependencyContainer = this.dependencyContainer;
     }
 
     /**
@@ -158,7 +157,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.workingDir = (String) soletConfig.getAttribute(SOLET_CFG_WORKING_DIR);
         Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
 
-        this.dependencyContainer.addServices((Set<Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_SERVICES_AND_BEANS));
         this.dependencyContainer.addServices(Set.of(soletConfig));
 
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(

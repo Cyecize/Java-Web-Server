@@ -33,8 +33,6 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
 
     private static final String TEMPLATE_NOT_FOUND_FORMAT = "Template \"%s\" not found under resources/templates/%s";
 
-    private final String appRootDir;
-
     private final DependencyContainer dependencyContainer;
 
     private Map<String, Object> templateServices;
@@ -46,7 +44,6 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
     private String templatesDir;
 
     public TemplateRenderingTwigService(String appRootDir, DependencyContainer dependencyContainer) {
-        this.appRootDir = appRootDir;
         this.dependencyContainer = dependencyContainer;
         this.initTwigEnvironment();
         this.templatesDir = appRootDir + RoutingConstants.TEMPLATES_DIRECTORY + File.separator;

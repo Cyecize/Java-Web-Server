@@ -74,6 +74,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
      */
     private void loadSolet(Class<HttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         HttpSolet soletInstance = soletClass.getDeclaredConstructor().newInstance();
+        soletInstance.setAssetsFolder(this.assetsDir + applicationName);
+
         WebSolet soletAnnotation = this.getSoletAnnotation(soletInstance.getClass());
         if (soletAnnotation == null) {
             throw new IllegalArgumentException(String.format(MISSING_SOLET_ANNOTATION_FORMAT, soletClass.getName()));
@@ -92,7 +94,6 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
             soletInstance.setAppNamePrefix("/" + applicationName);
         }
 
-        soletInstance.setAssetsFolder(this.assetsDir + applicationName);
         this.solets.put(soletRoute, soletInstance);
     }
 

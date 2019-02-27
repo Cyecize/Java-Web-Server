@@ -21,12 +21,13 @@ public class ControllerLoadingServiceImpl implements ControllerLoadingService {
     }
 
     @Override
-    public Map<Class<?>, Object> loadControllers() throws ControllerLoadException, PostConstructException {
+    public Map<Class<?>, Object> loadControllers() throws ControllerLoadException {
         try {
             Set<Object> controllers = this.componentInstantiatingService.instantiateClasses(this.componentInstantiatingService.findClassesByAnnotation(Controller.class));
             for (Object controller : controllers) {
                 this.loadedControllers.put(controller.getClass(), controller);
             }
+
             return this.loadedControllers;
         } catch (ComponentInstantiationException e) {
             throw new ControllerLoadException(e.getMessage(), e);

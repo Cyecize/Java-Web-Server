@@ -20,12 +20,9 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
 
     private final Set<Class<?>> loadedClasses;
 
-    private final PostConstructInvokingService constructInvokingService;
-
-    public ComponentInstantiatingServiceImpl(Set<Object> loadedClassesAndBeans, Set<Class<?>> loadedClasses, PostConstructInvokingService constructInvokingService) {
+    public ComponentInstantiatingServiceImpl(Set<Object> loadedClassesAndBeans, Set<Class<?>> loadedClasses) {
         this.loadedServicesAndBeans = loadedClassesAndBeans;
         this.loadedClasses = loadedClasses;
-        this.constructInvokingService = constructInvokingService;
     }
 
     @Override
@@ -39,12 +36,12 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
      * components.
      */
     @Override
-    public Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException, PostConstructException {
+    public Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException {
         Set<Object> instances = new HashSet<>();
         for (Class<?> componentClass : componentClasses) {
             instances.add(this.loadComponent(componentClass));
         }
-        this.constructInvokingService.invokePostConstructMethod(instances);
+
         return instances;
     }
 

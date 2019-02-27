@@ -5,8 +5,11 @@ import com.cyecize.solet.*;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.*;
+import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
+import com.cyecize.summer.areas.scanning.models.ScannedObjects;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
-import com.cyecize.summer.areas.scanning.services.DependencyContainerImpl;
+import com.cyecize.summer.areas.scanning.services.PostConstructInvokingService;
+import com.cyecize.summer.areas.scanning.services.PostConstructInvokingServiceImpl;
 import com.cyecize.summer.areas.security.interfaces.UserDetails;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
@@ -40,6 +43,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private TemplateRenderingTwigService renderingService;
 
     protected DependencyContainer dependencyContainer;
+
+    private ScannedObjects scannedObjects;
 
     protected String workingDir;
 
@@ -114,6 +119,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
             this.whitePageException(this.dependencyContainer.getObject(HttpSoletResponse.class), ex);
             return;
         }
+
         this.methodResultHandler.handleActionResult(exResult);
     }
 
@@ -152,51 +158,69 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         ex.printStackTrace();
     }
 
-    @SuppressWarnings("unchecked")
-    private void initApplication(SoletConfig soletConfig) {
-        this.workingDir = (String) soletConfig.getAttribute(SOLET_CFG_WORKING_DIR);
-        Map<String, Set<Object>> components = (Map<String, Set<Object>>) soletConfig.getAttribute(SOLET_CFG_COMPONENTS);
+    /**
+     * Adds scanned objects to the solet config attributes.
+     * Calls @PostConstruct annotated methods for services/components/controllers.
+     *
+     * @param soletConfig config received from broccolina
+     */
+    @Override
+    public final void init(SoletConfig soletConfig) {
+        super.init(soletConfig);
+        dependencyContainer.addServices(Collections.singleton(soletConfig));
 
-        this.dependencyContainer.addServices(Set.of(soletConfig));
+        this.getSoletConfig().setAttribute(SOLET_CFG_SCANNED_OBJECTS, this.scannedObjects);
+        this.getSoletConfig().setAttribute(SOLET_CFG_ASSETS_DIR, this.assetsFolder);
+
+        try {
+            PostConstructInvokingService postConstructInvokingService = new PostConstructInvokingServiceImpl();
+
+            postConstructInvokingService.invokePostConstructMethod(this.scannedObjects.getLoadedServicesAndObjects());
+            postConstructInvokingService.invokePostConstructMethod(this.scannedObjects.getLoadedControllers().values());
+            for (Set<Object> components : this.scannedObjects.getLoadedComponents().values()) {
+                postConstructInvokingService.invokePostConstructMethod(components);
+            }
+
+        } catch (PostConstructException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        this.onApplicationLoaded();
+    }
+
+    /**
+     * Creates main services for the framework to function.
+     *
+     * @param scannedObjects objects received from the scanning process
+     */
+    final void initSummerBoot(ScannedObjects scannedObjects) {
+        this.scannedObjects = scannedObjects;
+        this.workingDir = scannedObjects.getWorkingDir();
+
+        Map<String, Set<Object>> components = scannedObjects.getLoadedComponents();
 
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                 this.dependencyContainer,
                 new ObjectBindingServiceImpl(this.dependencyContainer, components.get(COMPONENT_MAP_DATA_ADAPTERS)),
-                new ObjectValidationServiceImpl(components.get(COMPONENT_MAP_VALIDATORS), dependencyContainer),
-                (Map<String, Set<ActionMethod>>) soletConfig.getAttribute(SOLET_CFG_LOADED_ACTIONS),
-                (Map<Class<?>, Object>) soletConfig.getAttribute(SOLET_CFG_LOADED_CONTROLLERS));
+                new ObjectValidationServiceImpl(components.get(COMPONENT_MAP_VALIDATORS), this.dependencyContainer),
+                scannedObjects.getActionsByMethod(),
+                scannedObjects.getLoadedControllers());
 
         this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
-        this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
+        this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, this.renderingService);
 
         this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
     }
 
-    //override these methods and make them final to prevent the app from overriding and breaking the code.
-    @Override
-    public final void init(SoletConfig soletConfig) {
-        if (soletConfig.getAttribute(SOLET_CFG_WORKING_DIR) != null) {
-            this.initApplication(soletConfig);
-            super.init(soletConfig);
+    /**
+     * This method will be called once the application has fully been loaded.
+     * It can be overridden to achieve event-like effect.
+     */
+    protected void onApplicationLoaded() {
 
-            //set the field to false so broccolina can init the app with additional parameters
-            try {
-                Field isInitialized = BaseHttpSolet.class.getDeclaredField("isInitialized");
-                isInitialized.setAccessible(true);
-                isInitialized.set(this, false);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
-
-            return;
-        }
-
-        if (this.getSoletConfig() != null) {
-            soletConfig.getAllAttributes().forEach(super.getSoletConfig()::setAttribute);
-        } else {
-            super.init(soletConfig);
-        }
     }
+
+    //override these methods and make them final to prevent the app from overriding and breaking the code.
 
     @Override
     protected final void doGet(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
@@ -241,6 +265,5 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public void setAssetsFolder(String dir) {
         super.setAssetsFolder(dir);
-        this.getSoletConfig().setAttribute(SOLET_CFG_ASSETS_DIR, dir);
     }
 }

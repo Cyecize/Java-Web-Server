@@ -10,5 +10,5 @@ public interface ComponentInstantiatingService {
 
     Set<Class<?>> findClassesByAnnotation(Class<? extends Annotation> annotation);
 
-    Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException, PostConstructException;
+    Set<Object> instantiateClasses(Set<Class<?>> componentClasses) throws ComponentInstantiationException;
 }

@@ -61,14 +61,14 @@ public class MultipartMemoryFile implements MemoryFile {
 
     @Override
     public byte[] getBytes() {
-        try {
-            InputStream inputStream = this.getInputStream();
+        try (InputStream inputStream = this.getInputStream()) {
             if (inputStream != null) {
                 return inputStream.readAllBytes();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
         return null;
     }
 }

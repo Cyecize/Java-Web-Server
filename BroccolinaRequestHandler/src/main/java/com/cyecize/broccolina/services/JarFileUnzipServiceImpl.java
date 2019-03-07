@@ -15,59 +15,54 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
     @Override
     public void unzipJar(File jarFile) throws IOException {
-        this.unzipJar(jarFile, true, jarFile.getCanonicalPath().replace(".jar", ""));
+        this.unzipJar(jarFile, false, jarFile.getCanonicalPath().replace(".jar", ""));
     }
 
     @Override
     public void unzipJar(File jarFile, boolean overwriteExistingFiles, String outputDirectory) throws IOException {
         String rootCanonicalPath = jarFile.getCanonicalPath();
 
-        JarFile fileAsJarArchive = new JarFile(rootCanonicalPath);
+        try (JarFile fileAsJarArchive = new JarFile(rootCanonicalPath)) {
+            Enumeration<JarEntry> jarEntries = fileAsJarArchive.entries();
 
-        Enumeration<JarEntry> jarEntries = fileAsJarArchive.entries();
+            File jarFolder = new File(outputDirectory);
 
-        File jarFolder = new File(outputDirectory);
-
-        if (jarFolder.exists() && jarFolder.isDirectory() && overwriteExistingFiles) {
-            this.deleteFolder(jarFolder);
-        }
-
-        if (!jarFolder.exists()) {
-            jarFolder.mkdir();
-        }
-
-        while (jarEntries.hasMoreElements()) {
-            JarEntry currentEntry = jarEntries.nextElement();
-
-            String currentEntryCanonicalPath = jarFolder.getCanonicalPath() + File.separator + currentEntry.getName();
-            File currentEntryAsFile = new File(currentEntryCanonicalPath);
-
-            if (currentEntry.isDirectory()) {
-                currentEntryAsFile.mkdir();
-                continue;
+            if (jarFolder.exists() && jarFolder.isDirectory() && overwriteExistingFiles) {
+                this.deleteFolder(jarFolder);
             }
 
-            InputStream in = new BufferedInputStream(fileAsJarArchive.getInputStream(currentEntry));
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(currentEntryAsFile));
-
-            //Declare the input stream here so I can close it later.
-//            InputStream outputFileInputStream = null;
-//            if (currentEntryAsFile.exists()) {
-//                outputFileInputStream = new FileInputStream(currentEntryAsFile);
-//            }
-
-            //TODO: profide fix for checking if files are the same.
-            if (overwriteExistingFiles || !currentEntryAsFile.exists() /*|| (currentEntryAsFile.exists() && !FileUtils.filesMatch(in, outputFileInputStream))*/) {
-               // outputFileInputStream.close();
-                in.transferTo(out);
+            if (!jarFolder.exists()) {
+                jarFolder.mkdir();
             }
 
-            out.flush();
-            out.close();
-            in.close();
-        }
+            while (jarEntries.hasMoreElements()) {
+                JarEntry currentEntry = jarEntries.nextElement();
 
-        fileAsJarArchive.close();
+                String currentEntryCanonicalPath = jarFolder.getCanonicalPath() + File.separator + currentEntry.getName();
+                File currentEntryAsFile = new File(currentEntryCanonicalPath);
+
+                if (currentEntry.isDirectory()) {
+                    currentEntryAsFile.mkdir();
+                    continue;
+                }
+
+                if (currentEntryAsFile.exists()) {
+                    try (InputStream existingFileInputStream = new FileInputStream(currentEntryAsFile)) {
+                        try (InputStream jarFileInputStream1 = fileAsJarArchive.getInputStream(currentEntry)) {
+                            if (FileUtils.filesMatch(jarFileInputStream1, existingFileInputStream)) {
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                try (OutputStream fileOutputStream = new FileOutputStream(currentEntryAsFile)) {
+                    try (InputStream jarEntryInputStream = fileAsJarArchive.getInputStream(currentEntry)) {
+                        jarEntryInputStream.transferTo(fileOutputStream);
+                    }
+                }
+            }
+        }
     }
 
     /**

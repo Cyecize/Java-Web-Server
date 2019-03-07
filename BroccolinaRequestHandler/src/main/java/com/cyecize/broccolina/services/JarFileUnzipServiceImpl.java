@@ -15,7 +15,12 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
     @Override
     public void unzipJar(File jarFile) throws IOException {
-        this.unzipJar(jarFile, false, jarFile.getCanonicalPath().replace(".jar", ""));
+        this.unzipJar(jarFile, false);
+    }
+
+    @Override
+    public void unzipJar(File jarFile, boolean overwriteExistingFiles) throws IOException {
+        this.unzipJar(jarFile, overwriteExistingFiles, jarFile.getCanonicalPath().replace(".jar", ""));
     }
 
     @Override

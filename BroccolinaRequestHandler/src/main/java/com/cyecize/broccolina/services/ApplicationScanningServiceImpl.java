@@ -62,7 +62,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
             List<File> allJarFiles = Arrays.stream(applicationsFolder.listFiles()).filter(this::isJarFile).collect(Collectors.toList());
             for (File applicationJarFile : allJarFiles) {
-                this.jarFileUnzipService.unzipJar(applicationJarFile);
+                this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
 
                 String appName = applicationJarFile.getName().replace(".jar", "");
                 this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), appName);

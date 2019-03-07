@@ -18,4 +18,6 @@ public class ConfigConstants {
     public static final String MAIN_APP_JAR_NAME = "MAIN_APP_JAR_NAME";
 
     public static final String APPLICATION_DEPENDENCIES_FOLDER_NAME = "APPLICATION_DEPENDENCIES_FOLDER_NAME";
+
+    public static final String BROCCOLINA_FORCE_OVERWRITE_FILES = "BROCCOLINA_FORCE_OVERWRITE_FILES";
 }

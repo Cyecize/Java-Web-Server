@@ -86,11 +86,13 @@ public class FileCachingServiceImpl implements FileCachingService {
     }
 
     private void registerFileAccess(String fileRoute) {
-        if (!this.fileFrequencyAccess.containsKey(fileRoute)) {
-            this.fileFrequencyAccess.put(fileRoute, new FrequencyCounter());
+        FrequencyCounter frequencyCounter = this.fileFrequencyAccess.get(fileRoute);
+        if (frequencyCounter == null) {
+            frequencyCounter = new FrequencyCounter();
+            this.fileFrequencyAccess.put(fileRoute, frequencyCounter);
         }
 
-        this.fileFrequencyAccess.get(fileRoute).count();
+        frequencyCounter.count();
     }
 
     private long getFileAccessesCount(String fileRoute) {
@@ -111,7 +113,7 @@ public class FileCachingServiceImpl implements FileCachingService {
                     return (fileAccessesCount > currentFileAccessesCount && Math.abs(fileAccessesCount - currentFileAccessesCount) > 10) ||
                             (fileSize > currentFileSize && Math.abs(fileSize - currentFileSize) > 100000);
 
-                }).max(Comparator.comparingLong(f -> f.getValue().getLastTimeAccessed())).orElse(null);
+                }).min(Comparator.comparingLong(f -> f.getValue().getLastTimeAccessed())).orElse(null);
 
         if (stringCachedFileEntry == null) {
             return null;

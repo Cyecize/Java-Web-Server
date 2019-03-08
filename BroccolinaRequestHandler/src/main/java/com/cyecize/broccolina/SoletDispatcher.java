@@ -37,6 +37,8 @@ public class SoletDispatcher implements RequestHandler {
 
     private boolean showRequestContent;
 
+    private boolean trackResources;
+
     private SessionManagementService sessionManagementService;
 
     private Map<String, HttpSolet> soletMap;
@@ -70,6 +72,7 @@ public class SoletDispatcher implements RequestHandler {
         this.currentRequestAppName = "";
         this.initTempDir();
         this.showRequestContent = configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class);
+        this.trackResources = configService.getConfigParam(ConfigConstants.BROCCOLINA_TRACK_RESOURCES, boolean.class);
     }
 
     /**
@@ -105,7 +108,7 @@ public class SoletDispatcher implements RequestHandler {
 
             this.sessionManagementService.initSessionIfExistent(request);
             HttpSolet solet = this.findSoletCandidate(request);
-            if (solet == null /*|| request.isResource()*/) {
+            if (solet == null || (request.isResource() && !this.trackResources)) {
                 this.hasIntercepted = false;
                 return;
             }

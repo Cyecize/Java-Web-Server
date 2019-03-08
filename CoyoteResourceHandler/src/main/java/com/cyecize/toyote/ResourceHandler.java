@@ -5,8 +5,11 @@ import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.io.Writer;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.toyote.models.CachedFile;
 import com.cyecize.toyote.services.AppNameCollector;
 import com.cyecize.toyote.services.AppNameCollectorImpl;
+import com.cyecize.toyote.services.FileCachingService;
+import com.cyecize.toyote.services.FileCachingServiceImpl;
 
 import java.io.*;
 import java.net.SocketException;
@@ -25,6 +28,8 @@ public class ResourceHandler implements RequestHandler {
     private final String serverRootFolderPath;
 
     private final JavacheConfigService configService;
+
+    private final FileCachingService cachingService;
 
     private boolean hasIntercepted;
 
@@ -51,6 +56,7 @@ public class ResourceHandler implements RequestHandler {
         this.hasIntercepted = false;
         this.initDirectories();
         this.applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
+        this.cachingService = new FileCachingServiceImpl(configService);
         System.out.println("Loaded Toyote");
     }
 
@@ -80,23 +86,72 @@ public class ResourceHandler implements RequestHandler {
         response.setContent(String.format(RESOURCE_NOT_FOUND_MESSAGE, resourceName));
     }
 
+    private void resolveCacheType(HttpResponse response, String contentType, String resourceName) {
+        String finalCacheHeader = "";
+        if (contentType == null) {
+            return;
+        }
+
+        //TODO: add service for handling cache-control header.
+        switch (contentType) {
+            case "text/plain":
+                if (resourceName.endsWith(".js")) {
+                    finalCacheHeader = "max-age=60";
+                }
+
+                break;
+            case "text/css":
+                finalCacheHeader = "max-age=120";
+                break;
+            case "image/x-icon":
+                finalCacheHeader = "max-age=180";
+                break;
+            default:
+                finalCacheHeader = "no-cache";
+                break;
+        }
+
+        response.addHeader("Cache-Control", finalCacheHeader);
+    }
+
+    /**
+     * Handles resource found response.
+     */
+    private void found(HttpResponse response, String contentType, byte[] resourceContent, String resourceName) {
+        response.setStatusCode(HttpStatus.OK);
+
+        response.addHeader("Content-Type", contentType);
+        response.addHeader("Content-Length", resourceContent.length + "");
+        response.addHeader("Content-Disposition", "inline");
+        this.resolveCacheType(response, contentType, resourceName);
+
+        response.setContent(resourceContent);
+    }
+
     /**
      * Tries to read a file and set its content to the HttpResponse.
      * If exception is thrown, handle resource not found.
      */
-    private boolean handleResourceRequest(String resourcesFolder, String resourceName, HttpResponse response) {
+    private boolean handleResourceRequest(String resourcesFolder, String resourceName, HttpRequest request, HttpResponse response) throws FileNotFoundException {
+
+        if (this.cachingService.hasCachedFile(resourceName)) {
+            CachedFile cachedFile = this.cachingService.getCachedFile(resourceName);
+            this.found(response, cachedFile.getContentType(), cachedFile.getFileContent(), resourceName);
+            return true;
+        }
+
         try {
             File file = new File(resourcesFolder + File.separator + resourceName);
             Path resourcePath = Paths.get(new URL("file:/" + file.getCanonicalPath()).toURI());
             byte[] resourceContent = this.readAllBytes(file);
+            String contentType = Files.probeContentType(resourcePath);
+            if (request.getHeaders().containsKey("Content-Type")) {
+                contentType = request.getHeaders().get("Content-Type");
+            }
 
-            response.setStatusCode(HttpStatus.OK);
+            this.cachingService.cacheFile(resourceName, resourceContent, contentType);
+            this.found(response, contentType, resourceContent, resourceName);
 
-            response.addHeader("Content-Type", Files.probeContentType(resourcePath));
-            response.addHeader("Content-Length", resourceContent.length + "");
-            response.addHeader("Content-Disposition", "inline");
-
-            response.setContent(resourceContent);
             return true;
         } catch (IOException | URISyntaxException e) {
             this.notFound(resourceName, response);
@@ -124,11 +179,11 @@ public class ResourceHandler implements RequestHandler {
                     + File.separator
                     + this.classesDirName;
 
-            if (!this.handleResourceRequest(resourcesFolder, resourceName, response)) {
+            if (!this.handleResourceRequest(resourcesFolder, resourceName, request, response)) {
                 resourcesFolder = this.serverRootFolderPath
                         + this.assetsDirName
                         + applicationName;
-                this.handleResourceRequest(resourcesFolder, resourceName, response);
+                this.handleResourceRequest(resourcesFolder, resourceName, request, response);
             }
 
             new Writer().writeBytes(response.getBytes(), outputStream);

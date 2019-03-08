@@ -85,6 +85,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, "lib");
         this.configParameters.put(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, true);
         this.configParameters.put(ConfigConstants.BROCCOLINA_TRACK_RESOURCES, true);
+        this.configParameters.put(ConfigConstants.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, 50);
+        this.configParameters.put(ConfigConstants.TOYOYE_CACHED_FILE_MAX_SIZE, 1000000);
     }
 
     /**

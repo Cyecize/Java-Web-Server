@@ -22,4 +22,8 @@ public class ConfigConstants {
     public static final String BROCCOLINA_FORCE_OVERWRITE_FILES = "BROCCOLINA_FORCE_OVERWRITE_FILES";
 
     public static final String BROCCOLINA_TRACK_RESOURCES = "BROCCOLINA_TRACK_RESOURCES";
+
+    public static final String TOYOTE_MAX_NUMBER_OF_CACHED_FILES = "TOYOTE_MAX_NUMBER_OF_CACHED_FILES";
+
+    public static final String TOYOYE_CACHED_FILE_MAX_SIZE = "TOYOYE_CACHED_FILE_MAX_SIZE";
 }

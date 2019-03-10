@@ -9,15 +9,11 @@ import com.cyecize.toyote.services.AppNameCollector;
 import com.cyecize.toyote.services.AppNameCollectorImpl;
 import com.cyecize.toyote.services.FileCachingService;
 import com.cyecize.toyote.services.FileCachingServiceImpl;
+import org.apache.tika.Tika;
 
 import java.io.*;
 import java.net.SocketException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 public class ResourceHandler implements RequestHandler {
@@ -29,6 +25,8 @@ public class ResourceHandler implements RequestHandler {
     private final JavacheConfigService configService;
 
     private final FileCachingService cachingService;
+
+    private final Tika tika;
 
     private boolean hasIntercepted;
 
@@ -52,6 +50,7 @@ public class ResourceHandler implements RequestHandler {
         this.serverRootFolderPath = serverRootFolderPath;
         this.configService = configService;
         this.cachingService = new FileCachingServiceImpl(configService);
+        this.tika = new Tika();
         this.applicationNames = appNameCollector.getApplicationNames(this.serverRootFolderPath);
 
         this.initDirectories();
@@ -87,16 +86,10 @@ public class ResourceHandler implements RequestHandler {
     }
 
     private void writeFile(InputStream fileInputStream, OutputStream outputStream) throws IOException {
-        int available = fileInputStream.available();
-        byte[] buffer = new byte[2048];
-
-        while (available > 0) {
-            available = fileInputStream.read(buffer);
-            outputStream.write(buffer);
-        }
+        fileInputStream.transferTo(outputStream);
     }
 
-    private void resolveCacheType(HttpResponse response, String contentType, String resourceName) {
+    private void resolveCacheType(HttpResponse response, String contentType) {
         String finalCacheHeader = "";
         if (contentType == null) {
             return;
@@ -104,16 +97,15 @@ public class ResourceHandler implements RequestHandler {
 
         //TODO: add service for handling cache-control header.
         switch (contentType) {
-            case "text/plain":
-                if (resourceName.endsWith(".js")) {
-                    finalCacheHeader = "max-age=60";
-                }
-
-                break;
             case "text/css":
+            case "application/octet-stream":
                 finalCacheHeader = "max-age=120";
                 break;
+            case "application/javascript":
+                finalCacheHeader = "max-age=60";
+                break;
             case "image/x-icon":
+            case "image/vnd.microsoft.icon":
                 finalCacheHeader = "max-age=180";
                 break;
             default:
@@ -124,29 +116,28 @@ public class ResourceHandler implements RequestHandler {
         response.addHeader("Cache-Control", finalCacheHeader);
     }
 
-    private void found(HttpResponse response, String contentType, long contentLength, String resourceName) {
+    private void found(HttpResponse response, String contentType, long contentLength) {
         response.setStatusCode(HttpStatus.OK);
 
         response.addHeader("Content-Type", contentType);
         response.addHeader("Content-Length", contentLength + "");
         response.addHeader("Content-Disposition", "inline");
-        this.resolveCacheType(response, contentType, resourceName);
+        this.resolveCacheType(response, contentType);
     }
 
     /**
      * Tries to read a file and set its content to the HttpResponse.
      * If exception is thrown, handle resource not found.
      */
-    private boolean handleResourceRequest(String resourcesFolder, String resourceName, OutputStream outputStream, HttpResponse response) {
+    private boolean handleResourceRequest(String resourcesFolder, String resourceName, OutputStream outputStream, HttpResponse response) throws IOException {
 
         try {
             File file = new File(resourcesFolder + File.separator + resourceName);
 
-            Path resourcePath = Paths.get(new URL("file:/" + file.getCanonicalPath()).toURI());
-            String contentType = Files.probeContentType(resourcePath);
+            String contentType = this.tika.detect(file);
 
             try (InputStream fileInputStream = new FileInputStream(file)) {
-                this.found(response, contentType, fileInputStream.available(), resourceName);
+                this.found(response, contentType, fileInputStream.available());
                 byte[] fileContent = null;
 
                 if (this.cachingService.canCache(resourceName, fileInputStream.available())) {
@@ -163,8 +154,7 @@ public class ResourceHandler implements RequestHandler {
             }
 
             return true;
-        } catch (IOException | URISyntaxException e) {
-            this.notFound(resourceName, response);
+        } catch (IOException ignored) {
             return false;
         }
     }
@@ -175,8 +165,8 @@ public class ResourceHandler implements RequestHandler {
      * Writes the response content.
      */
     @Override
-    public void handleRequest(byte[] inputStream, OutputStream outputStream) {
-        HttpRequest request = new HttpRequestImpl(new String(inputStream, StandardCharsets.UTF_8));
+    public void handleRequest(byte[] bytes, OutputStream outputStream) {
+        HttpRequest request = new HttpRequestImpl(new String(bytes, StandardCharsets.UTF_8));
         HttpResponse response = new HttpResponseImpl();
 
         try {
@@ -185,7 +175,7 @@ public class ResourceHandler implements RequestHandler {
 
             if (this.cachingService.hasCachedFile(resourceName)) {
                 CachedFile cachedFile = this.cachingService.getCachedFile(resourceName);
-                this.found(response, cachedFile.getContentType(), cachedFile.getFileContent().length, resourceName);
+                this.found(response, cachedFile.getContentType(), cachedFile.getFileContent().length);
                 outputStream.write(response.getBytes());
                 this.writeFile(cachedFile.getFileContent(), outputStream);
             } else {
@@ -193,7 +183,10 @@ public class ResourceHandler implements RequestHandler {
                 //If the resource is not present in the webapps folder, check in the assets folder.
                 if (!this.handleResourceRequest(resourcesFolder, resourceName, outputStream, response)) {
                     resourcesFolder = this.serverRootFolderPath + this.assetsDirName + applicationName;
-                    this.handleResourceRequest(resourcesFolder, resourceName, outputStream, response);
+                    if (!this.handleResourceRequest(resourcesFolder, resourceName, outputStream, response)) {
+                        this.notFound(resourceName, response);
+                        outputStream.write(response.getBytes());
+                    }
                 }
             }
 
@@ -209,6 +202,7 @@ public class ResourceHandler implements RequestHandler {
         } finally {
             response = null;
             request = null;
+            bytes = null;
         }
     }
 

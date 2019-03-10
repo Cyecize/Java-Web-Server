@@ -103,6 +103,8 @@ public class SoletDispatcher implements RequestHandler {
                 request = new HttpSoletRequestImpl(requestContent, bytes, temporaryStorageService);
             } catch (Exception ex) { //assume the exception is due to parse error
                 throw new RequestReadException(String.format(REQUEST_READ_EXCEPTION_FORMAT, showRequestContent), ex);
+            } finally {
+                requestContent = null;
             }
 
 
@@ -133,6 +135,7 @@ public class SoletDispatcher implements RequestHandler {
             temporaryStorageService.removeTemporaryFiles();
             response = null;
             request = null;
+            bytes = null;
         }
     }
 
@@ -161,6 +164,7 @@ public class SoletDispatcher implements RequestHandler {
             System.out.println(requestContent);
         }
 
+        bytes = null;
         return requestContent;
     }
 

@@ -46,6 +46,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
         try {
             this.processClientConnection();
             this.clientSocketInputStream.close();
+            this.clientSocketOutputStream.flush();
             this.clientSocketOutputStream.close();
             this.clientSocket.close();
             this.cachingService.evictCache();
@@ -66,6 +67,11 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 
             this.loggingService.error(e.getMessage());
             e.printStackTrace();
+        } finally {
+            this.clientSocketInputStream = null;
+            this.clientSocketOutputStream = null;
+            this.clientSocket = null;
+            this.cachingService = null;
         }
     }
 

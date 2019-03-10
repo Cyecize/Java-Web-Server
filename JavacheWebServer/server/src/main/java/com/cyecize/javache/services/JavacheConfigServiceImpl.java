@@ -83,6 +83,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, "classes");
         this.configParameters.put(ConfigConstants.MAIN_APP_JAR_NAME, "ROOT");
         this.configParameters.put(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, "lib");
+        this.configParameters.put(ConfigConstants.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, false);
         this.configParameters.put(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, true);
         this.configParameters.put(ConfigConstants.BROCCOLINA_TRACK_RESOURCES, true);
         this.configParameters.put(ConfigConstants.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, 50);

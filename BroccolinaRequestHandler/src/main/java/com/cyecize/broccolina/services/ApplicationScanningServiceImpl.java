@@ -7,10 +7,10 @@ import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +32,8 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private String applicationLibFolderName;
 
+    private boolean skipExtractingAppsWithExistingFolder;
+
     public ApplicationScanningServiceImpl(String workingDir, JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
         this.workingDir = workingDir;
         this.jarFileUnzipService = jarFileUnzipService;
@@ -39,7 +41,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
         this.applicationNames = new ArrayList<>();
         this.soletClasses = new HashMap<>();
-        this.initDirectories();
+        this.initConfig();
     }
 
     @Override
@@ -62,10 +64,14 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
             List<File> allJarFiles = Arrays.stream(applicationsFolder.listFiles()).filter(this::isJarFile).collect(Collectors.toList());
             for (File applicationJarFile : allJarFiles) {
-                this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
-
                 String appName = applicationJarFile.getName().replace(".jar", "");
-                this.loadApplicationFromFolder(applicationJarFile.getCanonicalPath().replace(".jar", File.separator), appName);
+                String extractedJarFolderName = applicationJarFile.getCanonicalPath().replace(".jar", File.separator);
+
+                if (!this.skipExtractingAppsWithExistingFolder || !Files.exists(Paths.get(extractedJarFolderName))) {
+                    this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
+                }
+
+                this.loadApplicationFromFolder(extractedJarFolderName, appName);
             }
         }
 
@@ -191,11 +197,13 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     }
 
     /**
-     * Initializes directory values
+     * Initializes configuration values
      */
-    private void initDirectories() {
+    private void initConfig() {
         this.compileOutputFolderName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
         this.applicationsFolderPath = this.workingDir + this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
         this.applicationLibFolderName = this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
+
+        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(ConfigConstants.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, Boolean.class);
     }
 }

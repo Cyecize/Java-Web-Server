@@ -8,6 +8,8 @@ public interface FileCachingService {
 
     void clearCache();
 
+    boolean canCache(String fileRoute, long fileLength);
+
     boolean cacheFile(String fileRoute, byte[] fileContent, String contentType);
 
     boolean hasCachedFile(String fileRoute);

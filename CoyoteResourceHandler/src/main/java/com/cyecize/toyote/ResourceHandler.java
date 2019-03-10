@@ -3,7 +3,6 @@ package com.cyecize.toyote;
 import com.cyecize.http.*;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
-import com.cyecize.javache.io.Writer;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.models.CachedFile;
 import com.cyecize.toyote.services.AppNameCollector;
@@ -33,8 +32,6 @@ public class ResourceHandler implements RequestHandler {
 
     private boolean hasIntercepted;
 
-    private AppNameCollector appNameCollector;
-
     private List<String> applicationNames;
 
     private String webappsDirName;
@@ -50,13 +47,15 @@ public class ResourceHandler implements RequestHandler {
     }
 
     public ResourceHandler(String serverRootFolderPath, AppNameCollector appNameCollector, JavacheConfigService configService) {
-        this.serverRootFolderPath = serverRootFolderPath;
-        this.appNameCollector = appNameCollector;
-        this.configService = configService;
         this.hasIntercepted = false;
-        this.initDirectories();
-        this.applicationNames = this.appNameCollector.getApplicationNames(this.serverRootFolderPath);
+
+        this.serverRootFolderPath = serverRootFolderPath;
+        this.configService = configService;
         this.cachingService = new FileCachingServiceImpl(configService);
+        this.applicationNames = appNameCollector.getApplicationNames(this.serverRootFolderPath);
+
+        this.initDirectories();
+
         System.out.println("Loaded Toyote");
     }
 
@@ -77,13 +76,24 @@ public class ResourceHandler implements RequestHandler {
         return requestUrl.replace("/" + appName, "");
     }
 
-    /**
-     * Handles resource not found response.
-     */
     private void notFound(String resourceName, HttpResponse response) {
         response.setStatusCode(HttpStatus.NOT_FOUND);
         response.addHeader("Content-Type", "text/html");
         response.setContent(String.format(RESOURCE_NOT_FOUND_MESSAGE, resourceName));
+    }
+
+    private void writeFile(byte[] file, OutputStream outputStream) throws IOException {
+        outputStream.write(file);
+    }
+
+    private void writeFile(InputStream fileInputStream, OutputStream outputStream) throws IOException {
+        int available = fileInputStream.available();
+        byte[] buffer = new byte[2048];
+
+        while (available > 0) {
+            available = fileInputStream.read(buffer);
+            outputStream.write(buffer);
+        }
     }
 
     private void resolveCacheType(HttpResponse response, String contentType, String resourceName) {
@@ -114,43 +124,43 @@ public class ResourceHandler implements RequestHandler {
         response.addHeader("Cache-Control", finalCacheHeader);
     }
 
-    /**
-     * Handles resource found response.
-     */
-    private void found(HttpResponse response, String contentType, byte[] resourceContent, String resourceName) {
+    private void found(HttpResponse response, String contentType, long contentLength, String resourceName) {
         response.setStatusCode(HttpStatus.OK);
 
         response.addHeader("Content-Type", contentType);
-        response.addHeader("Content-Length", resourceContent.length + "");
+        response.addHeader("Content-Length", contentLength + "");
         response.addHeader("Content-Disposition", "inline");
         this.resolveCacheType(response, contentType, resourceName);
-
-        response.setContent(resourceContent);
     }
 
     /**
      * Tries to read a file and set its content to the HttpResponse.
      * If exception is thrown, handle resource not found.
      */
-    private boolean handleResourceRequest(String resourcesFolder, String resourceName, HttpRequest request, HttpResponse response) throws FileNotFoundException {
-
-        if (this.cachingService.hasCachedFile(resourceName)) {
-            CachedFile cachedFile = this.cachingService.getCachedFile(resourceName);
-            this.found(response, cachedFile.getContentType(), cachedFile.getFileContent(), resourceName);
-            return true;
-        }
+    private boolean handleResourceRequest(String resourcesFolder, String resourceName, OutputStream outputStream, HttpResponse response) {
 
         try {
             File file = new File(resourcesFolder + File.separator + resourceName);
-            Path resourcePath = Paths.get(new URL("file:/" + file.getCanonicalPath()).toURI());
-            byte[] resourceContent = this.readAllBytes(file);
-            String contentType = Files.probeContentType(resourcePath);
-            if (request.getHeaders().containsKey("Content-Type")) {
-                contentType = request.getHeaders().get("Content-Type");
-            }
 
-            this.cachingService.cacheFile(resourceName, resourceContent, contentType);
-            this.found(response, contentType, resourceContent, resourceName);
+            Path resourcePath = Paths.get(new URL("file:/" + file.getCanonicalPath()).toURI());
+            String contentType = Files.probeContentType(resourcePath);
+
+            try (InputStream fileInputStream = new FileInputStream(file)) {
+                this.found(response, contentType, fileInputStream.available(), resourceName);
+                byte[] fileContent = null;
+
+                if (this.cachingService.canCache(resourceName, fileInputStream.available())) {
+                    fileContent = fileInputStream.readAllBytes();
+                    this.cachingService.cacheFile(resourceName, fileContent, contentType);
+                }
+
+                outputStream.write(response.getBytes());
+                if (fileContent != null) {
+                    this.writeFile(fileContent, outputStream);
+                } else {
+                    this.writeFile(fileInputStream, outputStream);
+                }
+            }
 
             return true;
         } catch (IOException | URISyntaxException e) {
@@ -166,29 +176,27 @@ public class ResourceHandler implements RequestHandler {
      */
     @Override
     public void handleRequest(byte[] inputStream, OutputStream outputStream) {
-        try {
-            HttpRequest request = new HttpRequestImpl(new String(inputStream, StandardCharsets.UTF_8));
-            HttpResponse response = new HttpResponseImpl();
+        HttpRequest request = new HttpRequestImpl(new String(inputStream, StandardCharsets.UTF_8));
+        HttpResponse response = new HttpResponseImpl();
 
+        try {
             String applicationName = this.getApplicationName(request.getRequestURL());
             String resourceName = this.getResourceName(request.getRequestURL(), applicationName);
 
-            String resourcesFolder = this.serverRootFolderPath
-                    + this.webappsDirName
-                    + applicationName
-                    + File.separator
-                    + this.classesDirName;
-
-            if (!this.handleResourceRequest(resourcesFolder, resourceName, request, response)) {
-                resourcesFolder = this.serverRootFolderPath
-                        + this.assetsDirName
-                        + applicationName;
-                this.handleResourceRequest(resourcesFolder, resourceName, request, response);
+            if (this.cachingService.hasCachedFile(resourceName)) {
+                CachedFile cachedFile = this.cachingService.getCachedFile(resourceName);
+                this.found(response, cachedFile.getContentType(), cachedFile.getFileContent().length, resourceName);
+                outputStream.write(response.getBytes());
+                this.writeFile(cachedFile.getFileContent(), outputStream);
+            } else {
+                String resourcesFolder = this.serverRootFolderPath + this.webappsDirName + applicationName + File.separator + this.classesDirName;
+                //If the resource is not present in the webapps folder, check in the assets folder.
+                if (!this.handleResourceRequest(resourcesFolder, resourceName, outputStream, response)) {
+                    resourcesFolder = this.serverRootFolderPath + this.assetsDirName + applicationName;
+                    this.handleResourceRequest(resourcesFolder, resourceName, outputStream, response);
+                }
             }
 
-            new Writer().writeBytes(response.getBytes(), outputStream);
-            response = null;
-            request = null;
             this.hasIntercepted = true;
         } catch (IOException e) {
             this.hasIntercepted = false;
@@ -198,21 +206,15 @@ public class ResourceHandler implements RequestHandler {
             }
 
             e.printStackTrace();
+        } finally {
+            response = null;
+            request = null;
         }
     }
 
     @Override
     public boolean hasIntercepted() {
         return this.hasIntercepted;
-    }
-
-    /**
-     * Reads file bytes.
-     */
-    private byte[] readAllBytes(File file) throws IOException {
-        try (FileInputStream in = new FileInputStream(file)) {
-            return in.readAllBytes();
-        }
     }
 
     private void initDirectories() {

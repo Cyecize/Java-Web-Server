@@ -13,8 +13,6 @@ import java.util.Map;
 
 public class FileCachingServiceImpl implements FileCachingService {
 
-    private final JavacheConfigService configService;
-
     private Map<String, CachedFile> cache;
 
     private Map<String, FrequencyCounter> fileFrequencyAccess;
@@ -24,7 +22,6 @@ public class FileCachingServiceImpl implements FileCachingService {
     private long maxCachedFileSize;
 
     public FileCachingServiceImpl(JavacheConfigService configService) {
-        this.configService = configService;
         this.cache = new HashMap<>();
         this.fileFrequencyAccess = new HashMap<>();
 
@@ -38,8 +35,21 @@ public class FileCachingServiceImpl implements FileCachingService {
     }
 
     @Override
+    public boolean canCache(String fileRoute, long fileLength) {
+        if (fileLength > this.maxCachedFileSize) {
+            return false;
+        }
+
+        if (this.cache.size() <= this.maximumAllowedFilesInCache) {
+            return true;
+        }
+
+        return this.findFileCandidateForReplacement(this.getFileAccessesCount(fileRoute), fileLength) != null;
+    }
+
+    @Override
     public boolean cacheFile(String fileRoute, byte[] fileContent, String contentType) {
-        if (fileContent.length > this.maxCachedFileSize) {
+        if (!this.canCache(fileRoute, fileContent.length)) {
             return false;
         }
 
@@ -50,16 +60,11 @@ public class FileCachingServiceImpl implements FileCachingService {
             return true;
         }
 
-        long fileAccessesCount = this.getFileAccessesCount(fileRoute);
+        String fileCandidateForReplacement = this.findFileCandidateForReplacement(this.getFileAccessesCount(fileRoute), fileContent.length);
+        this.removeFile(fileCandidateForReplacement);
+        this.cache.put(fileRoute, new CachedFile(new Date().getTime(), fileContent, contentType));
 
-        String candidateForReplacement = this.findFileCandidateForReplacement(fileAccessesCount, fileContent.length);
-        if (candidateForReplacement != null) {
-            this.removeFile(candidateForReplacement);
-            this.cache.put(fileRoute, new CachedFile(new Date().getTime(), fileContent, contentType));
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     @Override
@@ -81,7 +86,6 @@ public class FileCachingServiceImpl implements FileCachingService {
 
         CachedFile cachedFile = this.cache.get(fileRoute);
         this.updateCachedFile(cachedFile);
-
         return cachedFile;
     }
 

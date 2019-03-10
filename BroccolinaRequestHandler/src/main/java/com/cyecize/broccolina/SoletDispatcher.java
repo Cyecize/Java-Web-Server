@@ -5,7 +5,6 @@ import com.cyecize.http.HttpStatus;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.exceptions.RequestReadException;
-import com.cyecize.javache.io.Writer;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.*;
 import com.cyecize.solet.service.TemporaryStorageService;
@@ -94,8 +93,11 @@ public class SoletDispatcher implements RequestHandler {
     public void handleRequest(byte[] bytes, OutputStream outputStream) throws IOException {
         TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
 
+        HttpSoletRequest request;
+        HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
+
         try {
-            HttpSoletRequest request;
+
             String requestContent = this.extractRequestContent(bytes);
             try {
                 request = new HttpSoletRequestImpl(requestContent, bytes, temporaryStorageService);
@@ -103,7 +105,7 @@ public class SoletDispatcher implements RequestHandler {
                 throw new RequestReadException(String.format(REQUEST_READ_EXCEPTION_FORMAT, showRequestContent), ex);
             }
 
-            HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
+
             this.resolveCurrentRequestAppName(request);
 
             this.sessionManagementService.initSessionIfExistent(request);
@@ -124,12 +126,13 @@ public class SoletDispatcher implements RequestHandler {
 
             this.sessionManagementService.sendSessionIfExistent(request, response);
             this.sessionManagementService.clearInvalidSessions();
-            new Writer().writeData(response.getResponse(), response.getOutputStream());
-            response = null;
-            request = null;
+            response.getOutputStream().write(response.getBytes());
+
             this.hasIntercepted = true;
         } finally {
             temporaryStorageService.removeTemporaryFiles();
+            response = null;
+            request = null;
         }
     }
 

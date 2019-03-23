@@ -13,16 +13,15 @@ public class JsonResponse {
 
     public JsonResponse() {
         this.response = new HashMap<>();
-        this.status = HttpStatus.OK;
     }
 
     public JsonResponse(HttpStatus status) {
         this();
-        this.status = status;
+        this.setStatusCode(status);
     }
 
     public JsonResponse(HttpStatus status, Map<String, Object> response) {
-        this.status = status;
+        this.setStatusCode(status);
         this.response = response;
     }
 

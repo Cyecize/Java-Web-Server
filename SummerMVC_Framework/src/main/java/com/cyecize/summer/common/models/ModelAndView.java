@@ -15,7 +15,6 @@ public class ModelAndView {
     private Map<String, Object> attributes;
 
     public ModelAndView() {
-        this.status = HttpStatus.OK;
         this.attributes = new HashMap<>();
     }
 
@@ -26,7 +25,7 @@ public class ModelAndView {
 
     public ModelAndView(String viewName, HttpStatus status) {
         this(viewName);
-        this.status = status;
+        this.setStatus(status);
     }
 
     public ModelAndView(String viewName, Map<String, Object> attributes) {
@@ -36,7 +35,7 @@ public class ModelAndView {
 
     public ModelAndView(String viewName, HttpStatus status, Map<String, Object> attributes) {
         this.viewName = viewName;
-        this.status = status;
+        this.setStatus(status);
         this.attributes = attributes;
     }
 

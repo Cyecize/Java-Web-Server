@@ -1,5 +1,6 @@
 package com.cyecize.summer.areas.routing.services;
 
+import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
@@ -46,8 +47,14 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     @Override
     public void handleActionResult(ActionInvokeResult result) {
         this.response = this.dependencyContainer.getObject(HttpSoletResponse.class);
-        this.response.addHeader(CONTENT_TYPE_HEADER, result.getContentType());
+        if (!this.response.getHeaders().containsKey(CONTENT_TYPE_HEADER)) {
+            this.response.addHeader(CONTENT_TYPE_HEADER, result.getContentType());
+        }
+
         this.executeSuitableMethod(result);
+        if (this.response.getStatusCode() == null) {
+            this.response.setStatusCode(HttpStatus.OK);
+        }
     }
 
     /**
@@ -85,20 +92,26 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * In case of JsonResponse, Stringify the result and set the Content-Type to application/json
      */
     private void handleJsonResponse(JsonResponse result) {
-        this.response.setStatusCode(result.getStatusCode());
+        if (result.getStatusCode() != null) {
+            this.response.setStatusCode(result.getStatusCode());
+        }
+
         this.response.addHeader(CONTENT_TYPE_HEADER, "application/json");
         this.response.setContent(this.gson.toJson(result));
     }
 
     /**
      * In case of ModelAndView, Transfer all added parameters to the model,
-     * set the status code from the modelAndView,
+     * set the status code from the modelAndView if response is missing one,
      * adds the view parameter to the model and proceeds to call
      * handleModelResponse.
      */
     private void handleModelAndViewResponse(ModelAndView result) throws EmptyViewException, ViewNotFoundException {
         Model model = this.dependencyContainer.getObject(Model.class);
-        this.response.setStatusCode(result.getStatus());
+        if (result.getStatus() != null) {
+            this.response.setStatusCode(result.getStatus());
+        }
+
         result.getAttributes().forEach(model::addAttribute);
         model.addAttribute(MODEL_VIEW_NAME_KEY, result.getView());
         this.handleModelResponse(model);

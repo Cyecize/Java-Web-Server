@@ -13,16 +13,20 @@ import com.cyecize.javache.embedded.services.EmbeddedRequestHandlerLoadingServic
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.javache.services.LoggingServiceImpl;
+import com.cyecize.javache.services.RequestHandlerLoadingService;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class JavacheEmbedded {
 
     public static void startServer(int port, Class<?> mainClass) {
         startServer(port, new HashMap<>(), mainClass);
     }
+
+    public static RequestHandlerLoadingService requestHandlerLoadingService;
 
     /**
      * Replaces system classloader with an instance of URLClassLoader
@@ -35,8 +39,10 @@ public class JavacheEmbedded {
      * If if doesn't consider changing the properties.
      * <p>
      * Creates server instance and runs the server.
+     * <p>
+     * Calls event when application is loaded
      */
-    public static void startServer(int port, Map<String, Object> config, Class<?> mainClass) {
+    public static void startServer(int port, Map<String, Object> config, Class<?> mainClass, Runnable onServerLoadedEvent) {
         try {
             StartUp.replaceSystemClassLoader();
 
@@ -65,12 +71,21 @@ public class JavacheEmbedded {
 
             ApplicationScanningService scanningService = new EmbeddedApplicationScanningService(configService, workingDir);
 
-            Server server = new ServerImpl(port, loggingService, new EmbeddedRequestHandlerLoadingService(workingDir, configService, scanningService), configService);
-            server.run();
+            requestHandlerLoadingService = new EmbeddedRequestHandlerLoadingService(workingDir, configService, scanningService);
+            Server server = new ServerImpl(port, loggingService, requestHandlerLoadingService, configService);
 
+            if (onServerLoadedEvent != null) {
+                onServerLoadedEvent.run();
+            }
+
+            server.run();
         } catch (Exception ex) {
             ex.printStackTrace();
             System.exit(1);
         }
+    }
+
+    public static void startServer(int port, Map<String, Object> config, Class<?> mainClass) {
+        startServer(port, config, mainClass, null);
     }
 }

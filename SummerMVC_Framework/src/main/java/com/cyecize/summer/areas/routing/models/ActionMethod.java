@@ -8,19 +8,19 @@ import java.lang.reflect.Method;
 
 public class ActionMethod implements Comparable<ActionMethod> {
 
-    private String pattern;
+    private final String pattern;
 
-    private Method method;
+    private final Method method;
 
-    private String contentType;
+    private final String contentType;
 
-    private Class<?> controllerClass;
+    private final Class<?> controllerClass;
 
-    public ActionMethod(String pattern, Method method, Class<?> controllerClass) {
+    public ActionMethod(String pattern, Method method, String contentType, Class<?> controllerClass) {
         this.pattern = pattern;
         this.method = method;
+        this.contentType = contentType;
         this.controllerClass = controllerClass;
-        this.extractContentType();
     }
 
     public String getPattern() {
@@ -37,16 +37,6 @@ public class ActionMethod implements Comparable<ActionMethod> {
 
     public Class<?> getControllerClass() {
         return controllerClass;
-    }
-
-    private void extractContentType() {
-        if (this.method.isAnnotationPresent(GetMapping.class)) {
-            this.contentType = this.method.getAnnotation(GetMapping.class).produces();
-        } else if (this.method.isAnnotationPresent(PostMapping.class)) {
-            this.contentType = this.method.getAnnotation(PostMapping.class).produces();
-        } else if (this.getMethod().isAnnotationPresent(ExceptionListener.class)) {
-            this.contentType = this.method.getAnnotation(ExceptionListener.class).produces();
-        }
     }
 
     @Override

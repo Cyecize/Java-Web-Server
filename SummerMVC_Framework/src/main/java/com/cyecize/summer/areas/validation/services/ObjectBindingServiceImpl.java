@@ -9,8 +9,8 @@ import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
-import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -47,7 +47,8 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         if (request.getBodyParameters() == null) {
             return;
         }
-        Arrays.stream(bindingModel.getClass().getDeclaredFields()).forEach(field -> {
+
+        ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass()).forEach(field -> {
             field.setAccessible(true);
 
             Object parsedVal;

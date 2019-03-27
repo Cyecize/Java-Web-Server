@@ -8,7 +8,6 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.Valid;
-import com.cyecize.summer.areas.validation.exceptions.ValidationException;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
 import com.cyecize.summer.areas.validation.services.ObjectBindingService;
 import com.cyecize.summer.areas.validation.services.ObjectValidationService;
@@ -17,7 +16,6 @@ import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.annotations.routing.RequestParam;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
-import org.eclipse.xtext.xbase.lib.Exceptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;

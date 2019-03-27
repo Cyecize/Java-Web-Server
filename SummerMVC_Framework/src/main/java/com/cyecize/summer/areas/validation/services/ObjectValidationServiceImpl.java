@@ -9,6 +9,7 @@ import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.areas.validation.models.FieldError;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -39,7 +40,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
     @Override
     public void validateBindingModel(Object bindingModel, BindingResult bindingResult) {
         try {
-            for (Field declaredField : bindingModel.getClass().getDeclaredFields()) {
+            for (Field declaredField : ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass())) {
                 this.validateField(declaredField, bindingModel, bindingResult);
             }
         } catch (Throwable th) {
@@ -47,7 +48,6 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     /**
      * Iterates all annotations for the given field.
      * If an annotation is annotated with @Constraint, get the constraint validator.
@@ -56,6 +56,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
      *
      * If the validator returns false, add new FieldError to the bindingResult.
      */
+    @SuppressWarnings("unchecked")
     private void validateField(Field field, Object bindingModel, BindingResult bindingResult) {
         try {
             field.setAccessible(true);

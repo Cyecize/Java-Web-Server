@@ -1,11 +1,14 @@
 package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.summer.areas.routing.models.ActionMethod;
+import com.cyecize.summer.areas.routing.models.annotationModels.ActionAnnotationHandlerContainer;
+import com.cyecize.summer.areas.routing.models.annotationModels.AnnotationExtractedValue;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.GetMapping;
 import com.cyecize.summer.common.annotations.routing.PostMapping;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -13,13 +16,28 @@ import java.util.stream.Collectors;
 
 public class ActionMethodScanningServiceImpl implements ActionMethodScanningService {
 
-    private static final String CANNOT_PARSE_ROUTE_FORMAT = "Cannot parse route for method \"%s\".";
-
     private static final String GET = "GET";
 
     private static final String POST = "POST";
 
     private static final String EXCEPTION = "EXCEPTION";
+
+    private static final List<ActionAnnotationHandlerContainer> methodAnnotationHandlers = new ArrayList<>();
+
+    /*
+      Initialize the supported routing annotations.
+     */
+    static {
+        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(GetMapping.class,
+                (annotation -> new AnnotationExtractedValue(GET, annotation.produces(), annotation.value()))));
+
+        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(PostMapping.class,
+                (annotation -> new AnnotationExtractedValue(POST, annotation.produces(), annotation.value()))));
+
+        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
+                (annotation -> new AnnotationExtractedValue(EXCEPTION, annotation.produces(), UUID.randomUUID().toString()))));
+
+    }
 
     private final PathFormatter pathFormatter;
 
@@ -47,51 +65,39 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
 
     /**
      * Iterates controller type and finds all methods with a given annotation.
-     * Then ads the method to a set of methods with the same annotation.
-     * Finally loads all located methods, again by annotationType.
+     * If a proper annotation is present, adds the method to a map of action methods
+     * where the key is the http method.
      */
     private void loadActionMethodsFromController(Class<?> controllerClass) {
-        Set<Method> getMethods = new HashSet<>();
-        Set<Method> postMethods = new HashSet<>();
-        Set<Method> exceptionListeners = new HashSet<>();
-        Arrays.stream(controllerClass.getMethods()).forEach(m -> {
-            if (m.isAnnotationPresent(GetMapping.class)) {
-                getMethods.add(m);
-            }
-            if (m.isAnnotationPresent(PostMapping.class)) {
-                postMethods.add(m);
-            }
-            if (m.isAnnotationPresent(ExceptionListener.class)) {
-                exceptionListeners.add(m);
+        Arrays.stream(controllerClass.getDeclaredMethods()).forEach(m -> {
+            m.setAccessible(true);
+
+            AnnotationExtractedValue annotationExtractedValue = this.findRoutingAnnotation(m);
+
+            if (annotationExtractedValue != null) {
+                ActionMethod actionMethod = new ActionMethod(annotationExtractedValue.getPattern(), m, annotationExtractedValue.getContentType(), controllerClass);
+                this.actionsByHttpMethod.get(annotationExtractedValue.getHttpMethod()).add(actionMethod);
             }
         });
-        getMethods.forEach(m -> this.loadMethod(m, controllerClass, GET));
-        postMethods.forEach(m -> this.loadMethod(m, controllerClass, POST));
-        exceptionListeners.forEach(m -> this.loadMethod(m, controllerClass, EXCEPTION));
     }
 
     /**
-     * Checks if method is GET or POST and gets the annotation value.
-     * If no annotation is present (the case with @ExceptionListener), generate a random route.
-     * Create a new actionMethod and add it to the actionsMap.
+     * Gets all annotations, looks for one of the supported routing annotations and gets its value
+     *
+     * @param method - the method that will be scanned
+     * @return null if no annotation is found
      */
-    private void loadMethod(Method method, Class<?> controller, String httpMethod) {
-        String pathPattern;
-        switch (httpMethod) {
-            case GET:
-                pathPattern = this.pathFormatter.formatPath(method.getAnnotation(GetMapping.class).value());
-                break;
-            case POST:
-                pathPattern = this.pathFormatter.formatPath(method.getAnnotation(PostMapping.class).value());
-                break;
-            case EXCEPTION:
-                pathPattern = UUID.randomUUID().toString();
-                break;
-            default:
-                throw new RuntimeException(String.format(CANNOT_PARSE_ROUTE_FORMAT, method.getName()));
+    @SuppressWarnings("unchecked")
+    private AnnotationExtractedValue findRoutingAnnotation(Method method) {
+        for (ActionAnnotationHandlerContainer methodAnnotationHandler : methodAnnotationHandlers) {
+            Class<? extends Annotation> annotationType = methodAnnotationHandler.getAnnotationType();
+
+            if (method.isAnnotationPresent(annotationType)) {
+                return methodAnnotationHandler.getAnnotationValue(method.getAnnotation(annotationType));
+            }
         }
-        ActionMethod actionMethod = new ActionMethod(pathPattern, method, controller);
-        this.actionsByHttpMethod.get(httpMethod).add(actionMethod);
+
+        return null;
     }
 
     /**

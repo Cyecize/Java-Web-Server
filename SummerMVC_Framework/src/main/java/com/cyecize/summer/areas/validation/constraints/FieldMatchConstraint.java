@@ -3,9 +3,9 @@ package com.cyecize.summer.areas.validation.constraints;
 import com.cyecize.summer.areas.validation.exceptions.ValidationException;
 import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 
 @Component
 public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Object> {
@@ -24,8 +24,10 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
 
     @Override
     public boolean isValid(Object fieldVal, Object bindingModel) {
-        Field matchingField = Arrays.stream(bindingModel.getClass().getDeclaredFields()).filter(f -> f.getName().equals(this.fieldName))
+        Field matchingField = ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass()).stream()
+                .filter(f -> f.getName().equals(this.fieldName))
                 .findFirst().orElse(null);
+
         if (matchingField == null) {
             throw new ValidationException(String.format(MATCHING_FIELD_NOT_FOUND_FORMAT, this.fieldName));
         }

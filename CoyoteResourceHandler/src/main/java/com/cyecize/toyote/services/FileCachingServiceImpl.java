@@ -6,10 +6,7 @@ import com.cyecize.toyote.models.CachedFile;
 import com.cyecize.toyote.models.FrequencyCounter;
 
 import java.io.FileNotFoundException;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FileCachingServiceImpl implements FileCachingService {
 
@@ -23,7 +20,7 @@ public class FileCachingServiceImpl implements FileCachingService {
 
     public FileCachingServiceImpl(JavacheConfigService configService) {
         this.cache = new HashMap<>();
-        this.fileFrequencyAccess = new HashMap<>();
+        this.fileFrequencyAccess = new Hashtable<>();
 
         this.maximumAllowedFilesInCache = configService.getConfigParam(ConfigConstants.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, Integer.class);
         this.maxCachedFileSize = configService.getConfigParam(ConfigConstants.TOYOYE_CACHED_FILE_MAX_SIZE, Integer.class);

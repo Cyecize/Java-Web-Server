@@ -15,7 +15,12 @@ public class MinConstraint implements ConstraintValidator<Min, Object> {
 
     @Override
     public boolean isValid(Object field, Object bindingModel) {
-        double val = Double.valueOf(String.valueOf(field));
+        double val = 0D;
+
+        if (field != null) {
+            val = Double.valueOf(String.valueOf(field));
+        }
+
         return field != null && minValue <= val;
     }
 }

@@ -4,9 +4,7 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.models.annotationModels.ActionAnnotationHandlerContainer;
 import com.cyecize.summer.areas.routing.models.annotationModels.AnnotationExtractedValue;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
-import com.cyecize.summer.common.annotations.routing.ExceptionListener;
-import com.cyecize.summer.common.annotations.routing.GetMapping;
-import com.cyecize.summer.common.annotations.routing.PostMapping;
+import com.cyecize.summer.common.annotations.routing.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -15,10 +13,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ActionMethodScanningServiceImpl implements ActionMethodScanningService {
-
-    private static final String GET = "GET";
-
-    private static final String POST = "POST";
 
     private static final String EXCEPTION = "EXCEPTION";
 
@@ -29,13 +23,16 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      */
     static {
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(GetMapping.class,
-                (annotation -> new AnnotationExtractedValue(GET, annotation.produces(), annotation.value()))));
+                (annotation -> new AnnotationExtractedValue(HttpMethod.GET.name(), annotation.produces(), annotation.value()))));
 
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(PostMapping.class,
-                (annotation -> new AnnotationExtractedValue(POST, annotation.produces(), annotation.value()))));
+                (annotation -> new AnnotationExtractedValue(HttpMethod.POST.name(), annotation.produces(), annotation.value()))));
 
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
                 (annotation -> new AnnotationExtractedValue(EXCEPTION, annotation.produces(), UUID.randomUUID().toString()))));
+
+        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(RequestMapping.class,
+                annotation -> new AnnotationExtractedValue(annotation.method().name(), annotation.produces(), annotation.value())));
 
     }
 
@@ -46,9 +43,8 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
     public ActionMethodScanningServiceImpl(PathFormatter pathFormatter) {
         this.pathFormatter = pathFormatter;
         this.actionsByHttpMethod = new HashMap<>();
-        this.actionsByHttpMethod.put(GET, new HashSet<>());
-        this.actionsByHttpMethod.put(POST, new HashSet<>());
         this.actionsByHttpMethod.put(EXCEPTION, new HashSet<>());
+        Arrays.stream(HttpMethod.values()).forEach(m -> this.actionsByHttpMethod.put(m.name(), new HashSet<>()));
     }
 
     @Override
@@ -58,8 +54,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         }
 
         this.orderExceptionsByHierarchy();
-        this.orderActionMethods(GET);
-        this.orderActionMethods(POST);
+        Arrays.stream(HttpMethod.values()).forEach(m -> this.orderActionMethods(m.name()));
         return this.actionsByHttpMethod;
     }
 
@@ -69,13 +64,22 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      * where the key is the http method.
      */
     private void loadActionMethodsFromController(Class<?> controllerClass) {
+        String baseRoute = "";
+        if (controllerClass.isAnnotationPresent(RequestMapping.class)) {
+            baseRoute = controllerClass.getAnnotation(RequestMapping.class).value();
+        }
+
+        final String finalBaseRoute = baseRoute;
+
         Arrays.stream(controllerClass.getDeclaredMethods()).forEach(m -> {
             m.setAccessible(true);
 
             AnnotationExtractedValue annotationExtractedValue = this.findRoutingAnnotation(m);
 
             if (annotationExtractedValue != null) {
-                ActionMethod actionMethod = new ActionMethod(annotationExtractedValue.getPattern(), m, annotationExtractedValue.getContentType(), controllerClass);
+                String pattern = this.pathFormatter.formatPath(finalBaseRoute + annotationExtractedValue.getPattern());
+
+                ActionMethod actionMethod = new ActionMethod(pattern, m, annotationExtractedValue.getContentType(), controllerClass);
                 this.actionsByHttpMethod.get(annotationExtractedValue.getHttpMethod()).add(actionMethod);
             }
         });

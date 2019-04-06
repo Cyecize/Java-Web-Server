@@ -5,6 +5,7 @@ import com.cyecize.summer.areas.routing.models.annotationModels.ActionAnnotation
 import com.cyecize.summer.areas.routing.models.annotationModels.AnnotationExtractedValue;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
 import com.cyecize.summer.common.annotations.routing.*;
+import com.cyecize.summer.constants.ContentTypes;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -16,22 +17,22 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
 
     private static final String EXCEPTION = "EXCEPTION";
 
-    private static final List<ActionAnnotationHandlerContainer> methodAnnotationHandlers = new ArrayList<>();
+    private static final List<ActionAnnotationHandlerContainer> METHOD_ANNOTATION_HANDLERS = new ArrayList<>();
 
     /*
       Initialize the supported routing annotations.
      */
     static {
-        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(GetMapping.class,
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(GetMapping.class,
                 (annotation -> new AnnotationExtractedValue(List.of(HttpMethod.GET.name()), annotation.produces(), annotation.value()))));
 
-        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(PostMapping.class,
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(PostMapping.class,
                 (annotation -> new AnnotationExtractedValue(List.of(HttpMethod.POST.name()), annotation.produces(), annotation.value()))));
 
-        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
                 (annotation -> new AnnotationExtractedValue(List.of(EXCEPTION), annotation.produces(), UUID.randomUUID().toString()))));
 
-        methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(RequestMapping.class,
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(RequestMapping.class,
                 annotation -> new AnnotationExtractedValue(Arrays.stream(annotation.methods()).map(Enum::name).collect(Collectors.toList()), annotation.produces(), annotation.value())));
 
     }
@@ -55,6 +56,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
 
         this.orderExceptionsByHierarchy();
         Arrays.stream(HttpMethod.values()).forEach(m -> this.orderActionMethods(m.name()));
+
         return this.actionsByHttpMethod;
     }
 
@@ -62,30 +64,40 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      * Iterates controller type and finds all methods with a given annotation.
      * If a proper annotation is present, adds the method to a map of action methods
      * where the key is the http method.
+     * <p>
+     * Applies base route and base content type if @RequestParam annotation is present.
      */
     private void loadActionMethodsFromController(Class<?> controllerClass) {
         String baseRoute = "";
+        String baseContentType = ContentTypes.NONE;
+
         if (controllerClass.isAnnotationPresent(RequestMapping.class)) {
-            baseRoute = controllerClass.getAnnotation(RequestMapping.class).value();
+            RequestMapping annotation = controllerClass.getAnnotation(RequestMapping.class);
+            baseRoute = annotation.value();
+            baseContentType = annotation.produces();
         }
 
-        final String finalBaseRoute = baseRoute;
 
-        Arrays.stream(controllerClass.getDeclaredMethods()).forEach(m -> {
-            m.setAccessible(true);
+        for (Method method : controllerClass.getDeclaredMethods()) {
+            method.setAccessible(true);
 
-            AnnotationExtractedValue annotationExtractedValue = this.findRoutingAnnotation(m);
+            AnnotationExtractedValue annotationExtractedValue = this.findRoutingAnnotation(method);
 
             if (annotationExtractedValue != null) {
-                String pattern = this.pathFormatter.formatPath(finalBaseRoute + annotationExtractedValue.getPattern());
+                String pattern = this.pathFormatter.formatPath(baseRoute + annotationExtractedValue.getPattern());
+                String contentType = ContentTypes.NONE.equals(annotationExtractedValue.getContentType()) ? baseContentType : annotationExtractedValue.getContentType();
 
-                ActionMethod actionMethod = new ActionMethod(pattern, m, annotationExtractedValue.getContentType(), controllerClass);
+                if (ContentTypes.NONE.equals(contentType)) {
+                    contentType = ContentTypes.TEXT_HTML;
+                }
+
+                ActionMethod actionMethod = new ActionMethod(pattern, method, contentType, controllerClass);
 
                 for (String httpMethod : annotationExtractedValue.getHttpMethods()) {
                     this.actionsByHttpMethod.get(httpMethod).add(actionMethod);
                 }
             }
-        });
+        }
     }
 
     /**
@@ -96,7 +108,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      */
     @SuppressWarnings("unchecked")
     private AnnotationExtractedValue findRoutingAnnotation(Method method) {
-        for (ActionAnnotationHandlerContainer methodAnnotationHandler : methodAnnotationHandlers) {
+        for (ActionAnnotationHandlerContainer methodAnnotationHandler : METHOD_ANNOTATION_HANDLERS) {
             Class<? extends Annotation> annotationType = methodAnnotationHandler.getAnnotationType();
 
             if (method.isAnnotationPresent(annotationType)) {

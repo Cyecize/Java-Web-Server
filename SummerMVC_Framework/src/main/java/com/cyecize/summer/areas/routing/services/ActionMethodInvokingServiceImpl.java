@@ -91,7 +91,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         Object methodResult = this.invokeAction(actionMethod, pathVariables);
 
         this.currentRequest = null;
-        return new ActionInvokeResult(methodResult, actionMethod.getContentType());
+        return new ActionInvokeResult(actionMethod, methodResult, actionMethod.getContentType());
     }
 
     /**
@@ -112,7 +112,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         Object methodResult = this.invokeAction(actionMethod, new HashMap<>());
         this.currentRequest = null;
 
-        return new ActionInvokeResult(methodResult, actionMethod.getContentType());
+        return new ActionInvokeResult(actionMethod, methodResult, actionMethod.getContentType());
     }
 
     /**

@@ -2,20 +2,27 @@ package com.cyecize.summer.areas.routing.models;
 
 public class ActionInvokeResult {
 
-    private Object invocationResult;
+    private final ActionMethod actionMethod;
 
-    private String contentType;
+    private final Object invocationResult;
 
-    public ActionInvokeResult(Object invocationResult, String contentType) {
+    private final String contentType;
+
+    public ActionInvokeResult(ActionMethod actionMethod, Object invocationResult, String contentType) {
+        this.actionMethod = actionMethod;
         this.invocationResult = invocationResult;
         this.contentType = contentType;
     }
 
+    public ActionMethod getActionMethod() {
+        return this.actionMethod;
+    }
+
     public Object getInvocationResult() {
-        return invocationResult;
+        return this.invocationResult;
     }
 
     public String getContentType() {
-        return contentType;
+        return this.contentType;
     }
 }

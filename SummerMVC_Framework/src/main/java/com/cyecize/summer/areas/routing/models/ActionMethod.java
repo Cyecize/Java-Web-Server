@@ -1,8 +1,6 @@
 package com.cyecize.summer.areas.routing.models;
 
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
-import com.cyecize.summer.common.annotations.routing.GetMapping;
-import com.cyecize.summer.common.annotations.routing.PostMapping;
 
 import java.lang.reflect.Method;
 
@@ -10,14 +8,17 @@ public class ActionMethod implements Comparable<ActionMethod> {
 
     private final String pattern;
 
+    private final String baseRoute;
+
     private final Method method;
 
     private final String contentType;
 
     private final Class<?> controllerClass;
 
-    public ActionMethod(String pattern, Method method, String contentType, Class<?> controllerClass) {
+    public ActionMethod(String pattern, String baseRoute, Method method, String contentType, Class<?> controllerClass) {
         this.pattern = pattern;
+        this.baseRoute = baseRoute;
         this.method = method;
         this.contentType = contentType;
         this.controllerClass = controllerClass;
@@ -25,6 +26,10 @@ public class ActionMethod implements Comparable<ActionMethod> {
 
     public String getPattern() {
         return this.pattern;
+    }
+
+    public String getBaseRoute() {
+        return this.baseRoute;
     }
 
     public String getContentType() {
@@ -36,7 +41,7 @@ public class ActionMethod implements Comparable<ActionMethod> {
     }
 
     public Class<?> getControllerClass() {
-        return controllerClass;
+        return this.controllerClass;
     }
 
     @Override

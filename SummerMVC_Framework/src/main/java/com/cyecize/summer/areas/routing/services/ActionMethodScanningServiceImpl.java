@@ -91,7 +91,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
                     contentType = ContentTypes.TEXT_HTML;
                 }
 
-                ActionMethod actionMethod = new ActionMethod(pattern, method, contentType, controllerClass);
+                ActionMethod actionMethod = new ActionMethod(pattern, baseRoute, method, contentType, controllerClass);
 
                 for (String httpMethod : annotationExtractedValue.getHttpMethods()) {
                     this.actionsByHttpMethod.get(httpMethod).add(actionMethod);

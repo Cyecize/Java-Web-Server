@@ -12,6 +12,8 @@ public class RoutingConstants {
 
     public static final String ACTION_RETURN_DELIMITER = ":";
 
+    public static final String ACTION_REDIRECT_ABSOLUTE_ROUTE_STARTING_CHAR = "/";
+
     public static final String TEMPLATES_DIRECTORY = "templates";
 
     public static final String REDIRECT_ATTRIBUTES_SESSION_ID = SUMMER_MVC + "RedirectAttributes";

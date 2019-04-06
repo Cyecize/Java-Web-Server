@@ -12,6 +12,7 @@ import com.cyecize.summer.areas.template.services.TemplateRenderingService;
 import com.cyecize.summer.common.models.JsonResponse;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
+import com.cyecize.summer.constants.ContentTypes;
 import com.google.gson.Gson;
 
 import java.lang.reflect.InvocationTargetException;
@@ -26,13 +27,15 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
 
+    private final Gson gson;
+
     private final DependencyContainer dependencyContainer;
 
     private final TemplateRenderingService renderingService;
 
     private HttpSoletResponse response;
 
-    private Gson gson;
+    private ActionInvokeResult actionInvokeResult;
 
     public ActionMethodResultHandlerImpl(DependencyContainer dependencyContainer, TemplateRenderingService renderingService) {
         this.dependencyContainer = dependencyContainer;
@@ -47,6 +50,8 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     @Override
     public void handleActionResult(ActionInvokeResult result) {
         this.response = this.dependencyContainer.getObject(HttpSoletResponse.class);
+        this.actionInvokeResult = result;
+
         if (!this.response.getHeaders().containsKey(CONTENT_TYPE_HEADER)) {
             this.response.addHeader(CONTENT_TYPE_HEADER, result.getContentType());
         }
@@ -55,6 +60,8 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         if (this.response.getStatusCode() == null) {
             this.response.setStatusCode(HttpStatus.OK);
         }
+
+        this.actionInvokeResult = null;
     }
 
     /**
@@ -96,7 +103,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
             this.response.setStatusCode(result.getStatusCode());
         }
 
-        this.response.addHeader(CONTENT_TYPE_HEADER, "application/json");
+        this.response.addHeader(CONTENT_TYPE_HEADER, ContentTypes.APPLICATION_JSON);
         this.response.setContent(this.gson.toJson(result));
     }
 
@@ -127,6 +134,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         if (viewName == null) {
             throw new EmptyViewException(VIEW_EMPTY_MSG);
         }
+
         if (viewName.toString().startsWith(ACTION_RETURN_REDIRECT + ACTION_RETURN_DELIMITER)) {
             this.handleRedirectResponse(
                     viewName.toString().split(ACTION_RETURN_DELIMITER)[1].trim(),
@@ -169,6 +177,10 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * Sends redirect by adding the app Name as a prefix.
      */
     private void handleRedirectResponse(String location, HttpSoletRequest request) {
+        if (!location.startsWith(ACTION_REDIRECT_ABSOLUTE_ROUTE_STARTING_CHAR)) {
+            location = this.actionInvokeResult.getActionMethod().getBaseRoute() + ACTION_REDIRECT_ABSOLUTE_ROUTE_STARTING_CHAR + location;
+        }
+
         this.response.sendRedirect(request.getContextPath() + location);
     }
 }

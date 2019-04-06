@@ -19,7 +19,7 @@ public class FileCachingServiceImpl implements FileCachingService {
     private long maxCachedFileSize;
 
     public FileCachingServiceImpl(JavacheConfigService configService) {
-        this.cache = new HashMap<>();
+        this.cache = new Hashtable<>();
         this.fileFrequencyAccess = new Hashtable<>();
 
         this.maximumAllowedFilesInCache = configService.getConfigParam(ConfigConstants.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, Integer.class);

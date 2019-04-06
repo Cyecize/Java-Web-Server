@@ -23,16 +23,16 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      */
     static {
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(GetMapping.class,
-                (annotation -> new AnnotationExtractedValue(HttpMethod.GET.name(), annotation.produces(), annotation.value()))));
+                (annotation -> new AnnotationExtractedValue(List.of(HttpMethod.GET.name()), annotation.produces(), annotation.value()))));
 
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(PostMapping.class,
-                (annotation -> new AnnotationExtractedValue(HttpMethod.POST.name(), annotation.produces(), annotation.value()))));
+                (annotation -> new AnnotationExtractedValue(List.of(HttpMethod.POST.name()), annotation.produces(), annotation.value()))));
 
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
-                (annotation -> new AnnotationExtractedValue(EXCEPTION, annotation.produces(), UUID.randomUUID().toString()))));
+                (annotation -> new AnnotationExtractedValue(List.of(EXCEPTION), annotation.produces(), UUID.randomUUID().toString()))));
 
         methodAnnotationHandlers.add(new ActionAnnotationHandlerContainer<>(RequestMapping.class,
-                annotation -> new AnnotationExtractedValue(annotation.method().name(), annotation.produces(), annotation.value())));
+                annotation -> new AnnotationExtractedValue(Arrays.stream(annotation.methods()).map(Enum::name).collect(Collectors.toList()), annotation.produces(), annotation.value())));
 
     }
 
@@ -80,7 +80,10 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
                 String pattern = this.pathFormatter.formatPath(finalBaseRoute + annotationExtractedValue.getPattern());
 
                 ActionMethod actionMethod = new ActionMethod(pattern, m, annotationExtractedValue.getContentType(), controllerClass);
-                this.actionsByHttpMethod.get(annotationExtractedValue.getHttpMethod()).add(actionMethod);
+
+                for (String httpMethod : annotationExtractedValue.getHttpMethods()) {
+                    this.actionsByHttpMethod.get(httpMethod).add(actionMethod);
+                }
             }
         });
     }

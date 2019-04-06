@@ -22,4 +22,11 @@ public class ReflectionUtils {
 
         return fields;
     }
+
+    /**
+     * Gets field generic type if present or just the field type.
+     */
+    public static String getFieldGenericType(Field field) {
+        return field.getGenericType().getTypeName();
+    }
 }

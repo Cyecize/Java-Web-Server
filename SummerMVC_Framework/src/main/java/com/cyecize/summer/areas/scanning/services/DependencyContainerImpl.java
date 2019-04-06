@@ -97,6 +97,7 @@ public class DependencyContainerImpl implements DependencyContainer {
         if (component.getClass().getAnnotation(Component.class).lifespan() != lifeSpan) {
             return component;
         }
+
         return this.reloadComponent(component);
     }
 

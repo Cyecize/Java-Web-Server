@@ -160,10 +160,10 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     private void initBodyParameters(String requestContent) {
-        if (this.getMethod().equals("POST")) {
-            this.bodyParameters = new HashMap<>();
-            this.bodyParametersAsList = new HashMap<>();
+        this.bodyParameters = new HashMap<>();
+        this.bodyParametersAsList = new HashMap<>();
 
+        if (this.getMethod().equals("POST")) {
             List<String> requestParams = Arrays.asList(requestContent.split("\\r\\n"));
 
             if (requestParams.size() > this.headers.size() + 2) {

@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface RequestParam {
 
     String value();
+
+    boolean required() default false;
 }

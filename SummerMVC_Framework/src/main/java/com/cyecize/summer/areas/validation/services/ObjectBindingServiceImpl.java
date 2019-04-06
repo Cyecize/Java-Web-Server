@@ -9,7 +9,6 @@ import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
-import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -20,19 +19,17 @@ import static com.cyecize.summer.constants.IocConstants.*;
 
 public class ObjectBindingServiceImpl implements ObjectBindingService {
 
-    private static final String NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT = "No generic type found for data adapter \"%s\".";
-
     private final DependencyContainer dependencyContainer;
 
-    private Map<String, List<DataAdapter>> dataAdapters;
+    private final DataAdapterStorageService dataAdapters;
 
     private PrimitiveTypeDataResolver dataResolver;
 
     private String assetsDir;
 
-    public ObjectBindingServiceImpl(DependencyContainer dependencyContainer, Set<Object> dataAdapters) {
+    public ObjectBindingServiceImpl(DependencyContainer dependencyContainer, DataAdapterStorageService dataAdapters) {
         this.dependencyContainer = dependencyContainer;
-        this.setDataAdapters(dataAdapters);
+        this.dataAdapters = dataAdapters;
         this.dataResolver = new PrimitiveTypeDataResolver();
     }
 
@@ -53,9 +50,10 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
             Object parsedVal;
             //add other types here
-            String fieldGenericType = this.getFieldGenericType(field);
-            if (this.dataAdapters.containsKey(this.getFieldGenericType(field))) {
-                parsedVal = this.handleCustomTypeField(field, request);
+            String fieldGenericType = ReflectionUtils.getFieldGenericType(field);
+
+            if (this.dataAdapters.hasDataAdapter(fieldGenericType)) {
+                parsedVal = this.handleCustomTypeField(fieldGenericType, field, request);
             } else if (field.getType() == MultipartFile.class) {
                 parsedVal = this.handleMultipartField(field, request);
             } else if (field.getType() == List.class) {
@@ -79,32 +77,22 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      * Returns null if no converter is found.
      * Returns the result of the data adapter.
      */
-    private Object handleCustomTypeField(Field field, HttpSoletRequest request) {
+    private Object handleCustomTypeField(String fieldGenericType, Field field, HttpSoletRequest request) {
         DataAdapter dataAdapter = null;
-        if (field.isAnnotationPresent(ConvertedBy.class)) {
-            Class<?> convertedClass = field.getAnnotation(ConvertedBy.class).value();
 
-            dataAdapter = this.dataAdapters.get(this.getFieldGenericType(field)).stream()
-                    .filter(da -> convertedClass.isAssignableFrom(da.getClass()))
-                    .findFirst().orElse(null);
+        if (field.isAnnotationPresent(ConvertedBy.class)) {
+            Class<? extends DataAdapter> convertedClass = field.getAnnotation(ConvertedBy.class).value();
+
+            dataAdapter = this.dataAdapters.getDataAdapter(fieldGenericType, convertedClass);
         } else {
-            dataAdapter = this.dataAdapters.get(this.getFieldGenericType(field)).get(0);
+            dataAdapter = this.dataAdapters.getDataAdapter(fieldGenericType);
         }
 
         if (dataAdapter == null) {
             return null;
         }
 
-        dataAdapter = this.dependencyContainer.reloadComponent(dataAdapter, ServiceLifeSpan.REQUEST);
-
-        return dataAdapter.resolveField(field, request);
-    }
-
-    /**
-     * Gets field generic type if present or just the field type.
-     */
-    private String getFieldGenericType(Field field) {
-        return field.getGenericType().getTypeName();
+        return dataAdapter.resolve(field.getName(), request);
     }
 
     /**
@@ -160,26 +148,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         if (this.assetsDir == null) {
             this.assetsDir = this.dependencyContainer.getObject(SoletConfig.class).getAttribute(SOLET_CFG_ASSETS_DIR) + "";
         }
-        return this.assetsDir;
-    }
 
-    /**
-     * Iterates the set of data adapters and for each object gets its
-     * generic type and adds the adapter to a map of data adapters where the key is the
-     * generic type and the value is a list of data adapters for that type.
-     */
-    private void setDataAdapters(Set<Object> adapters) {
-        this.dataAdapters = new HashMap<>();
-        for (Object adapter : adapters) {
-            try {
-                String genericType = ((ParameterizedType) adapter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
-                if (!this.dataAdapters.containsKey(genericType)) {
-                    this.dataAdapters.put(genericType, new ArrayList<>());
-                }
-                this.dataAdapters.get(genericType).add((DataAdapter) adapter);
-            } catch (Throwable e) {
-                throw new RuntimeException(NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT, e);
-            }
-        }
+        return this.assetsDir;
     }
 }

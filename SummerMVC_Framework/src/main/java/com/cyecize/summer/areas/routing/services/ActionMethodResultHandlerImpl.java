@@ -149,7 +149,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * If there are no matching keywords, sets the response content directly.
      */
     private void handleStringResponse(String result) throws ViewNotFoundException {
-        String delimiter = ACTION_RETURN_DELIMITER;
+        final String delimiter = ACTION_RETURN_DELIMITER;
 
         if (result.startsWith(ACTION_RETURN_TEMPLATE + delimiter)) {
             this.handleViewResponse(

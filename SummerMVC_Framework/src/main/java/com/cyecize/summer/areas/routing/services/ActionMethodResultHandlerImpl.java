@@ -149,18 +149,20 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * If there are no matching keywords, sets the response content directly.
      */
     private void handleStringResponse(String result) throws ViewNotFoundException {
-        String[] resultTokens = (result + "").split(ACTION_RETURN_DELIMITER);
-        if (resultTokens.length == 2) {
-            switch (resultTokens[0].trim().toLowerCase()) {
-                case ACTION_RETURN_TEMPLATE:
-                    this.handleViewResponse(resultTokens[1].trim(), this.dependencyContainer.getObject(Model.class));
-                    break;
-                case ACTION_RETURN_REDIRECT:
-                    this.handleRedirectResponse(resultTokens[1].trim(), this.dependencyContainer.getObject(HttpSoletRequest.class));
-                    break;
-                default:
-                    this.response.setContent(result);
-            }
+        String delimiter = ACTION_RETURN_DELIMITER;
+
+        if (result.startsWith(ACTION_RETURN_TEMPLATE + delimiter)) {
+            this.handleViewResponse(
+                    result.substring((ACTION_RETURN_TEMPLATE + delimiter).length()).trim(),
+                    this.dependencyContainer.getObject(Model.class)
+            );
+
+        } else if (result.startsWith(ACTION_RETURN_REDIRECT + delimiter)) {
+            this.handleRedirectResponse(
+                    result.substring((ACTION_RETURN_REDIRECT + delimiter).length()).trim(),
+                    this.dependencyContainer.getObject(HttpSoletRequest.class)
+            );
+
         } else {
             this.response.setContent(result);
         }

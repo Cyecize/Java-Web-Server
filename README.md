@@ -23,8 +23,8 @@ Similar to  Tomcat, Javache can
 
 Broccolina and Toyote jar files are placed in a folder where javache will read and execute them upon running.
 
-Summer MVC is has a templating engine, Dependency Container, Path variables, BindingModels, Validation, Security, Interceptors
-and so on.
+Summer MVC is a fully custom MVC framework that has a templating engine, Dependency Container, Path variables, BindingModels, Validation, Security, Interceptors, Custom data adapters
+and more.
 
 Multipart encoding is also supported.
 
@@ -78,7 +78,10 @@ If you are having trouble running the app, contact me at ceci2205@abv.bg .
 
 Credits
 -------
-This project was a lab work in my university but it had some fundamental problems mainly with workflow, how applications were loaded, dependencies and the 
-difficulty to run the application so I decided to rewrite the whole project and add some more
-functionality like Dependency Container and also add Documentation.
+The idea for this project came from a workshop in a software academy that I went to.
+
+The web server that we made there was intended to show really vaguely the idea behind Java EE and Spring and since we 
+had about 5 labs the final app was really buggy and slow, and it lacked many functionalities that are essential, such as asynchronous requests, uploading files and Dependency Injection for the MVC framework. Basically the MVC framework was a bunch of annotations with no real templating engine.
+
+So I decided to start from the ground up and create somewhat similar application, but more functional which resulted in something that was totally different than the original project except the names of the mini applications such as Summer, Javache and so on.
 

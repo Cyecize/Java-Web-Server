@@ -2,6 +2,7 @@ package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
 import com.cyecize.summer.common.annotations.Service;
+import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -60,7 +61,7 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
     /**
      * Checks if the service has already been loaded (as a parameter to another service) and returns the
      * object if that is the case.
-     * Gets the first constructor and the service and collects its parameters.
+     * Finds a suitable constructor and the service and collects its parameters.
      * For each parameter, it calls loadService recursively and throws ServiceLoadException if
      * the parameter is null.
      * <p>
@@ -79,20 +80,20 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
             return this.instantiateService(serviceCls, serviceCls.getConstructor());
         }
 
-        Constructor<?> serviceConstructor = serviceCls.getConstructors()[0];
+        Constructor<?> serviceConstructor = ReflectionUtils.findConstructor(serviceCls);
 
         Class<?>[] parameterTypes = serviceConstructor.getParameterTypes();
         Object[] parameterInstances = new Object[serviceConstructor.getParameterCount()];
         for (int i = 0; i < parameterTypes.length; i++) {
-
             Class<?> paramType = parameterTypes[i];
             Object paramInstance = this.loadService(paramType); //possible infinite loop
             if (paramInstance == null) {
                 throw new ServiceLoadException(String.format(COULD_NOT_FIND_DEPENDENCY_FORMAT, paramType.getName()));
             }
-            parameterInstances[i] = paramInstance;
 
+            parameterInstances[i] = paramInstance;
         }
+
         return this.instantiateService(serviceCls, serviceConstructor, parameterInstances);
     }
 
@@ -106,6 +107,7 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
                 return serviceKvp.getValue();
             }
         }
+
         return null;
     }
 
@@ -120,6 +122,7 @@ public class ServiceLoadingServiceImpl implements ServiceLoadingService {
                 return availableService;
             }
         }
+
         throw new ServiceLoadException(String.format(COULD_NOT_FIND_ASSIGNABLE_FORMAT, target.getName()));
     }
 

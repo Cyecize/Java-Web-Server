@@ -4,6 +4,7 @@ import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.annotations.Service;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -63,7 +64,7 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     /**
-     * Gets the fist constructor of the given component.
+     * Finds a suitable constructor of the given component.
      * Collects all required parameters (if any) and returns new instance of the component.
      */
     @Override
@@ -71,20 +72,20 @@ public class DependencyContainerImpl implements DependencyContainer {
     public <T> T reloadComponent(T component) {
         try {
             Class componentClass = component.getClass();
-            Constructor<T> constructor = componentClass.getConstructors()[0];
-            if (constructor.getParameterCount() < 1) {
-                return (T) constructor.newInstance();
-            }
+            Constructor<T> constructor = ReflectionUtils.findConstructor(componentClass);
+
             Object[] paramInstances = new Object[constructor.getParameterCount()];
             Class<?>[] paramTypes = constructor.getParameterTypes();
             for (int i = 0; i < paramTypes.length; i++) {
                 paramInstances[i] = this.getObject(paramTypes[i]);
             }
+
             return (T) constructor.newInstance(paramInstances);
         } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
             //should not be reached
             e.printStackTrace();
         }
+
         return null;
     }
 
@@ -134,7 +135,7 @@ public class DependencyContainerImpl implements DependencyContainer {
 
     /**
      * Checks if there is an already loaded service. If there is, return it.
-     * Otherwise get the first constructor and collect its parameters (if any)
+     * Otherwise get a suitable constructor and collect its parameters (if any)
      * return an instance of the service type.
      */
     private Object loadService(Class<?> serviceClass, ServiceLifeSpan serviceLifeSpan) throws ServiceLoadException {
@@ -142,15 +143,15 @@ public class DependencyContainerImpl implements DependencyContainer {
         if (alreadyLoadedService != null) {
             return alreadyLoadedService;
         }
-        Constructor<?> constructor = serviceClass.getConstructors()[0];
-        if (constructor.getParameterCount() < 1) {
-            return this.instantiateService(constructor);
-        }
+
+        Constructor<?> constructor = ReflectionUtils.findConstructor(serviceClass);
+
         Object[] paramInstances = new Object[constructor.getParameterCount()];
         Class<?>[] paramTypes = constructor.getParameterTypes();
         for (int i = 0; i < paramTypes.length; i++) {
             paramInstances[i] = this.findAssignableService(paramTypes[i], serviceLifeSpan);
         }
+
         return this.instantiateService(constructor, paramInstances);
     }
 
@@ -166,11 +167,13 @@ public class DependencyContainerImpl implements DependencyContainer {
                 return service;
             }
         }
+
         for (Class<?> cls : this.cachedClassesByLifeSpan.get(lifeSpan)) {
             if (param.isAssignableFrom(cls)) {
                 return this.loadService(cls, lifeSpan);
             }
         }
+
         return null; //This should only be reached by platform services
     }
 
@@ -204,12 +207,14 @@ public class DependencyContainerImpl implements DependencyContainer {
         if (this.cachedClassesByLifeSpan.containsKey(lifeSpan)) {
             return this.cachedClassesByLifeSpan.get(lifeSpan);
         }
+
         List<Class<?>> classes = new ArrayList<>();
         for (Object service : this.allServicesAndBeans) {
             if (this.isServiceToBeReloaded(service.getClass(), lifeSpan)) {
                 classes.add(service.getClass());
             }
         }
+
         this.cachedClassesByLifeSpan.put(lifeSpan, classes);
         return classes;
     }
@@ -222,6 +227,7 @@ public class DependencyContainerImpl implements DependencyContainer {
         if (!serviceClass.isAnnotationPresent(Service.class)) {
             return false;
         }
+
         Service serviceAnnotation = serviceClass.getAnnotation(Service.class);
         return serviceAnnotation.lifespan() == lifeSpan;
     }

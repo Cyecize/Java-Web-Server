@@ -1,7 +1,7 @@
 package com.cyecize.summer.areas.scanning.services;
 
 import com.cyecize.summer.areas.scanning.exceptions.ComponentInstantiationException;
-import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
+import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -47,24 +47,22 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
 
     /**
      * Check if the class is interface and throw exception if it is.
-     * Gets the first constructor and collects its parameters if any.
+     * Finds suitable constructor and collects its parameters if any.
      * Returns instance of the componentClass.
      */
-    private Object loadComponent(Class<?> componentClasses) throws ComponentInstantiationException {
-        if (componentClasses.isInterface()) {
+    private Object loadComponent(Class<?> componentClass) throws ComponentInstantiationException {
+        if (componentClass.isInterface()) {
             throw new ComponentInstantiationException(CANNOT_INSTANTIATE_INTERFACE);
         }
 
-        Constructor<?> constructor = componentClasses.getConstructors()[0];
-        if (constructor.getParameterCount() < 1) {
-            return this.instantiateComponent(constructor);
-        }
+        Constructor<?> constructor = ReflectionUtils.findConstructor(componentClass);
 
         Object[] constructorParams = new Object[constructor.getParameterCount()];
         Class<?>[] parameterTypes = constructor.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
             constructorParams[i] = this.findDependencyInstance(parameterTypes[i]);
         }
+
         return this.instantiateComponent(constructor, constructorParams);
     }
 
@@ -90,6 +88,7 @@ public class ComponentInstantiatingServiceImpl implements ComponentInstantiating
                 return loadedService;
             }
         }
+
         throw new ComponentInstantiationException(String.format(COULD_NOT_FIND_DEPENDENCY_FORMAT, dependency.getName()));
     }
 }

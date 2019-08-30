@@ -68,6 +68,7 @@ public class JavacheEmbedded {
             config.put(ConfigConstants.WEB_APPS_DIR_NAME, "../");
 
             JavacheConfigService configService = new EmbeddedJavacheConfigService(config);
+            configService.addConfigParam(ConfigConstants.SERVER_PORT, port);
 
             ApplicationScanningService scanningService = new EmbeddedApplicationScanningService(configService, workingDir);
 

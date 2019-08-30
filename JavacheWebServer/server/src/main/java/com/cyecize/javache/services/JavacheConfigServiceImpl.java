@@ -31,6 +31,11 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
     }
 
     @Override
+    public void addConfigParam(String paramName, Object value) {
+        this.configParameters.put(paramName, value);
+    }
+
+    @Override
     public <T> T getConfigParam(String paramName, Class<T> type) {
         return (T) this.configParameters.get(paramName);
     }
@@ -88,6 +93,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(ConfigConstants.BROCCOLINA_TRACK_RESOURCES, true);
         this.configParameters.put(ConfigConstants.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, 50);
         this.configParameters.put(ConfigConstants.TOYOYE_CACHED_FILE_MAX_SIZE, 1000000);
+        this.configParameters.put(ConfigConstants.SERVER_PORT, WebConstants.DEFAULT_SERVER_PORT);
+        this.configParameters.put(ConfigConstants.SERVER_STARTUP_ARGS, new String[0]);
     }
 
     /**

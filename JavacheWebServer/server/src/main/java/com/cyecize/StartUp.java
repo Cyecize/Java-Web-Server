@@ -1,5 +1,6 @@
 package com.cyecize;
 
+import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.core.Server;
 import com.cyecize.javache.core.ServerImpl;
 import com.cyecize.javache.services.*;
@@ -22,6 +23,9 @@ public class StartUp {
         }
 
         JavacheConfigService configService = new JavacheConfigServiceImpl();
+        configService.addConfigParam(ConfigConstants.SERVER_PORT, port);
+        configService.addConfigParam(ConfigConstants.SERVER_STARTUP_ARGS, args);
+
         Server server = new ServerImpl(port, loggingService, new RequestHandlerLoadingServiceImpl(configService), configService);
 
         try {

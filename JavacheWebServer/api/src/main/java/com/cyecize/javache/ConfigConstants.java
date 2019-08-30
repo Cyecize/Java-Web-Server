@@ -28,4 +28,8 @@ public class ConfigConstants {
     public static final String TOYOTE_MAX_NUMBER_OF_CACHED_FILES = "TOYOTE_MAX_NUMBER_OF_CACHED_FILES";
 
     public static final String TOYOYE_CACHED_FILE_MAX_SIZE = "TOYOYE_CACHED_FILE_MAX_SIZE";
+
+    public static final String SERVER_PORT = "SERVER_PORT";
+
+    public static final String SERVER_STARTUP_ARGS = "SERVER_STARTUP_ARGS";
 }

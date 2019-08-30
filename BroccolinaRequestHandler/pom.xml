@@ -34,7 +34,7 @@
             <artifactId>javache-api</artifactId>
             <scope>system</scope>
             <version>1.2.6</version>
-            <systemPath>${basedir}/lib/javache-api-1.2.6.jar</systemPath>
+            <systemPath>${basedir}/lib/javache-api-1.2.7.jar</systemPath>
         </dependency>
 
         <dependency>

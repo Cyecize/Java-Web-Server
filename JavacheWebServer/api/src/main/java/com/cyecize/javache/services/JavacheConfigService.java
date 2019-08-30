@@ -5,6 +5,8 @@ import java.util.Map;
 
 public interface JavacheConfigService {
 
+    void addConfigParam(String paramName, Object value);
+
     <T> T getConfigParam(String paramName, Class<T> type);
 
     List<String> getRequestHandlerPriority();

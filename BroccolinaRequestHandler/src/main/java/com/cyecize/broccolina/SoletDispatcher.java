@@ -238,6 +238,7 @@ public class SoletDispatcher implements RequestHandler {
     private SoletConfig createSoletConfig() {
         SoletConfig soletConfig = new SoletConfigImpl();
         soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY, this.sessionManagementService.getSessionStorage());
+        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY, this.configService);
         //TODO add more items here
         return soletConfig;
     }

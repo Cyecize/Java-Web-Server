@@ -27,7 +27,6 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
     private List<RequestHandler> requestHandlers;
 
     public RequestHandlerLoadingServiceImpl(JavacheConfigService configService) {
-
         this.configService = configService;
     }
 

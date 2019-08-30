@@ -22,7 +22,7 @@ public class StartUp {
             port = Integer.parseInt(args[0]);
         }
 
-        JavacheConfigService configService = new JavacheConfigServiceImpl();
+        final JavacheConfigService configService = new JavacheConfigServiceImpl();
         configService.addConfigParam(ConfigConstants.SERVER_PORT, port);
         configService.addConfigParam(ConfigConstants.SERVER_STARTUP_ARGS, args);
 

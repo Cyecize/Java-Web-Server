@@ -4,5 +4,7 @@ public class BroccolinaConstants {
 
     public static final String SOLET_CONFIG_SESSION_STORAGE_KEY = "SESSION_STORAGE";
 
+    public static final String SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY = "SERVER_CONFIG";
+
     public static final long SESSION_EXPIRE_DAYS = 1;
 }

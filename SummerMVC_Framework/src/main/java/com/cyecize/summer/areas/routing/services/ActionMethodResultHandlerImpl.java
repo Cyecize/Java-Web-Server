@@ -72,10 +72,16 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      */
     private void executeSuitableMethod(ActionInvokeResult result) {
         Object methodInvokeResult = result.getInvocationResult();
+        if (methodInvokeResult == null) {
+            this.handleNullResponse();
+            return;
+        }
+
         Class<?> actionResultType = methodInvokeResult.getClass();
         Method suitableMethod = Arrays.stream(ActionMethodResultHandlerImpl.class.getDeclaredMethods())
                 .filter(m -> m.getParameterCount() == 1 && actionResultType.isAssignableFrom(m.getParameterTypes()[0]))
                 .findFirst().orElse(null);
+
         if (suitableMethod != null) {
             suitableMethod.setAccessible(true);
             try {
@@ -166,6 +172,10 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         } else {
             this.response.setContent(result);
         }
+    }
+
+    private void handleNullResponse() {
+        this.response.setContent("");
     }
 
     /**

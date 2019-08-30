@@ -10,92 +10,44 @@ public class PrimitiveTypeDataResolver {
      * If the type is not primitive, return null.
      */
     public Object resolve(Class<?> primitiveType, String data) {
-        if (primitiveType == byte.class) {
-            Object parsed = this.tryParse(() -> Byte.parseByte(data));
-            if (parsed != null) return parsed;
-            return 0;
+        if (primitiveType == Byte.class || primitiveType == byte.class) {
+            return this.tryParse(primitiveType, () -> Byte.parseByte(data));
         }
 
-        if (primitiveType == Byte.class) {
-            return this.tryParse(() -> Byte.parseByte(data));
+        if (primitiveType == Short.class || primitiveType == short.class) {
+            return this.tryParse(primitiveType, () -> Short.parseShort(data));
         }
 
-        if (primitiveType == short.class) {
-            Object parsed = this.tryParse(() -> Short.parseShort(data));
-            if (parsed != null) return parsed;
-            return 0;
+        if (primitiveType == Integer.class || primitiveType == int.class) {
+            return this.tryParse(primitiveType, () -> Integer.parseInt(data));
         }
 
-        if (primitiveType == Short.class) {
-            return this.tryParse(() -> Short.parseShort(data));
+        if (primitiveType == Long.class || primitiveType == long.class) {
+            return this.tryParse(primitiveType, (() -> Long.parseLong(data)));
         }
 
-        if (primitiveType == int.class) {
-            Object parsed = this.tryParse(() -> Integer.parseInt(data));
-            if (parsed != null) return parsed;
-            return 0;
+        if (primitiveType == Float.class || primitiveType == float.class) {
+            return this.tryParse(primitiveType, (() -> Float.parseFloat(data)));
         }
 
-        if (primitiveType == Integer.class) {
-            return this.tryParse(() -> Integer.parseInt(data));
+        if (primitiveType == Double.class || primitiveType == double.class) {
+            return this.tryParse(primitiveType, (() -> Double.parseDouble(data)));
         }
 
-        if (primitiveType == long.class) {
-            Object parsed = this.tryParse((() -> Long.parseLong(data)));
-            if (parsed != null) return parsed;
-            return 0L;
+        if (primitiveType == Boolean.class || primitiveType == boolean.class) {
+            return this.tryParse(primitiveType, (() -> Boolean.parseBoolean(data)));
         }
 
-        if (primitiveType == Long.class) {
-            return this.tryParse((() -> Long.parseLong(data)));
-        }
-
-        if (primitiveType == float.class) {
-            Object parsed = this.tryParse((() -> Float.parseFloat(data)));
-            if (parsed != null) return parsed;
-            return 0.0F;
-        }
-
-        if (primitiveType == Float.class) {
-            return this.tryParse((() -> Float.parseFloat(data)));
-        }
-
-        if (primitiveType == double.class) {
-            Object parsed = this.tryParse((() -> Double.parseDouble(data)));
-            if (parsed != null) return parsed;
-            return 0.0D;
-        }
-
-        if (primitiveType == Double.class) {
-            return this.tryParse((() -> Double.parseDouble(data)));
-        }
-
-        if (primitiveType == boolean.class) {
-            Object parsed = this.tryParse((() -> Boolean.parseBoolean(data)));
-            if (parsed != null) return parsed;
-            return false;
-        }
-
-        if (primitiveType == Boolean.class) {
-            return this.tryParse((() -> Boolean.parseBoolean(data)));
-        }
-
-        if (primitiveType == char.class) {
-            Object parsed = this.tryParse((() -> data.charAt(0)));
-            if (parsed != null) return parsed;
-            return '\u0000';
-        }
-
-        if (primitiveType == Character.class) {
-            this.tryParse((() -> data.charAt(0)));
+        if (primitiveType == char.class || primitiveType == Character.class) {
+            return this.tryParse(primitiveType, () -> data.charAt(0));
         }
 
         if (primitiveType == BigInteger.class) {
-            return this.tryParse(() -> new BigInteger(data));
+            return this.tryParse(primitiveType, () -> new BigInteger(data));
         }
 
         if (primitiveType == BigDecimal.class) {
-            return this.tryParse(() -> new BigDecimal(data));
+            return this.tryParse(primitiveType, () -> new BigDecimal(data));
         }
 
         if (primitiveType == String.class) {
@@ -106,14 +58,28 @@ public class PrimitiveTypeDataResolver {
     }
 
     /**
-     * Accepts functional interface and tries to call the function.
-     * If there is an exception, return null.
+     * Returns the default value of the type (null if the type is not primitive).
      */
-    private Object tryParse(TryParse function) {
+    public Object defaultValue(Class<?> type) {
+        if (type == byte.class || type == short.class || type == int.class) return 0;
+        if (type == long.class) return 0L;
+        if (type == float.class) return 0.0f;
+        if (type == double.class) return 0.0d;
+        if (type == char.class) return '\u0000';
+        if (type == boolean.class) return false;
+
+        return null;
+    }
+
+    /**
+     * Accepts functional interface and tries to call the function.
+     * If there is an exception, return the default value of that type.
+     */
+    private Object tryParse(Class<?> type, TryParse function) {
         try {
             return function.parse();
         } catch (Exception ex) {
-            return null;
+            return this.defaultValue(type);
         }
     }
 }

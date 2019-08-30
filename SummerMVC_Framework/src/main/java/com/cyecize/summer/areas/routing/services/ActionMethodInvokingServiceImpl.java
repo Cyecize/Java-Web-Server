@@ -224,7 +224,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             if (requestParam.required()) {
                 throw new UnsatisfiedRequestParamException(requestParam.value());
             } else {
-                return null;
+                return this.dataResolver.defaultValue(parameter.getType());
             }
         }
 

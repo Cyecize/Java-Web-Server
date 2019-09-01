@@ -1,5 +1,8 @@
 package com.cyecize;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 public class WebConstants {
 
     private final static String START_UP_PACKAGE_PATH = StartUp.class.getName()
@@ -8,9 +11,9 @@ public class WebConstants {
 
     public static final int DEFAULT_SERVER_PORT = 8000;
 
-    public static final String WORKING_DIRECTORY = StartUp.class.getResource("").toString()
+    public static final String WORKING_DIRECTORY = URLDecoder.decode(StartUp.class.getResource("").toString()
             .replace("file:/", "")
-            .replace(START_UP_PACKAGE_PATH, "");
+            .replace(START_UP_PACKAGE_PATH, ""), StandardCharsets.UTF_8);
 
     private WebConstants() {
 

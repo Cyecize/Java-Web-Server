@@ -4,7 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cyecize</groupId>
+    <parent>
+        <groupId>com.cyecize</groupId>
+        <artifactId>javache-parent</artifactId>
+        <version>1.0</version>
+        <relativePath>../</relativePath>
+    </parent>
+
     <artifactId>summer</artifactId>
     <version>1.0</version>
     <build>
@@ -32,8 +38,8 @@
                             <artifactSet>
                                 <excludes>
                                     <!--<exclude>mysql:mysql-connector-java</exclude>-->
-                                    <exclude>cyecize:http</exclude>
-                                    <exclude>cyecize:solet</exclude>
+<!--                                    <exclude>cyecize:http</exclude>-->
+<!--                                    <exclude>cyecize:solet</exclude>-->
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -44,21 +50,16 @@
     </build>
 
     <dependencies>
-
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>http</artifactId>
-            <scope>system</scope>
             <version>1.2.2</version>
-            <systemPath>${basedir}/lib/http-1.2.2.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
-            <scope>system</scope>
             <version>1.2.0</version>
-            <systemPath>${basedir}/lib/solet-1.2.0.jar</systemPath>
         </dependency>
 
         <!-- Third party dependencies -->

@@ -4,9 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cyecize</groupId>
+    <parent>
+        <groupId>com.cyecize</groupId>
+        <artifactId>javache-parent</artifactId>
+        <version>1.0</version>
+        <relativePath>../</relativePath>
+    </parent>
+
     <artifactId>solet</artifactId>
     <version>1.2.0</version>
+
     <build>
         <plugins>
             <plugin>
@@ -31,7 +38,7 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>cyecize:http</exclude>
+                                    <exclude>com.cyecize:http</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -45,9 +52,7 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>http</artifactId>
-            <scope>system</scope>
-            <version>1.2.1</version>
-            <systemPath>${basedir}/lib/http-1.2.1.jar</systemPath>
+            <version>1.2.2</version>
         </dependency>
 
         <dependency>
@@ -64,4 +69,6 @@
 
     </dependencies>
 
+    <!-- cd target -->
+    <!-- mvn deploy:deploy-file -Durl=file://C:\_projects\javache\LocalRepository -Dfile=original-solet-1.2.0.jar -DgroupId=com.cyecize  -DartifactId=solet -Dpackaging=jar -Dversion=1.2.0 -DpomFile=../solet-deploy.pom  -->
 </project>

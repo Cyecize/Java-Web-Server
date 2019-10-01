@@ -4,16 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cyecize</groupId>
+    <parent>
+        <groupId>com.cyecize</groupId>
+        <artifactId>javache-parent</artifactId>
+        <version>1.0</version>
+        <relativePath>../../</relativePath>
+    </parent>
+
     <artifactId>javache-embedded</artifactId>
     <version>1.0</version>
-
-    <repositories>
-        <repository>
-            <id>javache-repo</id>
-            <url>file://${basedir}/lib</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
@@ -39,8 +38,7 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <!--<exclude>mysql:mysql-connector-java</exclude>-->
-                                    <!--<exclude>cyecize:http</exclude>-->
+                                    <exclude>com.cyecize:http</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -57,51 +55,27 @@
             <groupId>com.cyecize</groupId>
             <artifactId>javache</artifactId>
             <version>1.0</version>
-            <scope>compile</scope>
-            <!--<systemPath>${basedir}/lib/javache-1.0.jar</systemPath>-->
-        </dependency>
-
-        <dependency>
-            <groupId>com.cyecize</groupId>
-            <artifactId>javache-api</artifactId>
-            <version>1.2.7</version>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${basedir}/lib/javache-api-1.2.5.jar</systemPath>-->
         </dependency>
 
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>broccolina</artifactId>
             <version>1.1</version>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${basedir}/lib/broccolina-1.0.jar</systemPath>-->
         </dependency>
 
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>toyote</artifactId>
             <version>1.1</version>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${basedir}/lib/toyote-1.0.jar</systemPath>-->
         </dependency>
 
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
             <version>1.2.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/solet-1.2.0.jar</systemPath>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
 
 </project>
-        <!-- Run this to install a local lib -->
-        <!-- You need to run those commands every time you make a change in one of the jars -->
-        <!-- This is required becase we are using local dependencies on a local repository so we need to install them in the .m2 folder -->
-        <!-- -DlocalRepositoryPath= will vary so make sure you change it with your maven cache folder (on Windows usually .m2 folder in user files) -->
-
-        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-1.0.jar -DgroupId=com.cyecize -DartifactId=javache -Dversion=1.0 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
-        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/javache-api-1.2.7.jar -DgroupId=com.cyecize -DartifactId=javache-api -Dversion=1.2.7 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
-        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/broccolina-1.1.jar -DgroupId=com.cyecize -DartifactId=broccolina -Dversion=1.1 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->
-        <!-- mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=${basedir}/lib/toyote-1.1.jar -DgroupId=com.cyecize -DartifactId=toyote -Dversion=1.1 -Dpackaging=jar -DlocalRepositoryPath=C:\Users\tyaki\.m2\repository -->

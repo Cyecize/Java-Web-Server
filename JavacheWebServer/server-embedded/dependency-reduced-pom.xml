@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>javache-parent</artifactId>
+    <groupId>com.cyecize</groupId>
+    <version>1.0</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.cyecize</groupId>
   <artifactId>javache-embedded</artifactId>
   <version>1.0</version>
   <build>
@@ -24,7 +29,9 @@
             </goals>
             <configuration>
               <artifactSet>
-                <excludes />
+                <excludes>
+                  <exclude>com.cyecize:http</exclude>
+                </excludes>
               </artifactSet>
             </configuration>
           </execution>
@@ -32,19 +39,22 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>javache-repo</id>
-      <url>file://${basedir}/lib</url>
-    </repository>
-  </repositories>
   <dependencies>
     <dependency>
       <groupId>com.cyecize</groupId>
       <artifactId>solet</artifactId>
       <version>1.2.0</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/lib/solet-1.2.0.jar</systemPath>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>delight-fileupload</artifactId>
+          <groupId>org.javadelight</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>servlet-api</artifactId>
+          <groupId>javax.servlet</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>

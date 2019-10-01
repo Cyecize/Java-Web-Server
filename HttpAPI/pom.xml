@@ -20,4 +20,6 @@
         </plugins>
     </build>
 
+    <!-- To deploy cd target, and then: -->
+   <!-- mvn deploy:deploy-file -Durl=file://C:\_projects\javache\LocalRepository -Dfile=http-1.2.2.jar -DgroupId=com.cyecize  -DartifactId=http -Dpackaging=jar -Dversion=1.2.2  -->
 </project>

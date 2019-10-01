@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.cyecize</groupId>
+  <artifactId>toyote</artifactId>
+  <version>1.1</version>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.cyecize</groupId>
+      <artifactId>http</artifactId>
+      <version>1.2.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.cyecize</groupId>
+      <artifactId>javache-api</artifactId>
+      <version>1.2.7</version>
+    </dependency>
+
+    <!-- Third party dependencies -->
+    <!-- https://mvnrepository.com/artifact/org.osgi/org.osgi.core -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <version>4.3.0</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.osgi/org.osgi.util.tracker -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.util.tracker</artifactId>
+      <version>1.5.1</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>1.22</version>
+    </dependency>
+
+  </dependencies>
+
+</project>

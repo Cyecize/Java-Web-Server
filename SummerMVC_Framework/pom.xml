@@ -52,14 +52,8 @@
     <dependencies>
         <dependency>
             <groupId>com.cyecize</groupId>
-            <artifactId>http</artifactId>
-            <version>1.2.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
-            <version>1.2.0</version>
+            <version>${version.solet}</version>
         </dependency>
 
         <!-- Third party dependencies -->

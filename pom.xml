@@ -11,6 +11,15 @@
 
   <packaging>pom</packaging>
   
+  <properties>
+	<version.http>1.2.2</version.http>
+	<version.solet>1.2.0</version.solet>
+	<version.toyote>1.1</version.toyote>
+	<version.javache-api>1.2.7</version.javache-api>
+	<version.broccolina>1.1</version.broccolina>
+	<version.javache>1.0</version.javache>
+  </properties>
+  
   <repositories>
     <repository>
         <id>project.local</id>

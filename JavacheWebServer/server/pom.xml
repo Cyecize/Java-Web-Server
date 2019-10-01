@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
-            <version>1.2.7</version>
+            <version>${version.javache-api}</version>
         </dependency>
     </dependencies>
 

@@ -53,13 +53,13 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>http</artifactId>
-            <version>1.2.2</version>
+            <version>${version.http}</version>
         </dependency>
 
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>javache-api</artifactId>
-            <version>1.2.7</version>
+            <version>${version.javache-api}</version>
         </dependency>
 
         <!-- Third party dependencies -->

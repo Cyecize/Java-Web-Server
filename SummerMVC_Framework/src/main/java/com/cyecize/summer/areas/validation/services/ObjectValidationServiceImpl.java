@@ -2,22 +2,18 @@ package com.cyecize.summer.areas.validation.services;
 
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.Constraint;
-import com.cyecize.summer.areas.validation.constraints.*;
 import com.cyecize.summer.areas.validation.exceptions.ValidationException;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
 import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.areas.validation.models.FieldError;
 import com.cyecize.summer.common.annotations.Component;
-import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.utils.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+
 
 public class ObjectValidationServiceImpl implements ObjectValidationService {
 
@@ -25,13 +21,10 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
 
     private static final String ADD_ANNOTATION_TO_CLASS_FORMAT = "Validator \"%s\" not annotated with @Component";
 
-    private Map<Class<?>, ConstraintValidator> classValidatorMap;
-
     private final DependencyContainer dependencyContainer;
 
-    public ObjectValidationServiceImpl(Set<Object> validators, DependencyContainer dependencyContainer) {
+    public ObjectValidationServiceImpl(DependencyContainer dependencyContainer) {
         this.dependencyContainer = dependencyContainer;
-        this.setClassValidatorMap(validators);
     }
 
     /**
@@ -53,7 +46,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
      * If an annotation is annotated with @Constraint, get the constraint validator.
      * If the constraintValidator is null, throw ValidationException.
      * Reload the validator if lifeSpan == REQUEST
-     *
+     * <p>
      * If the validator returns false, add new FieldError to the bindingResult.
      */
     @SuppressWarnings("unchecked")
@@ -68,13 +61,11 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                 }
 
                 Constraint constraint = currentAnnotation.annotationType().getAnnotation(Constraint.class);
-                ConstraintValidator validator = this.classValidatorMap.get(constraint.validatedBy());
+                ConstraintValidator validator = this.dependencyContainer.getService(constraint.validatedBy());
 
                 if (validator == null || constraint.validatedBy().getAnnotation(Component.class) == null) {
                     throw new ValidationException(String.format(ADD_ANNOTATION_TO_CLASS_FORMAT, constraint.validatedBy().getName()));
                 }
-
-                validator = this.dependencyContainer.reloadComponent(validator, ServiceLifeSpan.REQUEST);
 
                 validator.initialize(currentAnnotation);
 
@@ -105,32 +96,5 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ValidationException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Converts the set of objects to a map of Class and ConstraintValidator
-     * Then calls the addPlatformValidators method.
-     */
-    private void setClassValidatorMap(Set<Object> validators) {
-        this.classValidatorMap = new HashMap<>();
-        for (Object validator : validators) {
-            this.classValidatorMap.put(validator.getClass(), (ConstraintValidator) validator);
-        }
-        this.addPlatformValidators();
-    }
-
-    /**
-     * Add Platform validators here
-     */
-    private void addPlatformValidators() {
-        this.classValidatorMap.put(NotNullConstraint.class, new NotNullConstraint());
-        this.classValidatorMap.put(NotEmptyConstraint.class, new NotEmptyConstraint());
-        this.classValidatorMap.put(FieldMatchConstraint.class, new FieldMatchConstraint());
-        this.classValidatorMap.put(MaxLengthConstraint.class, new MaxLengthConstraint());
-        this.classValidatorMap.put(MinLengthConstraint.class, new MinLengthConstraint());
-        this.classValidatorMap.put(MaxConstraint.class, new MaxConstraint());
-        this.classValidatorMap.put(MinConstraint.class, new MinConstraint());
-        this.classValidatorMap.put(RegExConstraint.class, new RegExConstraint());
-        this.classValidatorMap.put(MediaTypeConstraint.class, new MediaTypeConstraint());
     }
 }

@@ -5,18 +5,11 @@ import com.cyecize.solet.*;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.*;
-import com.cyecize.summer.areas.scanning.exceptions.PostConstructException;
 import com.cyecize.summer.areas.scanning.models.ScannedObjects;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
-import com.cyecize.summer.areas.scanning.services.PostConstructInvokingService;
-import com.cyecize.summer.areas.scanning.services.PostConstructInvokingServiceImpl;
-import com.cyecize.summer.areas.security.interfaces.UserDetails;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
-import com.cyecize.summer.areas.validation.models.BindingResultImpl;
-import com.cyecize.summer.areas.validation.models.FieldError;
-import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageService;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImpl;
 import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
@@ -25,8 +18,6 @@ import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.*;
 import com.cyecize.summer.constants.RoutingConstants;
 import com.cyecize.summer.constants.SecurityConstants;
-
-import java.util.*;
 
 import static com.cyecize.summer.constants.IocConstants.*;
 
@@ -51,8 +42,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     protected DispatcherSolet() {
         super();
-        this.dependencyContainer = SummerBootApplication.dependencyContainer;
-        this.dependencyContainer.addPlatformBean(new Principal());
     }
 
     /**
@@ -69,13 +58,13 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
             return;
         }
 
-        if (!this.interceptorService.preHandle(request, response, method, false)) {
+        if (!this.interceptorService.preHandle(request, response, method)) {
             return;
         }
 
         ActionInvokeResult result = this.methodInvokingService.invokeMethod(method);
         this.methodResultHandler.handleActionResult(result);
-        this.interceptorService.postHandle(request, response, result, this.dependencyContainer.getObject(Model.class));
+        this.interceptorService.postHandle(request, response, result, this.dependencyContainer.getService(Model.class));
     }
 
     /**
@@ -90,12 +79,12 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         super.setHasIntercepted(true);
-        this.addPlatformBeans(request, response);
-        dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
-        this.dataAdapterStorageService.reloadRequestScopedAdapters();
+        this.updatePlatformBeans(request, response);
+        this.dependencyContainer.clearFlashServices();
+        this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
 
         try {
-            if (this.interceptorService.preHandle(request, response, dependencyContainer, true)) {
+            if (this.interceptorService.preHandle(request, response, dependencyContainer)) {
                 super.service(request, response);
             }
         } catch (Exception ex) {
@@ -106,10 +95,9 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
             }
         }
 
-        request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getObject(Principal.class).getUser());
-        request.getSession().addAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID, dependencyContainer.getObject(RedirectAttributes.class).getAttributes());
-        request.getSession().addAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID, dependencyContainer.getObject(BindingResult.class).getErrors());
-        dependencyContainer.evictPlatformBeans();
+        request.getSession().addAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY, dependencyContainer.getService(Principal.class).getUser());
+        request.getSession().addAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID, dependencyContainer.getService(RedirectAttributes.class).getAttributes());
+        request.getSession().addAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID, dependencyContainer.getService(BindingResult.class).getErrors());
     }
 
     /**
@@ -119,7 +107,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     private void processException(Exception ex) {
         ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
         if (exResult == null) {
-            this.whitePageException(this.dependencyContainer.getObject(HttpSoletResponse.class), ex);
+            this.whitePageException(this.dependencyContainer.getService(HttpSoletResponse.class), ex);
             return;
         }
 
@@ -127,29 +115,12 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     }
 
     /**
-     * Adds platform beans on every request, including the dependency container itself.
+     * Updates request beans on every request.
      */
-    @SuppressWarnings("unchecked")
-    private void addPlatformBeans(HttpSoletRequest request, HttpSoletResponse response) {
-        this.addPlatformBean(this.dependencyContainer);
-        this.addPlatformBean(request);
-        this.addPlatformBean(response);
-        this.addPlatformBean(this.getSoletConfig());
-        this.addPlatformBean(request.getSession());
-        this.addPlatformBean(this.renderingService);
-        this.addPlatformBean(new Model((Map<String, Object>) request.getSession().getAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID)));
-        this.addPlatformBean(new ModelAndView());
-        this.addPlatformBean(new RedirectAttributes());
-        this.addPlatformBean(new Principal((UserDetails) request.getSession().getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY)));
-        this.addPlatformBean(new BindingResultImpl());
-        this.addPlatformBean(new RedirectedBindingResult((List<FieldError>) request.getSession().getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID)));
-    }
-
-    /**
-     * Add platform bean
-     */
-    private void addPlatformBean(Object bean) {
-        this.dependencyContainer.addPlatformBean(bean);
+    private void updatePlatformBeans(HttpSoletRequest request, HttpSoletResponse response) {
+        this.dependencyContainer.update(request);
+        this.dependencyContainer.update(response);
+        this.dependencyContainer.update(request.getSession());
     }
 
     /**
@@ -170,23 +141,10 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public final void init(SoletConfig soletConfig) {
         super.init(soletConfig);
-        dependencyContainer.addServices(Collections.singleton(soletConfig));
+        dependencyContainer.update(soletConfig);
 
         this.getSoletConfig().setAttribute(SOLET_CFG_SCANNED_OBJECTS, this.scannedObjects);
         this.getSoletConfig().setAttribute(SOLET_CFG_ASSETS_DIR, this.assetsFolder);
-
-        try {
-            PostConstructInvokingService postConstructInvokingService = new PostConstructInvokingServiceImpl();
-
-            postConstructInvokingService.invokePostConstructMethod(this.scannedObjects.getLoadedServicesAndObjects());
-            postConstructInvokingService.invokePostConstructMethod(this.scannedObjects.getLoadedControllers().values());
-            for (Set<Object> components : this.scannedObjects.getLoadedComponents().values()) {
-                postConstructInvokingService.invokePostConstructMethod(components);
-            }
-
-        } catch (PostConstructException ex) {
-            throw new RuntimeException(ex);
-        }
 
         this.onApplicationLoaded();
     }
@@ -197,16 +155,16 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      * @param scannedObjects objects received from the scanning process
      */
     final void initSummerBoot(ScannedObjects scannedObjects) {
+        this.dependencyContainer = SummerBootApplication.dependencyContainer;
         this.scannedObjects = scannedObjects;
         this.workingDir = scannedObjects.getWorkingDir();
 
-        Map<String, Set<Object>> components = scannedObjects.getLoadedComponents();
-        this.dataAdapterStorageService = new DataAdapterStorageServiceImpl(this.dependencyContainer, components.get(COMPONENT_MAP_DATA_ADAPTERS));
+        this.dataAdapterStorageService = new DataAdapterStorageServiceImpl(this.dependencyContainer);
 
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                 this.dependencyContainer,
                 new ObjectBindingServiceImpl(this.dependencyContainer, this.dataAdapterStorageService),
-                new ObjectValidationServiceImpl(components.get(COMPONENT_MAP_VALIDATORS), this.dependencyContainer),
+                new ObjectValidationServiceImpl(this.dependencyContainer),
                 this.dataAdapterStorageService,
                 scannedObjects.getActionsByMethod(),
                 scannedObjects.getLoadedControllers());
@@ -214,7 +172,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
         this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, this.renderingService);
 
-        this.interceptorService = new InterceptorInvokerServiceImpl(components.get(COMPONENT_MAP_INTERCEPTORS), this.dependencyContainer);
+        this.interceptorService = new InterceptorInvokerServiceImpl(this.dependencyContainer);
     }
 
     /**

@@ -5,25 +5,13 @@ import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-public interface DependencyContainer {
-
-    void addServices(Set<Object> services);
+public interface DependencyContainer extends com.cyecize.ioc.services.DependencyContainer {
 
     void reloadServices(ServiceLifeSpan lifeSpan);
 
-    void addPlatformBean(Object object);
+    void addFlashService(Object service);
 
-    void evictPlatformBeans();
+    <T> T getFlashService(Class<?> serviceType);
 
-    <T> T reloadComponent(T component);
-
-    <T> T reloadComponent(T component, ServiceLifeSpan lifeSpan);
-
-    <T> T getObject(Class<T> objType);
-
-    Set<Object> getServicesAndBeans();
-
-    Set<Object> getServicesByAnnotation(Class<? extends Annotation> annotationType);
-
-    Set<Object> getPlatformBeans();
+    void clearFlashServices();
 }

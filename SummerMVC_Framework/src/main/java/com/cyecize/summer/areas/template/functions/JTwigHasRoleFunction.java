@@ -31,7 +31,8 @@ public class JTwigHasRoleFunction extends SimpleJtwigFunction {
         if (functionRequest.getArguments().size() != 1 || !(functionRequest.get(0) instanceof String)) {
             throw new JtwigException(INVALID_PARAMETER_MESSAGE);
         }
-        Principal principal = this.dependencyContainer.getObject(Principal.class);
+
+        final Principal principal = this.dependencyContainer.getService(Principal.class);
         return principal.isUserPresent() && principal.hasAuthority((String) functionRequest.get(0));
     }
 }

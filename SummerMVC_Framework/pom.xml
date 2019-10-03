@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>summer</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <build>
         <plugins>
             <plugin>
@@ -54,6 +54,12 @@
             <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
             <version>${version.solet}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>ioc</artifactId>
+            <version>1.1</version>
         </dependency>
 
         <!-- Third party dependencies -->

@@ -1,9 +1,15 @@
 package com.cyecize.summer.areas.validation.models;
 
+import com.cyecize.http.HttpSession;
+import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.constants.RoutingConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component(lifespan = ServiceLifeSpan.REQUEST)
 public class RedirectedBindingResult {
     private List<FieldError> errors;
 
@@ -11,8 +17,9 @@ public class RedirectedBindingResult {
         this.errors = new ArrayList<>();
     }
 
-    public RedirectedBindingResult(List<FieldError> errors) {
+    public RedirectedBindingResult(HttpSession session) {
         this();
+        List<FieldError> errors = (List<FieldError>) session.getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID);
         if (errors != null) {
             this.errors = errors;
         }

@@ -1,234 +1,131 @@
 package com.cyecize.summer.areas.scanning.services;
 
-import com.cyecize.summer.areas.scanning.exceptions.ServiceLoadException;
-import com.cyecize.summer.common.annotations.Component;
-import com.cyecize.summer.common.annotations.Service;
+import com.cyecize.ioc.exceptions.AlreadyInitializedException;
+import com.cyecize.ioc.models.ServiceDetails;
+import com.cyecize.ioc.services.ObjectInstantiationService;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
-import com.cyecize.summer.utils.ReflectionUtils;
+import com.cyecize.summer.constants.IocConstants;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class DependencyContainerImpl implements DependencyContainer {
 
-    private Set<Object> allServicesAndBeans;
+    private final com.cyecize.ioc.services.DependencyContainer dependencyContainer;
 
-    private Set<Object> platformBeans;
+    private final Map<ServiceLifeSpan, Collection<ServiceDetails>> cachedServicesByLifespan;
 
-    private Map<ServiceLifeSpan, List<Class<?>>> cachedClassesByLifeSpan;
+    private final Collection<Object> flashServices;
 
-    public DependencyContainerImpl() {
-        this.allServicesAndBeans = new HashSet<>();
-        this.platformBeans = new HashSet<>();
-        this.cachedClassesByLifeSpan = new HashMap<>();
+    public DependencyContainerImpl(com.cyecize.ioc.services.DependencyContainer dependencyContainer) {
+        this.dependencyContainer = dependencyContainer;
+        this.cachedServicesByLifespan = new HashMap<>();
+        this.flashServices = new ArrayList<>();
     }
 
-    @Override
-    public void addServices(Set<Object> services) {
-        this.allServicesAndBeans.addAll(services);
-    }
-
-    /**
-     * Gets classes with the given lifeSpan.
-     * Filters out the currently instantiated services that have the given serviceLifeSpan.
-     * Iterates the classes that need to be loaded and reloads them.
-     */
     @Override
     public void reloadServices(ServiceLifeSpan lifeSpan) {
-        List<Class<?>> classesToReload = this.getOrCacheClassesByLifespan(lifeSpan);
-        this.allServicesAndBeans = this.allServicesAndBeans.stream()
-                .filter((service) -> !this.isServiceToBeReloaded(service.getClass(), lifeSpan))
-                .collect(Collectors.toSet());
-        try {
-            for (Class<?> clsToReload : classesToReload) {
-                this.loadService(clsToReload, lifeSpan);
-            }
-        } catch (ServiceLoadException ex) {
-            //this should not be reached since services have been
-            // successfully initialized before in the ServiceLoadingService
-            ex.printStackTrace();
+        for (ServiceDetails serviceDetails : this.getOrCacheServicesByLifeSpan(lifeSpan)) {
+            this.reload(serviceDetails);
         }
     }
 
-    @Override
-    public void addPlatformBean(Object object) {
-        this.platformBeans.add(object);
-    }
+    private Collection<ServiceDetails> getOrCacheServicesByLifeSpan(ServiceLifeSpan serviceLifeSpan) {
+        if (!this.cachedServicesByLifespan.containsKey(serviceLifeSpan)) {
+            final Set<ServiceDetails> servicesByAnnotation = new HashSet<>();
 
-    @Override
-    public void evictPlatformBeans() {
-        this.platformBeans = new HashSet<>();
-    }
+            for (Class<? extends Annotation> serviceAnnotation : IocConstants.SERVICE_ANNOTATIONS) {
+                servicesByAnnotation.addAll(this.getServicesByAnnotation(serviceAnnotation).stream().filter(sd -> {
+                    try {
+                        final Method method = sd.getAnnotation().annotationType().getDeclaredMethod(IocConstants.SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME);
+                        method.setAccessible(true);
 
-    /**
-     * Finds a suitable constructor of the given component.
-     * Collects all required parameters (if any) and returns new instance of the component.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T reloadComponent(T component) {
-        try {
-            Class componentClass = component.getClass();
-            Constructor<T> constructor = ReflectionUtils.findConstructor(componentClass);
+                        final ServiceLifeSpan lifeSpan = (ServiceLifeSpan) method.invoke(sd.getAnnotation());
 
-            Object[] paramInstances = new Object[constructor.getParameterCount()];
-            Class<?>[] paramTypes = constructor.getParameterTypes();
-            for (int i = 0; i < paramTypes.length; i++) {
-                paramInstances[i] = this.getObject(paramTypes[i]);
+                        return lifeSpan == serviceLifeSpan;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toSet()));
             }
 
-            return (T) constructor.newInstance(paramInstances);
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            //should not be reached
-            e.printStackTrace();
+            this.cachedServicesByLifespan.put(serviceLifeSpan, servicesByAnnotation);
+        }
+
+        return this.cachedServicesByLifespan.get(serviceLifeSpan);
+    }
+
+    @Override
+    public void addFlashService(Object service) {
+        this.flashServices.add(service);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getFlashService(Class<?> serviceType) {
+        for (Object flashService : this.flashServices) {
+            if (serviceType.isAssignableFrom(flashService.getClass())) {
+                return (T) flashService;
+            }
         }
 
         return null;
     }
 
-    /**
-     * Reloads component only if the lifeSpan if the component is equal
-     * to the required lifeSpan.
-     */
     @Override
-    public <T> T reloadComponent(T component, ServiceLifeSpan lifeSpan) {
-        if (component.getClass().getAnnotation(Component.class).lifespan() != lifeSpan) {
-            return component;
-        }
-
-        return this.reloadComponent(component);
-    }
-
-    /**
-     * Iterates platform beans to find assignable object for objType parameter.
-     * If there is none, looks in allServicesAndBeans.
-     * Returns the type or null if the type is not found.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getObject(Class<T> objType) {
-        return (T) this.platformBeans.stream().filter(pb -> objType.isAssignableFrom(pb.getClass()))
-                .findFirst().orElse(this.allServicesAndBeans.stream()
-                        .filter(sb -> objType.isAssignableFrom(sb.getClass())).findFirst().orElse(null)
-                );
+    public void clearFlashServices() {
+        this.flashServices.clear();
     }
 
     @Override
-    public Set<Object> getServicesAndBeans() {
-        return this.allServicesAndBeans;
+    public void init(Collection<Class<?>> collection, Collection<ServiceDetails> collection1, ObjectInstantiationService objectInstantiationService) throws AlreadyInitializedException {
+
     }
 
     @Override
-    public Set<Object> getServicesByAnnotation(Class<? extends Annotation> annotationType) {
-        return this.allServicesAndBeans.stream()
-                .filter(s -> s.getClass().isAnnotationPresent(annotationType))
-                .collect(Collectors.toSet());
+    public void reload(ServiceDetails serviceDetails) {
+        this.dependencyContainer.reload(serviceDetails);
     }
 
     @Override
-    public Set<Object> getPlatformBeans() {
-        return this.platformBeans;
+    public void reload(Class<?> serviceType) {
+        this.dependencyContainer.reload(serviceType);
     }
 
-    /**
-     * Checks if there is an already loaded service. If there is, return it.
-     * Otherwise get a suitable constructor and collect its parameters (if any)
-     * return an instance of the service type.
-     */
-    private Object loadService(Class<?> serviceClass, ServiceLifeSpan serviceLifeSpan) throws ServiceLoadException {
-        Object alreadyLoadedService = this.findAlreadyLoadedService(serviceClass);
-        if (alreadyLoadedService != null) {
-            return alreadyLoadedService;
-        }
-
-        Constructor<?> constructor = ReflectionUtils.findConstructor(serviceClass);
-
-        Object[] paramInstances = new Object[constructor.getParameterCount()];
-        Class<?>[] paramTypes = constructor.getParameterTypes();
-        for (int i = 0; i < paramTypes.length; i++) {
-            paramInstances[i] = this.findAssignableService(paramTypes[i], serviceLifeSpan);
-        }
-
-        return this.instantiateService(constructor, paramInstances);
+    @Override
+    public void update(Object service) {
+        this.dependencyContainer.update(service);
     }
 
-    /**
-     * Looks for assignable object for a given parameter.
-     * First checks the already loaded services.
-     * If there is no assignable object in the already loaded services, checks
-     * in the cached types. If a class is found, load that class and return it.
-     */
-    private Object findAssignableService(Class<?> param, ServiceLifeSpan lifeSpan) throws ServiceLoadException {
-        for (Object service : this.allServicesAndBeans) {
-            if (param.isAssignableFrom(service.getClass())) {
-                return service;
-            }
-        }
-
-        for (Class<?> cls : this.cachedClassesByLifeSpan.get(lifeSpan)) {
-            if (param.isAssignableFrom(cls)) {
-                return this.loadService(cls, lifeSpan);
-            }
-        }
-
-        return null; //This should only be reached by platform services
+    @Override
+    public <T> T getService(Class<T> serviceType) {
+        return this.dependencyContainer.getService(serviceType);
     }
 
-    /**
-     * Iterate loaded services/beans and find assignable object for a given type.
-     */
-    private Object findAlreadyLoadedService(Class<?> serviceClass) {
-        return this.allServicesAndBeans.stream()
-                .filter(s -> serviceClass.isAssignableFrom(s.getClass()))
-                .findFirst().orElse(null);
+    @Override
+    public ServiceDetails getServiceDetails(Class<?> serviceType) {
+        return this.dependencyContainer.getServiceDetails(serviceType);
     }
 
-    /**
-     * Instantiate class with given constructor and optional parameters.
-     */
-    private Object instantiateService(Constructor<?> serviceConstructor, Object... params) throws ServiceLoadException {
-        try {
-            Object service = serviceConstructor.newInstance(params);
-            this.allServicesAndBeans.add(service);
-            return service;
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            throw new ServiceLoadException(e.getMessage(), e);
-        }
+    @Override
+    public Collection<Class<?>> getAllScannedClasses() {
+        return this.dependencyContainer.getAllScannedClasses();
     }
 
-    /**
-     * Adds services to a map with key of ServiceLifeSpan and returns the matching classes.
-     * If the check has been performed, returns the value of the map to enhance performance.
-     */
-    private List<Class<?>> getOrCacheClassesByLifespan(ServiceLifeSpan lifeSpan) {
-        if (this.cachedClassesByLifeSpan.containsKey(lifeSpan)) {
-            return this.cachedClassesByLifeSpan.get(lifeSpan);
-        }
-
-        List<Class<?>> classes = new ArrayList<>();
-        for (Object service : this.allServicesAndBeans) {
-            if (this.isServiceToBeReloaded(service.getClass(), lifeSpan)) {
-                classes.add(service.getClass());
-            }
-        }
-
-        this.cachedClassesByLifeSpan.put(lifeSpan, classes);
-        return classes;
+    @Override
+    public Collection<ServiceDetails> getImplementations(Class<?> serviceType) {
+        return this.dependencyContainer.getImplementations(serviceType);
     }
 
-    /**
-     * Checks if serviceType contains annotation @Service and if it has, compares
-     * the lifeSpan with the given one.
-     */
-    private boolean isServiceToBeReloaded(Class<?> serviceClass, ServiceLifeSpan lifeSpan) {
-        if (!serviceClass.isAnnotationPresent(Service.class)) {
-            return false;
-        }
+    @Override
+    public Collection<ServiceDetails> getServicesByAnnotation(Class<? extends Annotation> annotationType) {
+        return this.dependencyContainer.getServicesByAnnotation(annotationType);
+    }
 
-        Service serviceAnnotation = serviceClass.getAnnotation(Service.class);
-        return serviceAnnotation.lifespan() == lifeSpan;
+    @Override
+    public Collection<ServiceDetails> getAllServices() {
+        return this.dependencyContainer.getAllServices();
     }
 }

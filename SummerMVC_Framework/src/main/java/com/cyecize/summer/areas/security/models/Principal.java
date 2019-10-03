@@ -1,11 +1,17 @@
 package com.cyecize.summer.areas.security.models;
 
+import com.cyecize.http.HttpSession;
 import com.cyecize.summer.areas.security.interfaces.GrantedAuthority;
 import com.cyecize.summer.areas.security.interfaces.UserDetails;
+import com.cyecize.summer.common.annotations.Autowired;
+import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.constants.SecurityConstants;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+@Component(lifespan = ServiceLifeSpan.REQUEST)
 public class Principal {
 
     private UserDetails user;
@@ -14,8 +20,9 @@ public class Principal {
 
     }
 
-    public Principal(UserDetails user) {
-        this.user = user;
+    @Autowired
+    public Principal(HttpSession session) {
+        this.user = (UserDetails) session.getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY);
     }
 
     public UserDetails getUser() {

@@ -11,6 +11,7 @@ import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.security.models.SecuredArea;
 import com.cyecize.summer.areas.security.models.SecurityConfig;
 import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.annotations.Optional;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.extensions.InterceptorAdapter;
 
@@ -21,11 +22,11 @@ public class SecurityInterceptor implements InterceptorAdapter {
 
     private static final String NOT_AUTHORIZED_FOR_URL_FORMAT = "User not authorized for \"%s\".";
 
-    private SecurityConfig securityConfig;
+    private final SecurityConfig securityConfig;
 
-    private Principal principal;
+    private final Principal principal;
 
-    public SecurityInterceptor(SecurityConfig securityConfig, Principal principal) {
+    public SecurityInterceptor(@Optional SecurityConfig securityConfig, Principal principal) {
         this.securityConfig = securityConfig;
         this.principal = principal;
     }
@@ -108,6 +109,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
                 this.handleNotPrivileged(request, response);
                 return false;
             }
+
             return true;
         }
 
@@ -117,6 +119,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
                 return false;
             }
         }
+
         return true;
     }
 

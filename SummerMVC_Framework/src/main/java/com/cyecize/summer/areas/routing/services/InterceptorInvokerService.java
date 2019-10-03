@@ -6,7 +6,7 @@ import com.cyecize.summer.common.models.Model;
 
 public interface InterceptorInvokerService {
 
-    boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler, boolean reload) throws Exception;
+    boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler) throws Exception;
 
     void postHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler, Model model) throws Exception;
 }

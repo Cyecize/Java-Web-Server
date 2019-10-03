@@ -28,13 +28,15 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
      */
     @Override
     public Object execute(FunctionRequest functionRequest) {
-        RedirectedBindingResult bindingResult = this.dependencyContainer.getObject(RedirectedBindingResult.class);
+        RedirectedBindingResult bindingResult = this.dependencyContainer.getService(RedirectedBindingResult.class);
         if (functionRequest.getNumberOfArguments() < 1) {
             return bindingResult.getErrors();
         }
+
         if (functionRequest.getNumberOfArguments() > 1 || functionRequest.getArguments().get(0) == null || !(functionRequest.getArguments().get(0) instanceof String)) {
             throw new JtwigException(INVALID_PARAMETER_MESSAGE);
         }
+
         return bindingResult.getFieldErrors((String) functionRequest.getArguments().get(0));
     }
 }

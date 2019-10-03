@@ -9,8 +9,6 @@ import com.cyecize.summer.areas.template.functions.JTwigHasRoleFunction;
 import com.cyecize.summer.areas.template.functions.JTwigPathFunction;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.template.functions.JTwigUrlFunction;
-import com.cyecize.summer.common.annotations.Service;
-import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.constants.RoutingConstants;
 import org.jtwig.JtwigTemplate;
@@ -20,9 +18,7 @@ import org.jtwig.exceptions.JtwigException;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TemplateRenderingTwigService implements TemplateRenderingService {
@@ -36,8 +32,6 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
     private final DependencyContainer dependencyContainer;
 
     private Map<String, Object> templateServices;
-
-    private List<String> templateServicesWithRequestLifeSpan;
 
     private EnvironmentConfiguration twigEnvironmentConfig;
 
@@ -55,6 +49,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
         if (view.startsWith("/")) {
             view = view.substring(1);
         }
+
         this.addGlobalVars(model);
         try {
             JtwigTemplate template = JtwigTemplate.fileTemplate(this.templatesDir + view, this.twigEnvironmentConfig);
@@ -69,22 +64,12 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
      * Add Template services, specified by the user (annotated with @TemplateService).
      */
     private void addGlobalVars(Model model) {
-        this.reloadTemplateServices();
 
-        model.addAttribute(GLOBAL_VAR_USER, this.dependencyContainer.getObject(Principal.class).getUser());
-        model.addAttribute(GLOBAL_VAR_REQUEST, this.dependencyContainer.getObject(HttpSoletRequest.class));
+        model.addAttribute(GLOBAL_VAR_USER, this.dependencyContainer.getService(Principal.class).getUser());
+        model.addAttribute(GLOBAL_VAR_REQUEST, this.dependencyContainer.getService(HttpSoletRequest.class));
 
         for (Map.Entry<String, Object> serviceEntry : this.templateServices.entrySet()) {
             model.addAttribute(serviceEntry.getKey(), serviceEntry.getValue());
-        }
-    }
-
-    /**
-     * Reload services with REQUEST life span.
-     */
-    private void reloadTemplateServices() {
-        for (String serviceName : this.templateServicesWithRequestLifeSpan) {
-            this.templateServices.put(serviceName, this.dependencyContainer.reloadComponent(this.templateServices.get(serviceName)));
         }
     }
 
@@ -116,15 +101,10 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
      */
     private void initTemplateServices() {
         this.templateServices = new HashMap<>();
-        this.templateServicesWithRequestLifeSpan = new ArrayList<>();
-        this.dependencyContainer.getServicesByAnnotation(TemplateService.class).forEach(ts -> {
-            String serviceNameInTemplate = ts.getClass().getAnnotation(TemplateService.class).serviceNameInTemplate();
+        this.dependencyContainer.getServicesByAnnotation(TemplateService.class).forEach(sd -> {
+            String serviceNameInTemplate = ((TemplateService)sd.getAnnotation()).serviceNameInTemplate();
 
-            this.templateServices.put(serviceNameInTemplate, ts);
-
-            if (ts.getClass().getAnnotation(Service.class).lifespan() == ServiceLifeSpan.REQUEST) {
-                this.templateServicesWithRequestLifeSpan.add(serviceNameInTemplate);
-            }
+            this.templateServices.put(serviceNameInTemplate, sd.getProxyInstance());
         });
     }
 }

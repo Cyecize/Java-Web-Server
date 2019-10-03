@@ -100,11 +100,11 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      */
     @Override
     public ActionInvokeResult invokeMethod(Exception ex) {
-        this.currentRequest = this.dependencyContainer.getObject(HttpSoletRequest.class);
+        this.currentRequest = this.dependencyContainer.getService(HttpSoletRequest.class);
         List<Throwable> exceptionStack = this.getExceptionStack(ex);
-        exceptionStack.forEach(this.dependencyContainer::addPlatformBean);
+        exceptionStack.forEach(this.dependencyContainer::addFlashService);
 
-        ActionMethod actionMethod = this.findActionMethod(exceptionStack);
+        final ActionMethod actionMethod = this.findActionMethod(exceptionStack);
         if (actionMethod == null) {
             return null;
         }
@@ -126,11 +126,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 .filter((kvp) -> actionMethod.getControllerClass().isAssignableFrom(kvp.getKey()))
                 .findFirst().orElse(null).getValue(); //never null
 
-        if (controller.getClass().getAnnotation(Controller.class).lifeSpan() == ServiceLifeSpan.REQUEST) {
-            controller = this.dependencyContainer.reloadComponent(controller);
-        }
-
-        Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);
+        final Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);
         try {
             actionMethod.getMethod().setAccessible(true);
             return actionMethod.getMethod().invoke(controller, methodParams);
@@ -162,20 +158,17 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 continue;
             }
 
-            for (Object platformBean : this.dependencyContainer.getPlatformBeans()) {
-                if (parameter.getType().isAssignableFrom(platformBean.getClass())) {
-                    parameterInstances[i] = platformBean;
-                    break;
-                }
-            }
+            parameterInstances[i] = this.dependencyContainer.getService(parameter.getType());
+            if (parameterInstances[i] != null) continue;
 
+            parameterInstances[i] = this.dependencyContainer.getFlashService(parameter.getType());
             if (parameterInstances[i] != null) continue;
 
             try {
                 Object instanceOfBindingModel = parameter.getType().getConstructor().newInstance();
                 this.bindingService.populateBindingModel(instanceOfBindingModel);
                 if (parameter.isAnnotationPresent(Valid.class)) {
-                    this.validationService.validateBindingModel(instanceOfBindingModel, this.dependencyContainer.getObject(BindingResult.class));
+                    this.validationService.validateBindingModel(instanceOfBindingModel, this.dependencyContainer.getService(BindingResult.class));
                 }
                 parameterInstances[i] = instanceOfBindingModel;
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException cause) {

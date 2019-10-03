@@ -34,7 +34,7 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
      * so the leftover is the app name prefix.
      */
     private String getURI() {
-        HttpSoletRequest request = this.dependencyContainer.getObject(HttpSoletRequest.class);
+        HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
         String URI = request.getHost() + "/" + request.getRequestURL().replace(request.getRelativeRequestURL(), "");
         if (URI.endsWith("/")) {
             URI = URI.substring(0, URI.length() - 1);

@@ -1,8 +1,8 @@
 package com.cyecize.summer.areas.validation.services;
 
+import com.cyecize.ioc.models.ServiceDetails;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
-import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
@@ -11,27 +11,11 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
 
     private static final String NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT = "No generic type found for data adapter \"%s\".";
 
-    private final DependencyContainer dependencyContainer;
-
     private final Map<String, List<DataAdapter>> dataAdapters;
 
-    public DataAdapterStorageServiceImpl(DependencyContainer dependencyContainer, Set<Object> dataAdapters) {
-        this.dependencyContainer = dependencyContainer;
+    public DataAdapterStorageServiceImpl(DependencyContainer dependencyContainer) {
         this.dataAdapters = new HashMap<>();
-        this.setDataAdapters(dataAdapters);
-    }
-
-    @Override
-    public void reloadRequestScopedAdapters() {
-        for (Map.Entry<String, List<DataAdapter>> entry : this.dataAdapters.entrySet()) {
-            List<DataAdapter> adapters = new ArrayList<>();
-
-            for (DataAdapter adapter : entry.getValue()) {
-                adapters.add(this.dependencyContainer.reloadComponent(adapter, ServiceLifeSpan.REQUEST));
-            }
-
-            this.dataAdapters.put(entry.getKey(), adapters);
-        }
+        this.setDataAdapters(dependencyContainer.getImplementations(DataAdapter.class));
     }
 
     @Override
@@ -76,7 +60,8 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
             return null;
         }
 
-        return dataAdapters.stream().filter(da -> dataAdapterType.isAssignableFrom(da.getClass()))
+        return dataAdapters.stream()
+                .filter(da -> dataAdapterType.isAssignableFrom(da.getClass()))
                 .findFirst().orElse(null);
     }
 
@@ -114,24 +99,15 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
         return dataAdapters;
     }
 
-    @Override
-    public List<DataAdapter> getAllDataAdapters() {
-        final List<DataAdapter> dataAdapters = new ArrayList<>();
-        this.dataAdapters.values().forEach(dataAdapters::addAll);
-
-        return dataAdapters;
-    }
-
     /**
      * Iterates the set of data adapters and for each object gets its
      * generic type and adds the adapter to a map of data adapters where the key is the
      * generic type and the value is a list of data adapters for that type.
      */
-    @SuppressWarnings("unchecked")
-    private void setDataAdapters(Set<Object> adapters) {
+    private void setDataAdapters(Collection<ServiceDetails> adapters) {
 
-        for (Object object : adapters) {
-            DataAdapter adapter = (DataAdapter) object;
+        for (ServiceDetails serviceDetails : adapters) {
+            final DataAdapter adapter = (DataAdapter) serviceDetails.getActualInstance();
 
             try {
                 String genericType = ((ParameterizedType) adapter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
@@ -140,8 +116,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
                     this.dataAdapters.put(genericType, new ArrayList<>());
                 }
 
-                this.dataAdapters.get(genericType).add(adapter);
-
+                this.dataAdapters.get(genericType).add((DataAdapter) serviceDetails.getProxyInstance());
             } catch (Throwable e) {
                 throw new RuntimeException(NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT, e);
             }

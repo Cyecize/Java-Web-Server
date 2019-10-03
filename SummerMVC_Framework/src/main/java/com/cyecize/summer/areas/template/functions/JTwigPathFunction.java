@@ -26,6 +26,7 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
         if (functionRequest.getArguments().size() != 1 || !(functionRequest.get(0) instanceof String)) {
             throw new JtwigException(INVALID_PARAM_ERROR);
         }
+
         return this.createPrefix() + functionRequest.get(0);
     }
 
@@ -33,17 +34,20 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
      * Gets app name by replacing the relative URL with "" on the absolute URL.
      */
     private String createPrefix() {
-        HttpSoletRequest request = this.dependencyContainer.getObject(HttpSoletRequest.class);
+        final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
         String appName = request.getRequestURL().replace(request.getRelativeRequestURL(), "");
         if (appName.length() < 1) {
             return appName;
         }
+
         if (appName.endsWith("/")) {
             appName = appName.substring(0, appName.length() - 1);
         }
+
         if (!appName.startsWith("/")) {
             appName = "/" + appName;
         }
+
         return appName;
     }
 }

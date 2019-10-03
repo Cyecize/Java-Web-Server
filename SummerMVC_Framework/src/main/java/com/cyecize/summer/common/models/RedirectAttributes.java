@@ -1,12 +1,18 @@
 package com.cyecize.summer.common.models;
 
+import com.cyecize.summer.common.annotations.Autowired;
+import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.enums.ServiceLifeSpan;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Component(lifespan = ServiceLifeSpan.REQUEST)
 public class RedirectAttributes {
 
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
+    @Autowired
     public RedirectAttributes() {
         this.attributes = new HashMap<>();
     }

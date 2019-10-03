@@ -40,7 +40,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      */
     @Override
     public void populateBindingModel(Object bindingModel) {
-        HttpSoletRequest request = this.dependencyContainer.getObject(HttpSoletRequest.class);
+        HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
         if (request.getBodyParameters() == null) {
             return;
         }
@@ -146,7 +146,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      */
     private String getAssetsDir() {
         if (this.assetsDir == null) {
-            this.assetsDir = this.dependencyContainer.getObject(SoletConfig.class).getAttribute(SOLET_CFG_ASSETS_DIR) + "";
+            this.assetsDir = this.dependencyContainer.getService(SoletConfig.class).getAttribute(SOLET_CFG_ASSETS_DIR) + "";
         }
 
         return this.assetsDir;

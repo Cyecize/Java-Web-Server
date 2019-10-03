@@ -49,7 +49,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      */
     @Override
     public void handleActionResult(ActionInvokeResult result) {
-        this.response = this.dependencyContainer.getObject(HttpSoletResponse.class);
+        this.response = this.dependencyContainer.getService(HttpSoletResponse.class);
         this.actionInvokeResult = result;
 
         if (!this.response.getHeaders().containsKey(CONTENT_TYPE_HEADER)) {
@@ -71,14 +71,14 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * If no suitable method is found, the method handleOtherResponse is called.
      */
     private void executeSuitableMethod(ActionInvokeResult result) {
-        Object methodInvokeResult = result.getInvocationResult();
+        final Object methodInvokeResult = result.getInvocationResult();
         if (methodInvokeResult == null) {
             this.handleNullResponse();
             return;
         }
 
-        Class<?> actionResultType = methodInvokeResult.getClass();
-        Method suitableMethod = Arrays.stream(ActionMethodResultHandlerImpl.class.getDeclaredMethods())
+        final Class<?> actionResultType = methodInvokeResult.getClass();
+        final Method suitableMethod = Arrays.stream(ActionMethodResultHandlerImpl.class.getDeclaredMethods())
                 .filter(m -> m.getParameterCount() == 1 && actionResultType.isAssignableFrom(m.getParameterTypes()[0]))
                 .findFirst().orElse(null);
 
@@ -120,7 +120,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * handleModelResponse.
      */
     private void handleModelAndViewResponse(ModelAndView result) throws EmptyViewException, ViewNotFoundException {
-        Model model = this.dependencyContainer.getObject(Model.class);
+        final Model model = this.dependencyContainer.getService(Model.class);
         if (result.getStatus() != null) {
             this.response.setStatusCode(result.getStatus());
         }
@@ -136,7 +136,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * otherwise proceed to handle view response.
      */
     private void handleModelResponse(Model result) throws EmptyViewException, ViewNotFoundException {
-        Object viewName = result.getAttribute(MODEL_VIEW_NAME_KEY);
+        final Object viewName = result.getAttribute(MODEL_VIEW_NAME_KEY);
         if (viewName == null) {
             throw new EmptyViewException(VIEW_EMPTY_MSG);
         }
@@ -144,9 +144,10 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         if (viewName.toString().startsWith(ACTION_RETURN_REDIRECT + ACTION_RETURN_DELIMITER)) {
             this.handleRedirectResponse(
                     viewName.toString().split(ACTION_RETURN_DELIMITER)[1].trim(),
-                    this.dependencyContainer.getObject(HttpSoletRequest.class));
+                    this.dependencyContainer.getService(HttpSoletRequest.class));
             return;
         }
+
         this.handleViewResponse(viewName.toString(), result);
     }
 
@@ -160,13 +161,13 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         if (result.startsWith(ACTION_RETURN_TEMPLATE + delimiter)) {
             this.handleViewResponse(
                     result.substring((ACTION_RETURN_TEMPLATE + delimiter).length()).trim(),
-                    this.dependencyContainer.getObject(Model.class)
+                    this.dependencyContainer.getService(Model.class)
             );
 
         } else if (result.startsWith(ACTION_RETURN_REDIRECT + delimiter)) {
             this.handleRedirectResponse(
                     result.substring((ACTION_RETURN_REDIRECT + delimiter).length()).trim(),
-                    this.dependencyContainer.getObject(HttpSoletRequest.class)
+                    this.dependencyContainer.getService(HttpSoletRequest.class)
             );
 
         } else {

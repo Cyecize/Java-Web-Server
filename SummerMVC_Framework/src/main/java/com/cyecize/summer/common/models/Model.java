@@ -1,16 +1,24 @@
 package com.cyecize.summer.common.models;
 
+import com.cyecize.http.HttpSession;
+import com.cyecize.summer.common.annotations.Autowired;
+import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.enums.ServiceLifeSpan;
+import com.cyecize.summer.constants.RoutingConstants;
 import org.jtwig.JtwigModel;
 
 import java.util.Map;
 
+@Component(lifespan = ServiceLifeSpan.REQUEST)
 public class Model extends JtwigModel {
 
     public Model() {
         super();
     }
 
-    public Model(Map<String, Object> attributes) {
+    @Autowired
+    public Model(HttpSession session) {
+        Map<String, Object> attributes = (Map<String, Object>) session.getAttribute(RoutingConstants.REDIRECT_ATTRIBUTES_SESSION_ID);
         if (attributes != null) {
             this.populateModel(attributes);
         }
@@ -34,5 +42,4 @@ public class Model extends JtwigModel {
     private void populateModel(Map<String, Object> attributes) {
         attributes.forEach(this::addAttribute);
     }
-
 }

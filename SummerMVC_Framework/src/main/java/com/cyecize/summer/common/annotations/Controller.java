@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Controller {
-    ServiceLifeSpan lifeSpan() default ServiceLifeSpan.SINGLETON;
+    ServiceLifeSpan lifespan() default ServiceLifeSpan.SINGLETON;
 }

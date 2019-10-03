@@ -56,6 +56,12 @@
             <version>${version.solet}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>ioc</artifactId>
+            <version>1.1</version>
+        </dependency>
+
         <!-- Third party dependencies -->
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>

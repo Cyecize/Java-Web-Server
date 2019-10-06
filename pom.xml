@@ -15,7 +15,7 @@
         <version.http>1.2.2</version.http>
         <version.solet>1.2.0</version.solet>
         <version.toyote>1.1</version.toyote>
-        <version.javache-api>1.2.7</version.javache-api>
+        <version.javache-api>1.3</version.javache-api>
         <version.broccolina>1.1</version.broccolina>
         <version.javache>1.1</version.javache>
         <version.magic-injector>1.1</version.magic-injector>

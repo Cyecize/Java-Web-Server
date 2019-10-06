@@ -1,12 +1,11 @@
 package com.cyecize.javache.services;
 
 import com.cyecize.WebConstants;
-import com.cyecize.ioc.annotations.Service;
+import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -17,7 +16,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
-@Service
+@JavacheComponent
 public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingService {
 
     private static final String LIB_FOLDER_PATH = WebConstants.WORKING_DIRECTORY + "lib/";

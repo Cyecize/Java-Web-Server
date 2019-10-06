@@ -1,9 +1,8 @@
 package com.cyecize;
 
 import com.cyecize.ioc.MagicInjector;
-import com.cyecize.ioc.annotations.Service;
 import com.cyecize.ioc.services.DependencyContainer;
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.core.ServerInitializer;
 import com.cyecize.javache.services.JavacheConfigService;
 
@@ -12,14 +11,13 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 
-@Service
 public class StartUp {
 
     public static void main(String[] args) throws Exception {
         replaceSystemClassLoader();
 
-        final DependencyContainer dependencyContainer = MagicInjector.run(StartUp.class);
-        dependencyContainer.getService(JavacheConfigService.class).addConfigParam(ConfigConstants.SERVER_STARTUP_ARGS, args);
+        final DependencyContainer dependencyContainer = MagicInjector.run(StartUp.class, WebConstants.JAVACHE_IOC_CONFIGURATION);
+        dependencyContainer.getService(JavacheConfigService.class).addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, args);
 
         dependencyContainer.getService(ServerInitializer.class).initializeServer();
     }

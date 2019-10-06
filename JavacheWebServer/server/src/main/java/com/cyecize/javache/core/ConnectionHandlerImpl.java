@@ -1,6 +1,6 @@
 package com.cyecize.javache.core;
 
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.RequestHandler;
 
 import com.cyecize.javache.exceptions.RequestReadException;
@@ -82,7 +82,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
      */
     private void processClientConnection() throws IOException {
         try {
-            this.cachingService.getOrCacheInputStream(this.clientSocketInputStream, this.configService.getConfigParam(ConfigConstants.MAX_REQUEST_SIZE, Integer.class));
+            this.cachingService.getOrCacheInputStream(this.clientSocketInputStream, this.configService.getConfigParam(JavacheConfigValue.MAX_REQUEST_SIZE, Integer.class));
         } catch (RequestReadException e) {
             this.handleRequestReadException(e);
             return;

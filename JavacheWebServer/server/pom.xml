@@ -32,13 +32,6 @@
             <artifactId>javache-api</artifactId>
             <version>${version.javache-api}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.cyecize</groupId>
-            <artifactId>ioc</artifactId>
-            <version>1.1</version>
-        </dependency>
-
     </dependencies>
 
     <!-- cd target -->

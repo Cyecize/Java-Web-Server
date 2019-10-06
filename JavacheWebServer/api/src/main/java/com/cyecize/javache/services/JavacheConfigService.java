@@ -2,6 +2,7 @@ package com.cyecize.javache.services;
 
 import com.cyecize.javache.JavacheConfigValue;
 
+import java.util.List;
 import java.util.Map;
 
 public interface JavacheConfigService {
@@ -17,4 +18,6 @@ public interface JavacheConfigService {
     Object getConfigParam(JavacheConfigValue paramName);
 
     Map<String, Object> getConfigParams();
+
+    List<String> getRequestHandlerPriority();
 }

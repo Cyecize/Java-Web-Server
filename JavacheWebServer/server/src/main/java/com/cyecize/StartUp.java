@@ -1,39 +1,27 @@
 package com.cyecize;
 
+import com.cyecize.ioc.MagicInjector;
+import com.cyecize.ioc.annotations.Service;
+import com.cyecize.ioc.services.DependencyContainer;
 import com.cyecize.javache.ConfigConstants;
-import com.cyecize.javache.core.Server;
-import com.cyecize.javache.core.ServerImpl;
-import com.cyecize.javache.services.*;
+import com.cyecize.javache.core.ServerInitializer;
+import com.cyecize.javache.services.JavacheConfigService;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 
+@Service
 public class StartUp {
 
     public static void main(String[] args) throws Exception {
         replaceSystemClassLoader();
-        final LoggingService loggingService = new LoggingServiceImpl();
-        int port = WebConstants.DEFAULT_SERVER_PORT;
 
-        if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
+        final DependencyContainer dependencyContainer = MagicInjector.run(StartUp.class);
+        dependencyContainer.getService(JavacheConfigService.class).addConfigParam(ConfigConstants.SERVER_STARTUP_ARGS, args);
 
-        final JavacheConfigService configService = new JavacheConfigServiceImpl();
-        configService.addConfigParam(ConfigConstants.SERVER_PORT, port);
-        configService.addConfigParam(ConfigConstants.SERVER_STARTUP_ARGS, args);
-
-        Server server = new ServerImpl(port, loggingService, new RequestHandlerLoadingServiceImpl(configService), configService);
-
-        try {
-            server.run();
-        } catch (IOException ex) {
-            loggingService.error(ex.getMessage());
-            loggingService.printStackTrace(ex.getStackTrace());
-        }
+        dependencyContainer.getService(ServerInitializer.class).initializeServer();
     }
 
     /*

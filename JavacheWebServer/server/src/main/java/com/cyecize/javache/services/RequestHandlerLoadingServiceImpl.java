@@ -1,6 +1,7 @@
 package com.cyecize.javache.services;
 
 import com.cyecize.WebConstants;
+import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestHandler;
 
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
+@Service
 public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingService {
 
     private static final String LIB_FOLDER_PATH = WebConstants.WORKING_DIRECTORY + "lib/";

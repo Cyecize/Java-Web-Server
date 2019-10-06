@@ -1,6 +1,7 @@
 package com.cyecize.javache.services;
 
 import com.cyecize.WebConstants;
+import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.ConfigConstants;
 import com.cyecize.javache.io.Reader;
 import com.cyecize.javache.utils.PrimitiveTypeDataResolver;
@@ -9,6 +10,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 public class JavacheConfigServiceImpl implements JavacheConfigService {
 
     private static final String CONFIG_FOLDER_PATH = WebConstants.WORKING_DIRECTORY + "config/";

@@ -11,7 +11,7 @@ public class StartUp {
 
     public static void main(String[] args) throws Exception {
         final DependencyContainer dependencyContainer = MagicInjector.run(StartUp.class, WebConstants.JAVACHE_IOC_CONFIGURATION);
-        IoC.setDependencyContainer(dependencyContainer);
+        IoC.setJavacheDependencyContainer(dependencyContainer);
 
         dependencyContainer.getService(JavacheConfigService.class).addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, args);
 

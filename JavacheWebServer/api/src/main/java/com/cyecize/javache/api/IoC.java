@@ -5,7 +5,9 @@ import com.cyecize.ioc.services.DependencyContainer;
 public class IoC {
     private static DependencyContainer javacheDependencyContainer;
 
-    public static void setDependencyContainer(DependencyContainer dependencyContainer) {
+    private static DependencyContainer requestHandlersDependencyContainer;
+
+    public static void setJavacheDependencyContainer(DependencyContainer dependencyContainer) {
         if (dependencyContainer != null) {
             javacheDependencyContainer = dependencyContainer;
         }
@@ -13,5 +15,13 @@ public class IoC {
 
     public static DependencyContainer getJavacheDependencyContainer() {
         return javacheDependencyContainer;
+    }
+
+    public static void setRequestHandlersDependencyContainer(DependencyContainer dependencyContainer) {
+        requestHandlersDependencyContainer = dependencyContainer;
+    }
+
+    public static DependencyContainer getRequestHandlersDependencyContainer() {
+        return requestHandlersDependencyContainer;
     }
 }

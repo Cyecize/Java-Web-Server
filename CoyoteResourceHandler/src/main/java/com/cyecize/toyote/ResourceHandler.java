@@ -2,6 +2,7 @@ package com.cyecize.toyote;
 
 import com.cyecize.http.*;
 import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.ioc.annotations.PostConstruct;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
@@ -56,9 +57,11 @@ public class ResourceHandler implements RequestHandler {
         this.cachingService = new FileCachingServiceImpl(configService);
         this.tika = new Tika();
         this.applicationNames = appNameCollector.getApplicationNames(this.serverRootFolderPath);
+    }
 
+    @PostConstruct
+    public void init() {
         this.initDirectories();
-
         System.out.println("Loaded Toyote");
     }
 

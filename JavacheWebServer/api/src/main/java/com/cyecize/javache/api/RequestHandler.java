@@ -10,4 +10,6 @@ public interface RequestHandler {
     void handleRequest(byte[] requestContent, OutputStream responseStream) throws IOException;
 
     boolean hasIntercepted();
+
+    int order();
 }

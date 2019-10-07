@@ -1,6 +1,6 @@
 package com.cyecize.broccolina.services;
 
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
@@ -68,7 +68,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
                 String extractedJarFolderName = applicationJarFile.getCanonicalPath().replace(".jar", File.separator);
 
                 if (!this.skipExtractingAppsWithExistingFolder || !Files.exists(Paths.get(extractedJarFolderName))) {
-                    this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
+                    this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(JavacheConfigValue.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
                 }
 
                 this.loadApplicationFromFolder(extractedJarFolderName, appName);
@@ -200,10 +200,10 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * Initializes configuration values
      */
     private void initConfig() {
-        this.compileOutputFolderName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
-        this.applicationsFolderPath = this.workingDir + this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
-        this.applicationLibFolderName = this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
+        this.compileOutputFolderName = this.configService.getConfigParam(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
+        this.applicationsFolderPath = this.workingDir + this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class);
+        this.applicationLibFolderName = this.configService.getConfigParam(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
 
-        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(ConfigConstants.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, Boolean.class);
+        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, Boolean.class);
     }
 }

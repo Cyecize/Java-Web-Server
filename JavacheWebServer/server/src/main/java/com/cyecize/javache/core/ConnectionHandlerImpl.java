@@ -93,6 +93,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
                     this.cachingService.getOrCacheInputStream(this.clientSocketInputStream),
                     this.clientSocketOutputStream
             );
+
             if (requestHandler.hasIntercepted()) {
                 break;
             }

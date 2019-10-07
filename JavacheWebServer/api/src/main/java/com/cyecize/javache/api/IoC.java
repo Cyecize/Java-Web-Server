@@ -5,7 +5,7 @@ import com.cyecize.ioc.services.DependencyContainer;
 public class IoC {
     private static DependencyContainer javacheDependencyContainer;
 
-    public void setDependencyContainer(DependencyContainer dependencyContainer) {
+    public static void setDependencyContainer(DependencyContainer dependencyContainer) {
         if (dependencyContainer != null) {
             javacheDependencyContainer = dependencyContainer;
         }

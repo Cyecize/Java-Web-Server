@@ -1,9 +1,6 @@
 package com.cyecize.javache.core;
 
-import com.cyecize.javache.services.InputStreamCachingServiceImpl;
-import com.cyecize.javache.services.JavacheConfigService;
-import com.cyecize.javache.services.LoggingService;
-import com.cyecize.javache.services.RequestHandlerLoadingService;
+import com.cyecize.javache.services.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,18 +15,17 @@ public class ServerImpl implements Server {
 
     private int port;
 
-    private LoggingService loggingService;
+    private final LoggingService loggingService;
 
-    private RequestHandlerLoadingService requestHandlerLoadingService;
+    private final RequestHandlerLoadingService requestHandlerLoadingService;
 
-    private JavacheConfigService javacheConfigService;
+    private final JavacheConfigService javacheConfigService;
 
     public ServerImpl(int port, LoggingService loggingService, RequestHandlerLoadingService requestHandlerLoadingService, JavacheConfigService javacheConfigService) {
         this.port = port;
         this.loggingService = loggingService;
         this.requestHandlerLoadingService = requestHandlerLoadingService;
         this.javacheConfigService = javacheConfigService;
-        this.initRequestHandlers();
     }
 
     @Override
@@ -51,19 +47,10 @@ public class ServerImpl implements Server {
                         this.loggingService,
                         this.javacheConfigService
                 ));
+
                 thread.start();
             } catch (SocketTimeoutException ignored) {
             }
-        }
-    }
-
-    private void initRequestHandlers() {
-        try {
-            this.requestHandlerLoadingService.loadRequestHandlers(this.javacheConfigService.getRequestHandlerPriority());
-        } catch (Exception e) {
-            this.loggingService.error(e.getMessage());
-            this.loggingService.printStackTrace(e.getStackTrace());
-            e.printStackTrace();
         }
     }
 }

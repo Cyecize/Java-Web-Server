@@ -2,7 +2,10 @@ package com.cyecize.broccolina;
 
 import com.cyecize.broccolina.services.*;
 import com.cyecize.http.HttpStatus;
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.ioc.annotations.PostConstruct;
+import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.exceptions.RequestReadException;
 import com.cyecize.javache.services.JavacheConfigService;
@@ -18,6 +21,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@JavacheComponent
 public class SoletDispatcher implements RequestHandler {
 
     private static final String REQUEST_READ_EXCEPTION_FORMAT = "Could not parse Http Request:\n %s";
@@ -48,13 +52,14 @@ public class SoletDispatcher implements RequestHandler {
 
     private String currentRequestAppName;
 
-    public SoletDispatcher(String workingDir, JavacheConfigService configService) {
+    @Autowired
+    public SoletDispatcher(JavacheConfigService configService) {
         this(
-                workingDir,
+                configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class),
                 new ApplicationLoadingServiceImpl(
-                        new ApplicationScanningServiceImpl(workingDir, new JarFileUnzipServiceImpl(), configService),
+                        new ApplicationScanningServiceImpl(configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class), new JarFileUnzipServiceImpl(), configService),
                         configService,
-                        workingDir + configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class)
+                        configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) + configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class)
                 ),
                 configService
         );
@@ -65,13 +70,17 @@ public class SoletDispatcher implements RequestHandler {
         this.configService = configService;
         this.applicationLoadingService = applicationLoadingService;
         this.sessionManagementService = new SessionManagementServiceImpl();
-        this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
+        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
         this.hasIntercepted = false;
-        this.initializeSoletMap();
         this.currentRequestAppName = "";
         this.initTempDir();
-        this.showRequestContent = configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class);
-        this.trackResources = configService.getConfigParam(ConfigConstants.BROCCOLINA_TRACK_RESOURCES, boolean.class);
+        this.showRequestContent = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
+        this.trackResources = configService.getConfigParam(JavacheConfigValue.BROCCOLINA_TRACK_RESOURCES, boolean.class);
+    }
+
+    @PostConstruct
+    public void init() {
+        this.initializeSoletMap();
     }
 
     /**
@@ -142,6 +151,11 @@ public class SoletDispatcher implements RequestHandler {
     @Override
     public boolean hasIntercepted() {
         return this.hasIntercepted;
+    }
+
+    @Override
+    public int order() {
+        return 0;
     }
 
     /**

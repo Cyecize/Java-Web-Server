@@ -1,7 +1,9 @@
 package com.cyecize.toyote;
 
 import com.cyecize.http.*;
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.models.CachedFile;
@@ -16,6 +18,7 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+@JavacheComponent
 public class ResourceHandler implements RequestHandler {
 
     private static final String RESOURCE_NOT_FOUND_MESSAGE = "<h1 style=\"text-align: center;\">The resource - \"%s\" you are looking for cannot be found.</h1>";
@@ -40,14 +43,15 @@ public class ResourceHandler implements RequestHandler {
 
     private String mainAppName;
 
-    public ResourceHandler(String serverRootFolderPath, JavacheConfigService configService) {
-        this(serverRootFolderPath, new AppNameCollectorImpl(configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class)), configService);
+    @Autowired
+    public ResourceHandler(JavacheConfigService configService) {
+        this(new AppNameCollectorImpl(configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class)), configService);
     }
 
-    public ResourceHandler(String serverRootFolderPath, AppNameCollector appNameCollector, JavacheConfigService configService) {
+    public ResourceHandler(AppNameCollector appNameCollector, JavacheConfigService configService) {
         this.hasIntercepted = false;
 
-        this.serverRootFolderPath = serverRootFolderPath;
+        this.serverRootFolderPath = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class);
         this.configService = configService;
         this.cachingService = new FileCachingServiceImpl(configService);
         this.tika = new Tika();
@@ -132,9 +136,9 @@ public class ResourceHandler implements RequestHandler {
     private boolean handleResourceRequest(String resourcesFolder, String resourceName, OutputStream outputStream, HttpResponse response) throws IOException {
 
         try {
-            File file = new File(resourcesFolder + File.separator + resourceName);
+            final File file = new File(resourcesFolder + File.separator + resourceName);
 
-            String contentType = this.tika.detect(file);
+            final String contentType = this.tika.detect(file);
 
             try (InputStream fileInputStream = new FileInputStream(file)) {
                 this.found(response, contentType, fileInputStream.available());
@@ -211,10 +215,15 @@ public class ResourceHandler implements RequestHandler {
         return this.hasIntercepted;
     }
 
+    @Override
+    public int order() {
+        return 1;
+    }
+
     private void initDirectories() {
-        this.webappsDirName = this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
-        this.assetsDirName = this.configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class);
-        this.classesDirName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
-        this.mainAppName = this.configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
+        this.webappsDirName = this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class);
+        this.assetsDirName = this.configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class);
+        this.classesDirName = this.configService.getConfigParam(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
+        this.mainAppName = this.configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
     }
 }

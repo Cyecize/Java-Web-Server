@@ -10,6 +10,8 @@ public enum JavacheConfigValue {
 
     ASSETS_DIR_NAME,
 
+    LIB_DIR_NAME,
+
     APP_COMPILE_OUTPUT_DIR_NAME,
 
     MAIN_APP_JAR_NAME,
@@ -29,5 +31,7 @@ public enum JavacheConfigValue {
     SERVER_PORT,
 
     SERVER_STARTUP_ARGS,
+
+    JAVACHE_WORKING_DIRECTORY,
 
 }

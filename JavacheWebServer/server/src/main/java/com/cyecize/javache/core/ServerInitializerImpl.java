@@ -4,9 +4,7 @@ import com.cyecize.WebConstants;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.JavacheComponent;
-import com.cyecize.javache.services.JavacheConfigService;
-import com.cyecize.javache.services.LoggingService;
-import com.cyecize.javache.services.RequestHandlerLoadingServiceImpl;
+import com.cyecize.javache.services.*;
 
 import java.io.IOException;
 
@@ -17,14 +15,23 @@ public class ServerInitializerImpl implements ServerInitializer {
 
     private final JavacheConfigService configService;
 
+    private final LibraryLoadingService libraryLoadingService;
+
+    private final RequestHandlerLoadingService requestHandlerLoadingService;
+
     @Autowired
-    public ServerInitializerImpl(LoggingService loggingService, JavacheConfigService configService) {
+    public ServerInitializerImpl(LoggingService loggingService, JavacheConfigService configService, LibraryLoadingService libraryLoadingService, RequestHandlerLoadingService requestHandlerLoadingService) {
         this.loggingService = loggingService;
         this.configService = configService;
+        this.libraryLoadingService = libraryLoadingService;
+        this.requestHandlerLoadingService = requestHandlerLoadingService;
     }
 
     @Override
     public void initializeServer() {
+        this.libraryLoadingService.loadLibraries();
+        this.requestHandlerLoadingService.loadRequestHandlers(this.configService.getRequestHandlerPriority(), this.libraryLoadingService.getJarLibs());
+
         final String[] startupArgs = this.configService.getConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, String[].class);
 
         int port = WebConstants.DEFAULT_SERVER_PORT;
@@ -35,7 +42,7 @@ public class ServerInitializerImpl implements ServerInitializer {
         this.configService.addConfigParam(JavacheConfigValue.SERVER_PORT, port);
         this.configService.addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, startupArgs);
 
-        final Server server = new ServerImpl(port, loggingService, new RequestHandlerLoadingServiceImpl(configService), configService);
+        final Server server = new ServerImpl(port, this.loggingService, this.requestHandlerLoadingService, this.configService);
 
         try {
             server.run();

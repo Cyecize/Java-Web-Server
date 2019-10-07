@@ -1,6 +1,6 @@
 package com.cyecize.broccolina.services;
 
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfig;
@@ -28,7 +28,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService, String assetsDir) {
         this.scanningService = scanningService;
         this.assetsDir = assetsDir;
-        this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
+        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
         this.solets = new HashMap<>();
         this.makeAppAssetDir(this.assetsDir);
     }

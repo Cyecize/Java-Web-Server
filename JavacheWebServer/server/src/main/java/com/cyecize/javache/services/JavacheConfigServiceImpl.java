@@ -113,6 +113,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.TOYOYE_CACHED_FILE_MAX_SIZE.name(), 1000000);
         this.configParameters.put(JavacheConfigValue.SERVER_PORT.name(), WebConstants.DEFAULT_SERVER_PORT);
         this.configParameters.put(JavacheConfigValue.SERVER_STARTUP_ARGS.name(), new String[0]);
+        this.configParameters.put(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY.name(), WebConstants.WORKING_DIRECTORY);
+        this.configParameters.put(JavacheConfigValue.LIB_DIR_NAME.name(), "lib/");
     }
 
     /**

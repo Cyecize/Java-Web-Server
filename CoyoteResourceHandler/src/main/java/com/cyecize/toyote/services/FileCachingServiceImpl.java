@@ -1,6 +1,6 @@
 package com.cyecize.toyote.services;
 
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.models.CachedFile;
 import com.cyecize.toyote.models.FrequencyCounter;
@@ -22,8 +22,8 @@ public class FileCachingServiceImpl implements FileCachingService {
         this.cache = new Hashtable<>();
         this.fileFrequencyAccess = new Hashtable<>();
 
-        this.maximumAllowedFilesInCache = configService.getConfigParam(ConfigConstants.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, Integer.class);
-        this.maxCachedFileSize = configService.getConfigParam(ConfigConstants.TOYOYE_CACHED_FILE_MAX_SIZE, Integer.class);
+        this.maximumAllowedFilesInCache = configService.getConfigParam(JavacheConfigValue.TOYOTE_MAX_NUMBER_OF_CACHED_FILES, Integer.class);
+        this.maxCachedFileSize = configService.getConfigParam(JavacheConfigValue.TOYOYE_CACHED_FILE_MAX_SIZE, Integer.class);
     }
 
     @Override

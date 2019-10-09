@@ -47,6 +47,8 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
                         .sorted(Comparator.comparingInt(RequestHandler::order))
                         .collect(Collectors.toList())
         );
+
+        this.requestHandlers.forEach(RequestHandler::init);
     }
 
     @Override

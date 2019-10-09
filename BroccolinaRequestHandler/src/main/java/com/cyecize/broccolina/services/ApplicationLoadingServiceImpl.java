@@ -1,6 +1,8 @@
 package com.cyecize.broccolina.services;
 
+import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfig;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+@JavacheComponent
 public class ApplicationLoadingServiceImpl implements ApplicationLoadingService {
 
     private static final String MISSING_SOLET_ANNOTATION_FORMAT = "Missing solet annotation for class named %s.";
@@ -25,9 +28,12 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private SoletConfig soletConfig;
 
-    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService, String assetsDir) {
+    @Autowired
+    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService) {
         this.scanningService = scanningService;
-        this.assetsDir = assetsDir;
+        this.assetsDir = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
+                configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class);
+
         this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
         this.solets = new HashMap<>();
         this.makeAppAssetDir(this.assetsDir);

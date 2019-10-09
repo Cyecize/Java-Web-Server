@@ -1,6 +1,8 @@
 package com.cyecize.broccolina.services;
 
+import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
@@ -15,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@JavacheComponent
 public class ApplicationScanningServiceImpl implements ApplicationScanningService {
 
     private final String workingDir;
@@ -35,8 +38,9 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private boolean skipExtractingAppsWithExistingFolder;
 
-    public ApplicationScanningServiceImpl(String workingDir, JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
-        this.workingDir = workingDir;
+    @Autowired
+    public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
+        this.workingDir = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class);
         this.jarFileUnzipService = jarFileUnzipService;
         this.configService = configService;
 

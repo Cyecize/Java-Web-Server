@@ -59,7 +59,7 @@ public class ResourceHandler implements RequestHandler {
         this.applicationNames = appNameCollector.getApplicationNames(this.serverRootFolderPath);
     }
 
-    @PostConstruct
+    @Override
     public void init() {
         this.initDirectories();
         System.out.println("Loaded Toyote");

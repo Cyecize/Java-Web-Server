@@ -5,6 +5,7 @@ import com.cyecize.http.HttpStatus;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.PostConstruct;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.exceptions.RequestReadException;
@@ -28,11 +29,11 @@ public class SoletDispatcher implements RequestHandler {
 
     private static final String TEMP_FOLDER_NAME = "temp/";
 
-    private final String workingDir;
-
     private final JavacheConfigService configService;
 
     private final ApplicationLoadingService applicationLoadingService;
+
+    private final SessionManagementService sessionManagementService;
 
     private String tempDir;
 
@@ -41,8 +42,6 @@ public class SoletDispatcher implements RequestHandler {
     private boolean showRequestContent;
 
     private boolean trackResources;
-
-    private SessionManagementService sessionManagementService;
 
     private Map<String, HttpSolet> soletMap;
 
@@ -53,24 +52,11 @@ public class SoletDispatcher implements RequestHandler {
     private String currentRequestAppName;
 
     @Autowired
-    public SoletDispatcher(JavacheConfigService configService) {
-        this(
-                configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class),
-                new ApplicationLoadingServiceImpl(
-                        new ApplicationScanningServiceImpl(configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class), new JarFileUnzipServiceImpl(), configService),
-                        configService,
-                        configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) + configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class)
-                ),
-                configService
-        );
-    }
-
-    public SoletDispatcher(String workingDir, ApplicationLoadingService applicationLoadingService, JavacheConfigService configService) {
-        this.workingDir = workingDir;
+    public SoletDispatcher(ApplicationLoadingService applicationLoadingService, JavacheConfigService configService, SessionManagementService sessionManagementService) {
         this.configService = configService;
         this.applicationLoadingService = applicationLoadingService;
-        this.sessionManagementService = new SessionManagementServiceImpl();
         this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
+        this.sessionManagementService = sessionManagementService;
         this.hasIntercepted = false;
         this.currentRequestAppName = "";
         this.initTempDir();
@@ -78,7 +64,7 @@ public class SoletDispatcher implements RequestHandler {
         this.trackResources = configService.getConfigParam(JavacheConfigValue.BROCCOLINA_TRACK_RESOURCES, boolean.class);
     }
 
-    @PostConstruct
+    @Override
     public void init() {
         this.initializeSoletMap();
     }
@@ -115,7 +101,6 @@ public class SoletDispatcher implements RequestHandler {
             } finally {
                 requestContent = null;
             }
-
 
             this.resolveCurrentRequestAppName(request);
 
@@ -253,6 +238,7 @@ public class SoletDispatcher implements RequestHandler {
         SoletConfig soletConfig = new SoletConfigImpl();
         soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY, this.sessionManagementService.getSessionStorage());
         soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY, this.configService);
+        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY, IoC.getRequestHandlersDependencyContainer());
         //TODO add more items here
         return soletConfig;
     }
@@ -276,9 +262,9 @@ public class SoletDispatcher implements RequestHandler {
      * Create javache's temporary directory if it doesn't exist.
      */
     private void initTempDir() {
-        this.tempDir = this.workingDir + TEMP_FOLDER_NAME;
+        this.tempDir = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) + TEMP_FOLDER_NAME;
 
-        File workingDir = new File(this.tempDir);
+        final File workingDir = new File(this.tempDir);
         if (!workingDir.exists()) {
             workingDir.mkdir();
         }

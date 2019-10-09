@@ -1,12 +1,14 @@
 package com.cyecize.broccolina.services;
 
 import com.cyecize.broccolina.utils.FileUtils;
+import com.cyecize.javache.api.JavacheComponent;
 
 import java.io.*;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+@JavacheComponent
 public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
     public JarFileUnzipServiceImpl() {

@@ -9,6 +9,8 @@ import java.io.OutputStream;
 public interface RequestHandler {
     void handleRequest(byte[] requestContent, OutputStream responseStream) throws IOException;
 
+    void init();
+
     boolean hasIntercepted();
 
     int order();

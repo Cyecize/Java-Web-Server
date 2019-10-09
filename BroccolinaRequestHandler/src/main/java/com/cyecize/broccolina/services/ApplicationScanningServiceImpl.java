@@ -1,6 +1,7 @@
 package com.cyecize.broccolina.services;
 
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
@@ -76,14 +77,6 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         }
 
         return this.soletClasses;
-    }
-
-    /**
-     * Default implementation for adding URL to the classLoader.
-     */
-    @Override
-    public void addUrlToClassPath(URL url) {
-        ApplicationScanningService.super.addUrlToClassPath(url);
     }
 
     /**
@@ -174,7 +167,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      */
     private void addDirectoryToClassPath(String canonicalPath) {
         try {
-            this.addUrlToClassPath(new URL("file:/" + canonicalPath));
+            ReflectionUtils.addUrlToClassPath(new URL("file:/" + canonicalPath));
         } catch (MalformedURLException ignored) {
         }
     }
@@ -184,7 +177,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      */
     private void addJarFileToClassPath(String canonicalPath) {
         try {
-            this.addUrlToClassPath(new URL("jar:file:" + canonicalPath + "!/"));
+            ReflectionUtils.addUrlToClassPath(new URL("jar:file:" + canonicalPath + "!/"));
         } catch (MalformedURLException ignored) {
         }
     }

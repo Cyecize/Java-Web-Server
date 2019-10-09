@@ -35,6 +35,17 @@ public class ReflectionUtils {
      * classloader with an instance of URLClassLoader.
      */
     public static void addJarFileToClassPath(String canonicalPath) throws MalformedURLException {
+        final URL url = new URL("jar:file:" + canonicalPath + "!/");
+        addUrlToClassPath(url);
+    }
+
+    /**
+     * Adds a URL to the current system classloader.
+     * This method works by default on Java 8.
+     * On newer versions it is required to first replace the system classloader with an instance of
+     * URLClassLoader. This is done at the start of Javache.
+     */
+    public static void addUrlToClassPath(URL url) {
         if (!(ClassLoader.getSystemClassLoader() instanceof URLClassLoader)) {
             try {
                 replaceSystemClassLoader();
@@ -43,13 +54,13 @@ public class ReflectionUtils {
             }
         }
 
-        final URL url = new URL("jar:file:" + canonicalPath + "!/");
-        final Class<URLClassLoader> uclType = URLClassLoader.class;
-
         try {
-            final Method method = uclType.getDeclaredMethod("addURL", URL.class);
+            final URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
+            final Class<URLClassLoader> sysClassLoaderType = URLClassLoader.class;
+
+            final Method method = sysClassLoaderType.getDeclaredMethod("addURL", URL.class);
             method.setAccessible(true);
-            method.invoke(ClassLoader.getSystemClassLoader(), url);
+            method.invoke(sysClassLoaderInstance, url);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

@@ -4,6 +4,7 @@ import com.cyecize.http.HttpCookieImpl;
 import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpRequestImpl;
 import com.cyecize.ioc.annotations.Service;
+import com.cyecize.toyote.exceptions.CannotParseRequestException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,9 +44,11 @@ public class HttpRequestParserImpl implements HttpRequestParser {
         StringBuilder metadataBuilder = new StringBuilder();
         boolean wasNewLine = true;
         int lineNumber = 1;
+        int readBytesCount = 0;
         int b;
 
         while ((b = inputStream.read()) >= 0) {
+            readBytesCount++;
             if (b == '\r') {
                 // expect new-line
                 int next = inputStream.read();
@@ -58,11 +61,11 @@ public class HttpRequestParserImpl implements HttpRequestParser {
                     wasNewLine = true;
                 } else {
                     inputStream.close();
-                    throw new IOException(String.format("Illegal character after return on line %d.", lineNumber));
+                    throw new CannotParseRequestException(String.format("Illegal character after return on line %d.", lineNumber));
                 }
             } else if (b == '\n') {
                 if (!allowNewLineWithoutReturn) {
-                    throw new IOException(String.format("Illegal new-line character without preceding return on line %d.", lineNumber));
+                    throw new CannotParseRequestException(String.format("Illegal new-line character without preceding return on line %d.", lineNumber));
                 }
 
                 // unexpected, but let's accept new-line without returns
@@ -79,6 +82,10 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
         if (metadataBuilder.length() > 0) {
             metadataLines.add(metadataBuilder.toString());
+        }
+
+        if (readBytesCount < 2) {
+            throw new CannotParseRequestException("Request is empty");
         }
 
         return metadataLines;
@@ -136,25 +143,25 @@ public class HttpRequestParserImpl implements HttpRequestParser {
     }
 
     private static String readBody(InputStream inputStream, HttpRequest request) throws IOException {
-        //TODO remove printing
-        System.out.println("Available count " + inputStream.available());
-
         int contentLength = inputStream.available();
         if (request.getHeaders().containsKey(CONTENT_LENGTH_HEADER_NAME)) {
             contentLength = Integer.parseInt(request.getHeaders().get(CONTENT_LENGTH_HEADER_NAME));
-            System.out.println("Content Length is " + contentLength);
         }
 
-        byte[] bytes = inputStream.readNBytes(contentLength);
+        final byte[] bytes = inputStream.readNBytes(contentLength);
 
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
     private static void setBodyParameters(String requestBody, HttpRequest request) {
+        if (requestBody == null || requestBody.isEmpty() || requestBody.trim().isEmpty()) {
+            return;
+        }
+
         final String[] bodyParamPairs = requestBody.split("&");
 
         for (String bodyParamPair : bodyParamPairs) {
-            String[] tokens = bodyParamPair.split("=");
+            final String[] tokens = bodyParamPair.split("=");
             final String paramKey = decode(tokens[0]);
             final String value = tokens.length > 1 ? decode(tokens[1]) : null;
 

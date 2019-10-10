@@ -1,37 +1,32 @@
 package com.cyecize.toyote;
 
 import com.cyecize.http.HttpRequest;
+import com.cyecize.http.HttpResponse;
+import com.cyecize.http.HttpResponseImpl;
+import com.cyecize.http.HttpStatus;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
-import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.services.HttpRequestParser;
 
 import java.io.*;
 
 @JavacheComponent
-public class ResourceHandler implements RequestHandler {
-
-    private static final String HTTP_REQUEST_SHARED_NAME = "HTTP_REQUEST";
-
-    //TODO make use of this
-    private final JavacheConfigService configService;
-
+public class ToyoteRequestHandler implements RequestHandler {
     private final HttpRequestParser httpRequestParser;
 
     private boolean hasIntercepted;
 
     @Autowired
-    public ResourceHandler(JavacheConfigService configService, HttpRequestParser httpRequestParser) {
-        this.configService = configService;
+    public ToyoteRequestHandler(HttpRequestParser httpRequestParser) {
         this.httpRequestParser = httpRequestParser;
         this.hasIntercepted = false;
     }
 
     @Override
     public void init() {
-        System.out.println("Loaded Toyote");
+
     }
 
     @Override
@@ -39,11 +34,24 @@ public class ResourceHandler implements RequestHandler {
         try {
             final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream);
 
-            sharedData.addObject(HTTP_REQUEST_SHARED_NAME, request);
-        } catch (IOException e) {
+            sharedData.addObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME, request);
+        } catch (Exception e) {
             this.hasIntercepted = true;
-            throw new IOException(e);
+            this.writeErrorResponse(outputStream, e);
         }
+    }
+
+    //TODO: create service for handling errors, add config for showing stack trace.
+    //TODO: put 404 handler in the same error handler service for Resource handling.
+    private void writeErrorResponse(OutputStream outputStream, Exception ex) throws IOException {
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ex.printStackTrace(new PrintStream(os));
+
+        final HttpResponse response = new HttpResponseImpl();
+        response.setStatusCode(HttpStatus.BAD_REQUEST);
+        response.setContent(os.toByteArray());
+
+        outputStream.write(response.getBytes());
     }
 
     @Override

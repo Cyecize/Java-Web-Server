@@ -12,9 +12,9 @@ public class HttpResponseImpl implements HttpResponse {
 
     private byte[] content;
 
-    private Map<String, String> headers;
+    private final Map<String, String> headers;
 
-    private Map<String, HttpCookie> cookies;
+    private final Map<String, HttpCookie> cookies;
 
     public HttpResponseImpl() {
         this.setContent(new byte[0]);
@@ -69,10 +69,12 @@ public class HttpResponseImpl implements HttpResponse {
 
     @Override
     public byte[] getBytes() {
-        byte[] headers = this.getHeaderString().getBytes();
-        byte[] result = new byte[headers.length + this.getContent().length];
+        final byte[] headers = this.getHeaderString().getBytes();
+        final byte[] result = new byte[headers.length + this.getContent().length];
+
         System.arraycopy(headers, 0, result, 0, headers.length);
         System.arraycopy(this.getContent(), 0, result, headers.length, this.getContent().length);
+
         return result;
     }
 
@@ -81,10 +83,10 @@ public class HttpResponseImpl implements HttpResponse {
         return this.headers;
     }
 
-
     private String getHeaderString() {
-        StringBuilder result = new StringBuilder()
-                .append(ResponseLines.getResponseLine(this.getStatusCode().getStatusCode())).append(System.lineSeparator());
+        final StringBuilder result = new StringBuilder()
+                .append(ResponseLines.getResponseLine(this.getStatusCode().getStatusCode()))
+                .append(System.lineSeparator());
 
         this.headers.put(CONTENT_TYPE, this.resolveCharset(this.headers.getOrDefault(CONTENT_TYPE, "text/html")));
 

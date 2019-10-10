@@ -109,8 +109,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS.name(), false);
         this.configParameters.put(JavacheConfigValue.BROCCOLINA_FORCE_OVERWRITE_FILES.name(), true);
         this.configParameters.put(JavacheConfigValue.BROCCOLINA_TRACK_RESOURCES.name(), true);
-        this.configParameters.put(JavacheConfigValue.TOYOTE_MAX_NUMBER_OF_CACHED_FILES.name(), 50);
-        this.configParameters.put(JavacheConfigValue.TOYOYE_CACHED_FILE_MAX_SIZE.name(), 1000000);
+//        this.configParameters.put(JavacheConfigValue.TOYOTE_MAX_NUMBER_OF_CACHED_FILES.name(), 50);
+      //  this.configParameters.put(JavacheConfigValue.TOYOYE_CACHED_FILE_MAX_SIZE.name(), 1000000);
         this.configParameters.put(JavacheConfigValue.SERVER_PORT.name(), WebConstants.DEFAULT_SERVER_PORT);
         this.configParameters.put(JavacheConfigValue.SERVER_STARTUP_ARGS.name(), new String[0]);
         this.configParameters.put(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY.name(), WebConstants.WORKING_DIRECTORY);

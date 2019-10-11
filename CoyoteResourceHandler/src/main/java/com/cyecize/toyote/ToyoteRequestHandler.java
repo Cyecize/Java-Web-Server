@@ -31,10 +31,14 @@ public class ToyoteRequestHandler implements RequestHandler {
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData) throws IOException {
+        this.hasIntercepted = false;
+
         try {
             final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream);
+            final HttpResponse response = new HttpResponseImpl();
 
             sharedData.addObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME, request);
+            sharedData.addObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME, response);
         } catch (Exception e) {
             this.hasIntercepted = true;
             this.writeErrorResponse(outputStream, e);

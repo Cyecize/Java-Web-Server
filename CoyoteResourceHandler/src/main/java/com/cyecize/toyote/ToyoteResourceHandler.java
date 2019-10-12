@@ -2,28 +2,30 @@ package com.cyecize.toyote;
 
 import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpResponse;
-import com.cyecize.http.HttpStatus;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
 import com.cyecize.toyote.services.ResourceLocationService;
+import com.cyecize.toyote.services.ResponsePopulationService;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 @Service
 public class ToyoteResourceHandler implements RequestHandler {
 
     private final ResourceLocationService resourceLocationService;
 
+    private final ResponsePopulationService responsePopulationService;
+
     private boolean hasIntercepted;
 
     @Autowired
-    public ToyoteResourceHandler(ResourceLocationService resourceLocationService) {
+    public ToyoteResourceHandler(ResourceLocationService resourceLocationService, ResponsePopulationService responsePopulationService) {
         this.resourceLocationService = resourceLocationService;
+        this.responsePopulationService = responsePopulationService;
         this.hasIntercepted = false;
     }
 
@@ -34,28 +36,19 @@ public class ToyoteResourceHandler implements RequestHandler {
         final HttpRequest request = (HttpRequest) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME);
         final HttpResponse response = (HttpResponse) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME);
 
-        try (InputStream fileInputStream = this.resourceLocationService.locateResource(request.getRequestURL())) {
-            this.createResponse(fileInputStream, response);
+        try {
+            final File resource = this.resourceLocationService.locateResource(request.getRequestURL());
 
-            outputStream.write(response.getBytes());
+            try (final FileInputStream fileInputStream = new FileInputStream(resource)) {
+                this.responsePopulationService.handleResourceFoundResponse(request, response, resource, fileInputStream.available());
 
-            final byte[] buffer = new byte[2048];
-            int read;
-            while ((read = fileInputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
+                outputStream.write(response.getBytes());
+                this.transferStream(fileInputStream, outputStream);
             }
 
             this.hasIntercepted = true;
-        } catch (ResourceNotFoundException ignored) { }
-    }
-
-    private void createResponse(InputStream inputStream, HttpResponse response) throws IOException {
-        response.setStatusCode(HttpStatus.OK);
-
-        response.addHeader("Content-Type", "img/png");//TODO probe this
-        response.addHeader("Content-Length", inputStream.available() + "");
-        response.addHeader("Content-Disposition", "inline");
-        //TODO cache
+        } catch (ResourceNotFoundException ignored) {
+        }
     }
 
     @Override
@@ -71,5 +64,14 @@ public class ToyoteResourceHandler implements RequestHandler {
     @Override
     public int order() {
         return 2;
+    }
+
+    private void transferStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+        final byte[] buffer = new byte[2048];
+        int read;
+
+        while ((read = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, read);
+        }
     }
 }

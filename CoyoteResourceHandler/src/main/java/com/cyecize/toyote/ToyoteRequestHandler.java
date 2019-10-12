@@ -8,19 +8,24 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.toyote.services.ErrorHandlingService;
 import com.cyecize.toyote.services.HttpRequestParser;
 
 import java.io.*;
 
 @JavacheComponent
 public class ToyoteRequestHandler implements RequestHandler {
+
     private final HttpRequestParser httpRequestParser;
+
+    private final ErrorHandlingService errorHandlingService;
 
     private boolean hasIntercepted;
 
     @Autowired
-    public ToyoteRequestHandler(HttpRequestParser httpRequestParser) {
+    public ToyoteRequestHandler(HttpRequestParser httpRequestParser, ErrorHandlingService errorHandlingService) {
         this.httpRequestParser = httpRequestParser;
+        this.errorHandlingService = errorHandlingService;
         this.hasIntercepted = false;
     }
 
@@ -40,22 +45,8 @@ public class ToyoteRequestHandler implements RequestHandler {
             sharedData.addObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME, request);
             sharedData.addObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME, response);
         } catch (Exception e) {
-            this.hasIntercepted = true;
-            this.writeErrorResponse(outputStream, e);
+            this.hasIntercepted = this.errorHandlingService.handleException(outputStream, e, new HttpResponseImpl(), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    //TODO: create service for handling errors, add config for showing stack trace.
-    //TODO: put 404 handler in the same error handler service for Resource handling.
-    private void writeErrorResponse(OutputStream outputStream, Exception ex) throws IOException {
-        final ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ex.printStackTrace(new PrintStream(os));
-
-        final HttpResponse response = new HttpResponseImpl();
-        response.setStatusCode(HttpStatus.BAD_REQUEST);
-        response.setContent(os.toByteArray());
-
-        outputStream.write(response.getBytes());
     }
 
     @Override

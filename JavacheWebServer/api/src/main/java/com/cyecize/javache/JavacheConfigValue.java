@@ -30,4 +30,6 @@ public enum JavacheConfigValue {
 
     JAVACHE_WORKING_DIRECTORY,
 
+    JAVACHE_PRINT_EXCEPTIONS,
+
 }

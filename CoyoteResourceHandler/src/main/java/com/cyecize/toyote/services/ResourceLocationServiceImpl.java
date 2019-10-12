@@ -44,7 +44,7 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
     }
 
     @Override
-    public InputStream locateResource(String requestURL) throws ResourceNotFoundException, FileNotFoundException {
+    public File locateResource(String requestURL) throws ResourceNotFoundException, FileNotFoundException {
         final String currentRequestAppName = this.getAppNameForRequest(requestURL);
         requestURL = requestURL.replaceFirst(Pattern.quote("/" + currentRequestAppName), "");
 
@@ -54,7 +54,7 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
         }
 
         if (file.exists() && !file.isDirectory()) {
-            return new FileInputStream(file);
+            return file;
         }
 
         throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND_FORMAT, requestURL));

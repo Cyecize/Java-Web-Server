@@ -20,19 +20,19 @@ public class ToyoteResourceHandler implements RequestHandler {
 
     private final ResponsePopulationService responsePopulationService;
 
-    private boolean hasIntercepted;
-
     @Autowired
     public ToyoteResourceHandler(ResourceLocationService resourceLocationService, ResponsePopulationService responsePopulationService) {
         this.resourceLocationService = resourceLocationService;
         this.responsePopulationService = responsePopulationService;
-        this.hasIntercepted = false;
     }
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData requestHandlerSharedData) throws IOException {
-        this.hasIntercepted = false;
+    public void init() {
 
+    }
+
+    @Override
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData requestHandlerSharedData) throws IOException {
         final HttpRequest request = (HttpRequest) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME);
         final HttpResponse response = (HttpResponse) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME);
 
@@ -46,19 +46,11 @@ public class ToyoteResourceHandler implements RequestHandler {
                 this.transferStream(fileInputStream, outputStream);
             }
 
-            this.hasIntercepted = true;
+            return true;
         } catch (ResourceNotFoundException ignored) {
         }
-    }
 
-    @Override
-    public void init() {
-
-    }
-
-    @Override
-    public boolean hasIntercepted() {
-        return this.hasIntercepted;
+        return false;
     }
 
     @Override

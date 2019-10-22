@@ -14,22 +14,19 @@ import java.io.OutputStream;
 public class ToyoteFallbackHandler implements RequestHandler {
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData requestHandlerSharedData) throws IOException {
+    public void init() {
+
+    }
+
+    @Override
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData requestHandlerSharedData) throws IOException {
         final HttpResponse response = (HttpResponse) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME);
 
         response.setStatusCode(HttpStatus.NOT_FOUND);
         response.setContent("The resource you are looking for could not be found!");
 
         outputStream.write(response.getBytes());
-    }
 
-    @Override
-    public void init() {
-
-    }
-
-    @Override
-    public boolean hasIntercepted() {
         return true;
     }
 

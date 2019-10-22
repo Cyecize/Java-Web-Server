@@ -20,13 +20,10 @@ public class ToyoteRequestHandler implements RequestHandler {
 
     private final ErrorHandlingService errorHandlingService;
 
-    private boolean hasIntercepted;
-
     @Autowired
     public ToyoteRequestHandler(HttpRequestParser httpRequestParser, ErrorHandlingService errorHandlingService) {
         this.httpRequestParser = httpRequestParser;
         this.errorHandlingService = errorHandlingService;
-        this.hasIntercepted = false;
     }
 
     @Override
@@ -35,8 +32,7 @@ public class ToyoteRequestHandler implements RequestHandler {
     }
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData) throws IOException {
-        this.hasIntercepted = false;
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData) throws IOException {
 
         try {
             final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream);
@@ -45,13 +41,10 @@ public class ToyoteRequestHandler implements RequestHandler {
             sharedData.addObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME, request);
             sharedData.addObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME, response);
         } catch (Exception e) {
-            this.hasIntercepted = this.errorHandlingService.handleException(outputStream, e, new HttpResponseImpl(), HttpStatus.BAD_REQUEST);
+            return this.errorHandlingService.handleException(outputStream, e, new HttpResponseImpl(), HttpStatus.BAD_REQUEST);
         }
-    }
 
-    @Override
-    public boolean hasIntercepted() {
-        return this.hasIntercepted;
+        return false;
     }
 
     @Override

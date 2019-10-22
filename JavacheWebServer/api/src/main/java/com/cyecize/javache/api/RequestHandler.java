@@ -8,11 +8,9 @@ import java.io.OutputStream;
  * Interface that Javache web server looks for when scanning for request handlers.
  */
 public interface RequestHandler {
-    void handleRequest(InputStream inputStream, OutputStream responseStream, RequestHandlerSharedData sharedData) throws IOException;
-
     void init();
 
-    boolean hasIntercepted();
+    boolean handleRequest(InputStream inputStream, OutputStream responseStream, RequestHandlerSharedData sharedData) throws IOException;
 
     int order();
 }

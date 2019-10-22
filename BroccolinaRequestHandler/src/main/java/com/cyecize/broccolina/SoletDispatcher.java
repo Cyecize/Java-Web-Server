@@ -61,8 +61,8 @@ public class SoletDispatcher implements RequestHandler {
                 sharedData.getObject(BroccolinaConstants.SHARED_DATA_HTTP_RESPONSE_KEY, HttpResponse.class)
         );
 
-        this.sessionManagementService.initSessionIfExistent(request);
         final HttpSolet solet = this.soletCandidateFinder.findSoletCandidate(request);
+        this.sessionManagementService.initSessionIfExistent(request);
 
         if (solet == null || (request.isResource() && !this.trackResources)) {
             return false;

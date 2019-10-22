@@ -3,6 +3,7 @@ package com.cyecize.broccolina.services;
 import com.cyecize.broccolina.BroccolinaConstants;
 import com.cyecize.http.*;
 import com.cyecize.ioc.annotations.Service;
+import com.cyecize.solet.HttpSoletRequest;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,19 +29,19 @@ public class SessionManagementServiceImpl implements SessionManagementService {
      * if the session is valid, sets the session to the HttpRequest.
      */
     @Override
-    public void initSessionIfExistent(HttpRequest request) {
-        final HttpCookie cookie = request.getCookies().get(SESSION_COOKIE_NAME);
+    public void initSessionIfExistent(HttpSoletRequest request) {
+        final HttpCookie cookie = request.getCookies().get(this.getSessionCookieName(request));
 
         if (cookie != null) {
             final HttpSession session = this.sessionStorage.getSession(cookie.getValue());
-            if (session != null && session.isValid()) {
+            if (this.isSessionValid(session)) {
                 request.setSession(session);
             } else {
                 request.getCookies().remove(SESSION_COOKIE_NAME);
-                request.setSession(new HttpSessionImpl());
+                this.addNewSession(request);
             }
         } else {
-            request.setSession(new HttpSessionImpl());
+            this.addNewSession(request);
         }
     }
 
@@ -50,7 +51,7 @@ public class SessionManagementServiceImpl implements SessionManagementService {
      * If the session is invalid, removes the cookie.
      */
     @Override
-    public void sendSessionIfExistent(HttpRequest request, HttpResponse response) {
+    public void sendSessionIfExistent(HttpSoletRequest request, HttpResponse response) {
         if (request.getSession() == null) {
             return;
         }
@@ -60,15 +61,15 @@ public class SessionManagementServiceImpl implements SessionManagementService {
         }
 
         if (request.getSession().isValid()) {
-            final HttpCookie cookie = new HttpCookieImpl(SESSION_COOKIE_NAME, request.getSession().getId());
+            final HttpCookie cookie = new HttpCookieImpl(this.getSessionCookieName(request), request.getSession().getId());
 
-            //set the path to "/" and set the expire date to one day
-            cookie.setPath("/; expires=" + DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().plusDays(BroccolinaConstants.SESSION_EXPIRE_DAYS)));
+            final String expires = DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().plusDays(BroccolinaConstants.SESSION_EXPIRE_DAYS));
+            cookie.setPath("/; expires=" + expires);
+
             response.addCookie(cookie);
         } else {
             response.addCookie(SESSION_COOKIE_NAME, "removed; expires=" + new Date(0).toString());
         }
-
     }
 
     @Override
@@ -79,5 +80,17 @@ public class SessionManagementServiceImpl implements SessionManagementService {
     @Override
     public HttpSessionStorage getSessionStorage() {
         return this.sessionStorage;
+    }
+
+    private void addNewSession(HttpSoletRequest request) {
+        request.setSession(new HttpSessionImpl());
+    }
+
+    private boolean isSessionValid(HttpSession session) {
+        return session != null && session.isValid();
+    }
+
+    private String getSessionCookieName(HttpSoletRequest request) {
+        return SESSION_COOKIE_NAME + request.getContextPath();
     }
 }

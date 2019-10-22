@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SoletConfigImpl implements SoletConfig {
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     public SoletConfigImpl() {
         this.attributes = new HashMap<>();

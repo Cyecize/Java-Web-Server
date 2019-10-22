@@ -4,52 +4,35 @@ import com.cyecize.http.HttpStatus;
 
 public abstract class BaseHttpSolet implements HttpSolet {
 
-    private static final String FUNCTIONALITY_NOT_FOUND_FORMAT = "<h1>[ERROR] %s %s </h1><br/>"
-            + "<h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>";
-
     private boolean isInitialized;
 
     private boolean hasIntercepted;
 
     private SoletConfig soletConfig;
 
-    protected String appNamePrefix;
-
-    protected String assetsFolder;
-
     protected BaseHttpSolet() {
         this.isInitialized = false;
         this.setHasIntercepted(true);
-        this.appNamePrefix = "";
-    }
-
-    private void configureNotFound(HttpSoletRequest request, HttpSoletResponse response) {
-        response.setStatusCode(HttpStatus.NOT_FOUND);
-        response.addHeader("Content-Type", "text/html");
     }
 
     protected String createRoute(String route) {
-        return this.appNamePrefix + route;
+        return this.soletConfig.getAttribute(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX) + route;
     }
 
     protected void doGet(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.configureNotFound(request, response);
-        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "GET", request.getRequestURL())));
+        this.functionalityNotFound(request, response);
     }
 
     protected void doPost(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.configureNotFound(request, response);
-        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "POST", request.getRequestURL())));
+        this.functionalityNotFound(request, response);
     }
 
     protected void doPut(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.configureNotFound(request, response);
-        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "PUT", request.getRequestURL())));
+        this.functionalityNotFound(request, response);
     }
 
     protected void doDelete(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        this.configureNotFound(request, response);
-        response.setContent((String.format(FUNCTIONALITY_NOT_FOUND_FORMAT, "DELETE", request.getRequestURL())));
+        this.functionalityNotFound(request, response);
     }
 
     protected void setHasIntercepted(boolean hasIntercepted) {
@@ -58,18 +41,9 @@ public abstract class BaseHttpSolet implements HttpSolet {
 
     @Override
     public void init(SoletConfig soletConfig) {
-        this.isInitialized = true;
         this.soletConfig = soletConfig;
-    }
-
-    @Override
-    public void setAppNamePrefix(String appName) {
-        this.appNamePrefix = appName;
-    }
-
-    @Override
-    public void setAssetsFolder(String dir) {
-        this.assetsFolder = dir;
+        this.soletConfig.setAttribute(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX, "");
+        this.isInitialized = true;
     }
 
     @Override
@@ -102,6 +76,15 @@ public abstract class BaseHttpSolet implements HttpSolet {
             case "DELETE":
                 this.doDelete(request, response);
                 break;
+            default:
+                this.functionalityNotFound(request, response);
+                break;
         }
+    }
+
+    private void functionalityNotFound(HttpSoletRequest request, HttpSoletResponse response) {
+        response.setStatusCode(HttpStatus.NOT_FOUND);
+        response.addHeader("Content-Type", "text/html");
+        response.setContent((String.format(SoletConstants.FUNCTIONALITY_NOT_FOUND_FORMAT, request.getMethod(), request.getRequestURL())));
     }
 }

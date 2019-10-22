@@ -13,7 +13,7 @@
 
     <properties>
         <version.http>1.3</version.http>
-        <version.solet>1.2.0</version.solet>
+        <version.solet>1.3</version.solet>
         <version.toyote>1.3</version.toyote>
         <version.javache-api>1.3</version.javache-api>
         <version.broccolina>1.3</version.broccolina>

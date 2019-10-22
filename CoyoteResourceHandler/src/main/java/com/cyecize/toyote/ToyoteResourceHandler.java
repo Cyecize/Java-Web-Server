@@ -4,9 +4,11 @@ import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpResponse;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 
+import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
 import com.cyecize.toyote.services.ResourceLocationService;
 import com.cyecize.toyote.services.ResponsePopulationService;
@@ -20,10 +22,16 @@ public class ToyoteResourceHandler implements RequestHandler {
 
     private final ResponsePopulationService responsePopulationService;
 
+    private final JavacheConfigService configService;
+
     @Autowired
-    public ToyoteResourceHandler(ResourceLocationService resourceLocationService, ResponsePopulationService responsePopulationService) {
+    public ToyoteResourceHandler(
+            ResourceLocationService resourceLocationService,
+            ResponsePopulationService responsePopulationService,
+            JavacheConfigService configService) {
         this.resourceLocationService = resourceLocationService;
         this.responsePopulationService = responsePopulationService;
+        this.configService = configService;
     }
 
     @Override
@@ -55,7 +63,7 @@ public class ToyoteResourceHandler implements RequestHandler {
 
     @Override
     public int order() {
-        return 2;
+        return this.configService.getConfigParam(JavacheConfigValue.TOYOTE_RESOURCE_HANDLER_ORDER, int.class);
     }
 
     private void transferStream(InputStream inputStream, OutputStream outputStream) throws IOException {

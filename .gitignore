@@ -29,3 +29,4 @@ JavacheWebServer/server-embedded/javache-embedded.iml
 CoyoteResourceHandler/dependency-reduced-pom.xml
 JavacheWebServer/api/javache-api.iml
 JavacheWebServer/server/javache.iml
+HttpAPI/http.iml

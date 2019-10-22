@@ -54,13 +54,22 @@ public class ReflectionUtils {
             }
         }
 
+        addUrlToClassLoader(url, (URLClassLoader) ClassLoader.getSystemClassLoader());
+    }
+
+    /**
+     * Adds a URL to a given URLClassLoader.
+     *
+     * @param url         - given URL.
+     * @param classLoader - given URLClassLoader.
+     */
+    public static void addUrlToClassLoader(URL url, URLClassLoader classLoader) {
         try {
-            final URLClassLoader sysClassLoaderInstance = (URLClassLoader) ClassLoader.getSystemClassLoader();
             final Class<URLClassLoader> sysClassLoaderType = URLClassLoader.class;
 
             final Method method = sysClassLoaderType.getDeclaredMethod("addURL", URL.class);
             method.setAccessible(true);
-            method.invoke(sysClassLoaderInstance, url);
+            method.invoke(classLoader, url);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

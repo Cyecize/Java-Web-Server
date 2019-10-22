@@ -2,18 +2,18 @@ package com.cyecize.broccolina.services;
 
 import com.cyecize.broccolina.BroccolinaConstants;
 import com.cyecize.http.*;
-import com.cyecize.javache.api.JavacheComponent;
+import com.cyecize.ioc.annotations.Service;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
-@JavacheComponent
+@Service
 public class SessionManagementServiceImpl implements SessionManagementService {
 
     private static final String SESSION_COOKIE_NAME = "JAVACHE_SESSION_ID";
 
-    private HttpSessionStorage sessionStorage;
+    private final HttpSessionStorage sessionStorage;
 
     public SessionManagementServiceImpl() {
         this.sessionStorage = new HttpSessionStorageImpl();
@@ -29,9 +29,10 @@ public class SessionManagementServiceImpl implements SessionManagementService {
      */
     @Override
     public void initSessionIfExistent(HttpRequest request) {
-        HttpCookie cookie = request.getCookies().get(SESSION_COOKIE_NAME);
+        final HttpCookie cookie = request.getCookies().get(SESSION_COOKIE_NAME);
+
         if (cookie != null) {
-            HttpSession session = this.sessionStorage.getSession(cookie.getValue());
+            final HttpSession session = this.sessionStorage.getSession(cookie.getValue());
             if (session != null && session.isValid()) {
                 request.setSession(session);
             } else {
@@ -59,7 +60,7 @@ public class SessionManagementServiceImpl implements SessionManagementService {
         }
 
         if (request.getSession().isValid()) {
-            HttpCookie cookie = new HttpCookieImpl(SESSION_COOKIE_NAME, request.getSession().getId());
+            final HttpCookie cookie = new HttpCookieImpl(SESSION_COOKIE_NAME, request.getSession().getId());
 
             //set the path to "/" and set the expire date to one day
             cookie.setPath("/; expires=" + DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().plusDays(BroccolinaConstants.SESSION_EXPIRE_DAYS)));

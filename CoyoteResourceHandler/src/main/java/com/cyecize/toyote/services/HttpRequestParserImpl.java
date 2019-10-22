@@ -3,7 +3,10 @@ package com.cyecize.toyote.services;
 import com.cyecize.http.HttpCookieImpl;
 import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpRequestImpl;
+import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
+import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
 
 import java.io.IOException;
@@ -21,24 +24,31 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
     private static final String COOKIE_HEADER_NAME = "Cookie";
 
+    private final boolean showRequestLog;
+
+    @Autowired
+    public HttpRequestParserImpl(JavacheConfigService configService) {
+        this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
+    }
+
     @Override
     public HttpRequest parseHttpRequest(InputStream inputStream) throws IOException {
         final HttpRequest request = new HttpRequestImpl();
 
         final List<String> headers = parseMetadataLines(inputStream, false);
 
-        setMethodAndURL(headers.get(0), request);
-        addQueryParameters(headers.get(0), request);
-        addHeaders(headers, request);
-        initCookies(request);
+        this.setMethodAndURL(headers.get(0), request);
+        this.addQueryParameters(headers.get(0), request);
+        this.addHeaders(headers, request);
+        this.initCookies(request);
 
         //TODO check for different content types
-        setBodyParameters(readBody(inputStream, request), request);
+        this.setBodyParameters(this.readBody(inputStream, request), request);
 
         return request;
     }
 
-    private static List<String> parseMetadataLines(InputStream inputStream, boolean allowNewLineWithoutReturn) throws IOException {
+    private List<String> parseMetadataLines(InputStream inputStream, boolean allowNewLineWithoutReturn) throws IOException {
         final List<String> metadataLines = new ArrayList<>();
 
         StringBuilder metadataBuilder = new StringBuilder();
@@ -88,22 +98,26 @@ public class HttpRequestParserImpl implements HttpRequestParser {
             throw new CannotParseRequestException("Request is empty");
         }
 
+        if (this.showRequestLog) {
+            System.out.println(String.join("\n", metadataLines));
+        }
+
         return metadataLines;
     }
 
-    private static void setMethodAndURL(String requestFirstLine, HttpRequest request) {
+    private void setMethodAndURL(String requestFirstLine, HttpRequest request) {
         request.setMethod(requestFirstLine.split("\\s")[0]);
         request.setRequestURL(requestFirstLine.split("[\\s\\?]")[1]);
     }
 
-    private static void addHeaders(List<String> requestMetadata, HttpRequest request) {
+    private void addHeaders(List<String> requestMetadata, HttpRequest request) {
         for (int i = 1; i < requestMetadata.size(); i++) {
             final String[] headerKeyValuePair = requestMetadata.get(i).split(":\\s+");
             request.addHeader(headerKeyValuePair[0], headerKeyValuePair[1]);
         }
     }
 
-    private static void addQueryParameters(String requestFirstLine, HttpRequest request) {
+    private void addQueryParameters(String requestFirstLine, HttpRequest request) {
         final String fullRequestURL = requestFirstLine.split("\\s")[1];
         final String[] urlQueryParamPair = fullRequestURL.split("\\?");
 
@@ -125,7 +139,7 @@ public class HttpRequestParserImpl implements HttpRequestParser {
         }
     }
 
-    private static void initCookies(HttpRequest request) {
+    private void initCookies(HttpRequest request) {
         if (!request.getHeaders().containsKey(COOKIE_HEADER_NAME)) {
             return;
         }
@@ -142,7 +156,7 @@ public class HttpRequestParserImpl implements HttpRequestParser {
         }
     }
 
-    private static String readBody(InputStream inputStream, HttpRequest request) throws IOException {
+    private String readBody(InputStream inputStream, HttpRequest request) throws IOException {
         int contentLength = inputStream.available();
         if (request.getHeaders().containsKey(CONTENT_LENGTH_HEADER_NAME)) {
             contentLength = Integer.parseInt(request.getHeaders().get(CONTENT_LENGTH_HEADER_NAME));
@@ -150,10 +164,15 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
         final byte[] bytes = inputStream.readNBytes(contentLength);
 
-        return new String(bytes, StandardCharsets.UTF_8);
+        final String body = new String(bytes, StandardCharsets.UTF_8);
+        if (this.showRequestLog) {
+            System.out.println(body);
+        }
+
+        return body;
     }
 
-    private static void setBodyParameters(String requestBody, HttpRequest request) {
+    private void setBodyParameters(String requestBody, HttpRequest request) {
         if (requestBody == null || requestBody.isEmpty() || requestBody.trim().isEmpty()) {
             return;
         }

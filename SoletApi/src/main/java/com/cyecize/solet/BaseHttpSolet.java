@@ -42,7 +42,7 @@ public abstract class BaseHttpSolet implements HttpSolet {
     @Override
     public void init(SoletConfig soletConfig) {
         this.soletConfig = soletConfig;
-        this.soletConfig.setAttribute(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX, "");
+        this.soletConfig.setIfMissing(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX, "");
         this.isInitialized = true;
     }
 

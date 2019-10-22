@@ -33,15 +33,17 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
                 .and()
                 .build();
 
-        final DependencyContainer javacheComponentsContainer = MagicInjector.run(
+        final DependencyContainer requestHandlersDependencyContainer = MagicInjector.run(
                 libJarFiles.stream()
                         .filter(jarFile -> requestHandlerPriority.stream().anyMatch(rh -> jarFile.getName().endsWith(rh + ".jar")))
                         .toArray(File[]::new),
                 magicConfiguration
         );
 
+        IoC.setRequestHandlersDependencyContainer(requestHandlersDependencyContainer);
+
         this.requestHandlers.addAll(
-                javacheComponentsContainer.getImplementations(RequestHandler.class)
+                requestHandlersDependencyContainer.getImplementations(RequestHandler.class)
                         .stream()
                         .map(sd -> (RequestHandler) sd.getProxyInstance())
                         .sorted(Comparator.comparingInt(RequestHandler::order))

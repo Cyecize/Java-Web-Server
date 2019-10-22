@@ -49,6 +49,6 @@ public class ToyoteRequestHandler implements RequestHandler {
 
     @Override
     public int order() {
-        return 0;
+        return Integer.MIN_VALUE;
     }
 }

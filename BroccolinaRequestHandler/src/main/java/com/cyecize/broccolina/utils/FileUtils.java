@@ -7,8 +7,8 @@ import java.util.Arrays;
 public class FileUtils {
 
     public static boolean filesMatch(InputStream firstFile, InputStream secondFile) throws IOException {
-        byte[] buffer1 = new byte[4096];
-        byte[] buffer2 = new byte[4096];
+        final byte[] buffer1 = new byte[4096];
+        final byte[] buffer2 = new byte[4096];
 
         if (firstFile.available() != secondFile.available()) {
             return false;
@@ -25,5 +25,4 @@ public class FileUtils {
 
         return true;
     }
-
 }

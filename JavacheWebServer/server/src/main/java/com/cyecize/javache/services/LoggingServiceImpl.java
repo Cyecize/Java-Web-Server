@@ -1,8 +1,8 @@
 package com.cyecize.javache.services;
 
-import com.cyecize.javache.api.JavacheComponent;
+import com.cyecize.ioc.annotations.Service;
 
-@JavacheComponent
+@Service
 public class LoggingServiceImpl implements LoggingService {
 
     public LoggingServiceImpl() {

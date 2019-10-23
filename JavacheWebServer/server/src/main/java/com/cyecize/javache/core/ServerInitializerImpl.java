@@ -2,13 +2,13 @@ package com.cyecize.javache.core;
 
 import com.cyecize.WebConstants;
 import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
-import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.services.*;
 
 import java.io.IOException;
 
-@JavacheComponent
+@Service
 public class ServerInitializerImpl implements ServerInitializer {
 
     private final LoggingService loggingService;
@@ -42,7 +42,7 @@ public class ServerInitializerImpl implements ServerInitializer {
         this.configService.addConfigParam(JavacheConfigValue.SERVER_PORT, port);
         this.configService.addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, startupArgs);
 
-        final Server server = new ServerImpl(port, this.loggingService, this.requestHandlerLoadingService, this.configService);
+        final Server server = new ServerImpl(port, this.loggingService, this.requestHandlerLoadingService);
 
         try {
             server.run();

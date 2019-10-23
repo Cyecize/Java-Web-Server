@@ -13,39 +13,33 @@ public class ServerImpl implements Server {
 
     private static final String LISTENING_MESSAGE_FORMAT = "http://localhost:%d";
 
-    private int port;
+    private final int port;
 
     private final LoggingService loggingService;
 
     private final RequestHandlerLoadingService requestHandlerLoadingService;
 
-    private final JavacheConfigService javacheConfigService;
-
-    public ServerImpl(int port, LoggingService loggingService, RequestHandlerLoadingService requestHandlerLoadingService, JavacheConfigService javacheConfigService) {
+    public ServerImpl(int port, LoggingService loggingService, RequestHandlerLoadingService requestHandlerLoadingService) {
         this.port = port;
         this.loggingService = loggingService;
         this.requestHandlerLoadingService = requestHandlerLoadingService;
-        this.javacheConfigService = javacheConfigService;
     }
 
     @Override
     public void run() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(this.port);
+        final ServerSocket serverSocket = new ServerSocket(this.port);
         serverSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
+
         this.loggingService.info(String.format(LISTENING_MESSAGE_FORMAT, this.port));
 
         while (true) {
             try {
-                Socket clientSocket = serverSocket.accept();
+                final Socket clientSocket = serverSocket.accept();
                 clientSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
-                clientSocket.setReceiveBufferSize(131072);
 
-                Thread thread = new Thread(new ConnectionHandlerImpl(
+                final Thread thread = new Thread(new ConnectionHandlerImpl(
                         clientSocket,
-                        this.requestHandlerLoadingService.getRequestHandlers(),
-                        new InputStreamCachingServiceImpl(),
-                        this.loggingService,
-                        this.javacheConfigService
+                        this.requestHandlerLoadingService.getRequestHandlers()
                 ));
 
                 thread.start();

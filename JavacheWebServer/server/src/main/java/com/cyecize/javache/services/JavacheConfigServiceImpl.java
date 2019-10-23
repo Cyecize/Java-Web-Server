@@ -116,6 +116,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY.name(), WebConstants.WORKING_DIRECTORY);
         this.configParameters.put(JavacheConfigValue.LIB_DIR_NAME.name(), "lib/");
         this.configParameters.put(JavacheConfigValue.JAVACHE_PRINT_EXCEPTIONS.name(), true);
+        this.configParameters.put(JavacheConfigValue.TOYOTE_RESOURCE_HANDLER_ORDER.name(), 1);
+        this.configParameters.put(JavacheConfigValue.BROCCOLINA_SOLET_DISPATCHER_ORDER.name(), 2);
     }
 
     /**
@@ -129,7 +131,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
             return;
         }
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(CONFIG_FILE_PATH)));
+       final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(CONFIG_FILE_PATH)));
         while (bufferedReader.ready()) {
             final String line = bufferedReader.readLine();
             final String[] keyValuePair = line.trim().split(":\\s+");

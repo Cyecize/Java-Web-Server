@@ -30,3 +30,4 @@ CoyoteResourceHandler/dependency-reduced-pom.xml
 JavacheWebServer/api/javache-api.iml
 JavacheWebServer/server/javache.iml
 HttpAPI/http.iml
+JavacheWebServer/server-embedded/dependency-reduced-pom.xml

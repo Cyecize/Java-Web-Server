@@ -1,54 +1,35 @@
 package com.cyecize.javache.embedded.services;
 
-import com.cyecize.broccolina.SoletDispatcher;
-import com.cyecize.broccolina.services.ApplicationLoadingServiceImpl;
-import com.cyecize.broccolina.services.ApplicationScanningService;
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.RequestHandler;
-import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.embedded.internal.JavacheEmbeddedComponent;
 import com.cyecize.javache.services.RequestHandlerLoadingService;
-import com.cyecize.toyote.ResourceHandler;
 
-import java.util.Collections;
+import java.io.File;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@JavacheEmbeddedComponent
 public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadingService {
 
-    private final String workingDir;
+    private final LinkedList<RequestHandler> requestHandlers;
 
-    private final JavacheConfigService configService;
-
-    private final ApplicationScanningService scanningService;
-
-    private LinkedList<RequestHandler> requestHandlers;
-
-    public EmbeddedRequestHandlerLoadingService(String workingDir, JavacheConfigService configService, ApplicationScanningService scanningService) {
-        this.workingDir = workingDir;
-        this.configService = configService;
-        this.scanningService = scanningService;
+    @Autowired
+    public EmbeddedRequestHandlerLoadingService() {
         this.requestHandlers = new LinkedList<>();
     }
 
-    /**
-     * Manually loads request handlers that are otherwise loaded using reflection in the real
-     * javache web server.
-     */
     @Override
-    public void loadRequestHandlers(List<String> list) {
-
-        this.requestHandlers.add(
-                new SoletDispatcher(
-                        this.workingDir,
-                        new ApplicationLoadingServiceImpl(
-                                this.scanningService,
-                                this.configService,
-                                this.workingDir + configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class)
-                        ),
-                        this.configService
-                ));
-
-        this.requestHandlers.add(new ResourceHandler(workingDir, s -> Collections.singletonList(""), this.configService));
+    public void loadRequestHandlers(List<String> requestHandlerPriority, List<File> libJarFiles) {
+        this.requestHandlers.addAll(IoC.getJavacheDependencyContainer().getImplementations(RequestHandler.class)
+                .stream()
+                .map(sd -> (RequestHandler) sd.getProxyInstance())
+                .sorted(Comparator.comparingInt(RequestHandler::order))
+                .peek(RequestHandler::init)
+                .collect(Collectors.toList()));
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.cyecize.http.HttpResponse;
 import com.cyecize.http.HttpResponseImpl;
 import com.cyecize.http.HttpStatus;
 import com.cyecize.ioc.annotations.Autowired;
-import com.cyecize.javache.api.JavacheComponent;
+import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 import com.cyecize.toyote.services.ErrorHandlingService;
@@ -13,7 +13,7 @@ import com.cyecize.toyote.services.HttpRequestParser;
 
 import java.io.*;
 
-@JavacheComponent
+@Service
 public class ToyoteRequestHandler implements RequestHandler {
 
     private final HttpRequestParser httpRequestParser;

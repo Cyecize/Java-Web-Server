@@ -22,9 +22,6 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
     public void run() {
         try {
             this.processClientConnection();
-            this.clientSocket.getInputStream().close();
-            this.clientSocket.getOutputStream().flush();
-            this.clientSocket.getOutputStream().close();
             this.clientSocket.close();
         } catch (Throwable e) {
             //TODO: log

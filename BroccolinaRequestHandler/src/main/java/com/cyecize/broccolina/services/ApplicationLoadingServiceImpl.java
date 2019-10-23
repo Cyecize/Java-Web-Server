@@ -2,8 +2,8 @@ package com.cyecize.broccolina.services;
 
 import com.cyecize.broccolina.BroccolinaConstants;
 import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
-import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfig;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-@JavacheComponent
+@Service
 public class ApplicationLoadingServiceImpl implements ApplicationLoadingService {
 
     private static final String MISSING_SOLET_ANNOTATION_FORMAT = "Missing solet annotation for class named %s.";

@@ -1,8 +1,6 @@
 package com.cyecize.toyote.exceptions;
 
-import java.io.IOException;
-
-public class CannotParseRequestException extends IOException {
+public class CannotParseRequestException extends RuntimeException {
     public CannotParseRequestException(String message) {
         super(message);
     }

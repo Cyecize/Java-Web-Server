@@ -1,5 +1,6 @@
 package com.cyecize.javache.core;
 
+import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 
@@ -13,9 +14,12 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 
     private final List<RequestHandler> requestHandlers;
 
-    public ConnectionHandlerImpl(Socket clientSocket, List<RequestHandler> requestHandlers) {
+    private final List<RequestDestroyHandler> requestDestroyHandlers;
+
+    public ConnectionHandlerImpl(Socket clientSocket, List<RequestHandler> requestHandlers, List<RequestDestroyHandler> requestDestroyHandlers) {
         this.clientSocket = clientSocket;
         this.requestHandlers = requestHandlers;
+        this.requestDestroyHandlers = requestDestroyHandlers;
     }
 
     @Override
@@ -40,6 +44,10 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
             if (requestHandler.handleRequest(this.clientSocket.getInputStream(), this.clientSocket.getOutputStream(), sharedData)) {
                 break;
             }
+        }
+
+        for (RequestDestroyHandler requestDestroyHandler : this.requestDestroyHandlers) {
+            requestDestroyHandler.destroy(sharedData);
         }
     }
 }

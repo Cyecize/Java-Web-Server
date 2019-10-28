@@ -2,11 +2,13 @@ package com.cyecize.javache.embedded.services;
 
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.api.IoC;
+import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.embedded.internal.JavacheEmbeddedComponent;
 import com.cyecize.javache.services.RequestHandlerLoadingService;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,9 +19,12 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
 
     private final LinkedList<RequestHandler> requestHandlers;
 
+    private final List<RequestDestroyHandler> destroyHandlers;
+
     @Autowired
     public EmbeddedRequestHandlerLoadingService() {
         this.requestHandlers = new LinkedList<>();
+        this.destroyHandlers = new ArrayList<>();
     }
 
     @Override
@@ -30,11 +35,22 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
                 .sorted(Comparator.comparingInt(RequestHandler::order))
                 .peek(RequestHandler::init)
                 .collect(Collectors.toList()));
+
+        this.destroyHandlers.addAll(IoC.getJavacheDependencyContainer().getImplementations(RequestDestroyHandler.class)
+                .stream()
+                .map(sd -> (RequestDestroyHandler) sd.getProxyInstance())
+                .collect(Collectors.toList())
+        );
     }
 
     @Override
     public List<RequestHandler> getRequestHandlers() {
         return this.requestHandlers;
+    }
+
+    @Override
+    public List<RequestDestroyHandler> getRequestDestroyHandlers() {
+        return this.destroyHandlers;
     }
 
 }

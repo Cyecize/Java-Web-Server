@@ -2,10 +2,12 @@ package com.cyecize.javache.services;
 
 import com.cyecize.WebConstants;
 import com.cyecize.ioc.MagicInjector;
+import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.config.MagicConfiguration;
 import com.cyecize.ioc.services.DependencyContainer;
 import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.JavacheComponent;
+import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 
 import java.io.File;
@@ -17,8 +19,12 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
     private final List<RequestHandler> requestHandlers;
 
+    private final List<RequestDestroyHandler> destroyHandlers;
+
+    @Autowired
     public RequestHandlerLoadingServiceImpl() {
         this.requestHandlers = new LinkedList<>();
+        this.destroyHandlers = new ArrayList<>();
     }
 
     @Override
@@ -50,11 +56,23 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
                         .collect(Collectors.toList())
         );
 
+        this.destroyHandlers.addAll(
+                requestHandlersDependencyContainer.getImplementations(RequestDestroyHandler.class)
+                .stream()
+                .map(sd -> (RequestDestroyHandler) sd.getProxyInstance())
+                .collect(Collectors.toList())
+        );
+
         this.requestHandlers.forEach(RequestHandler::init);
     }
 
     @Override
     public List<RequestHandler> getRequestHandlers() {
         return Collections.unmodifiableList(this.requestHandlers);
+    }
+
+    @Override
+    public List<RequestDestroyHandler> getRequestDestroyHandlers() {
+        return this.destroyHandlers;
     }
 }

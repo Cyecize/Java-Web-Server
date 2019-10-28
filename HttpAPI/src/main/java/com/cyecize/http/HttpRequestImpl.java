@@ -10,6 +10,10 @@ public class HttpRequestImpl implements HttpRequest {
 
     private HttpSession session;
 
+    private int contentLength;
+
+    private final List<MultipartFile> multipartFiles;
+
     private final Map<String, String> headers;
 
     private final Map<String, String> queryParameters;
@@ -21,6 +25,7 @@ public class HttpRequestImpl implements HttpRequest {
     private final Map<String, HttpCookie> cookies;
 
     public HttpRequestImpl() {
+        this.multipartFiles = new ArrayList<>();
         this.headers = new HashMap<>();
         this.queryParameters = new HashMap<>();
         this.bodyParameters = new HashMap<>();
@@ -36,6 +41,11 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public void setRequestURL(String requestUrl) {
         this.requestURL = requestUrl;
+    }
+
+    @Override
+    public void setContentLength(int contentLength) {
+        this.contentLength = contentLength;
     }
 
     @Override
@@ -60,8 +70,18 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     @Override
+    public void addMultipartFile(MultipartFile multipartFile) {
+        this.multipartFiles.add(multipartFile);
+    }
+
+    @Override
     public boolean isResource() {
         return this.getRequestURL().contains(".");
+    }
+
+    @Override
+    public int getContentLength() {
+        return this.contentLength;
     }
 
     @Override
@@ -85,8 +105,49 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     @Override
+    public String getContentType() {
+        return this.getHeader("Content-Type");
+    }
+
+    @Override
+    public String getQueryParam(String paramName) {
+        return this.queryParameters.get(paramName);
+    }
+
+    @Override
+    public String getBodyParam(String paramName) {
+        return this.bodyParameters.get(paramName);
+    }
+
+    @Override
+    public String get(String paramName) {
+        String param = this.getQueryParam(paramName);
+
+        if (param == null) {
+            param = this.getBodyParam(paramName);
+        }
+
+        return param;
+    }
+
+    @Override
+    public String getHeader(String headerName) {
+        return this.headers.get(headerName);
+    }
+
+    @Override
     public HttpSession getSession() {
         return this.session;
+    }
+
+    @Override
+    public HttpCookie getCookie(String cookieName) {
+        return this.cookies.get(cookieName);
+    }
+
+    @Override
+    public List<MultipartFile> getMultipartFiles() {
+        return this.multipartFiles;
     }
 
     @Override

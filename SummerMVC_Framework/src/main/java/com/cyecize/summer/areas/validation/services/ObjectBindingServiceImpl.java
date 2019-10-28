@@ -3,6 +3,7 @@ package com.cyecize.summer.areas.validation.services;
 import com.cyecize.http.MultipartFile;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.SoletConfig;
+import com.cyecize.solet.SoletConstants;
 import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
 import com.cyecize.summer.areas.routing.models.UploadedFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
@@ -102,7 +103,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      */
     private UploadedFile handleMultipartField(Field field, HttpSoletRequest request) {
         final MultipartFile multipartFile = request.getMultipartFiles().stream()
-                .filter(mf -> mf.getFileName().equalsIgnoreCase(field.getName()))
+                .filter(mf -> mf.getFieldName().equalsIgnoreCase(field.getName()))
                 .findFirst().orElse(null);
 
         if (multipartFile != null) {
@@ -151,7 +152,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      */
     private String getAssetsDir() {
         if (this.assetsDir == null) {
-            this.assetsDir = this.dependencyContainer.getService(SoletConfig.class).getAttribute(SOLET_CFG_ASSETS_DIR) + "";
+            this.assetsDir = this.dependencyContainer.getService(SoletConfig.class).getAttribute(SoletConstants.SOLET_CONFIG_ASSETS_DIR) + "";
         }
 
         return this.assetsDir;

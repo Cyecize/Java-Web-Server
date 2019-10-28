@@ -9,10 +9,9 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.ActionMethodScanningService;
 import com.cyecize.summer.areas.routing.services.ActionMethodScanningServiceImpl;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
-import com.cyecize.summer.areas.scanning.models.HttpSummerRequest;
-import com.cyecize.summer.areas.scanning.models.HttpSummerResponse;
 import com.cyecize.summer.areas.scanning.models.ScannedObjects;
 import com.cyecize.summer.areas.scanning.services.*;
+import com.cyecize.summer.areas.scanning.util.SoletRequestAndResponseBean;
 import com.cyecize.summer.areas.security.interceptors.SecurityInterceptor;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.validation.constraints.*;
@@ -41,8 +40,7 @@ public class SummerBootApplication {
                 .addAdditionalClassesForScanning(new HashMap<>() {{
 
                     //platform
-                    put(HttpSummerRequest.class, null);
-                    put(HttpSummerResponse.class, null);
+                    put(SoletRequestAndResponseBean.class, BeanConfig.class);
                     put(SoletConfigImpl.class, null);
                     put(HttpSessionImpl.class, null);
                     put(Model.class, Component.class);

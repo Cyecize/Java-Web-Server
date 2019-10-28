@@ -19,6 +19,7 @@
         <version.broccolina>1.3</version.broccolina>
         <version.javache>1.3</version.javache>
         <version.javache-embedded>1.3</version.javache-embedded>
+        <version.summer>1.3</version.summer>
         <version.magic-injector>1.1</version.magic-injector>
     </properties>
 

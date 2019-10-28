@@ -28,7 +28,7 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
      */
     @Override
     public Object execute(FunctionRequest functionRequest) {
-        RedirectedBindingResult bindingResult = this.dependencyContainer.getService(RedirectedBindingResult.class);
+        final RedirectedBindingResult bindingResult = this.dependencyContainer.getService(RedirectedBindingResult.class);
         if (functionRequest.getNumberOfArguments() < 1) {
             return bindingResult.getErrors();
         }

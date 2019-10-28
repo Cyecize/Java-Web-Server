@@ -23,13 +23,4 @@ public class IocConstants {
     public static final String SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME = "lifespan";
 
     public static final String SOLET_CFG_SCANNED_OBJECTS = "scannedObjects";
-
-    public static final String SOLET_CFG_ASSETS_DIR = "assetsDirectory";
-
-    public static final String COMPONENT_MAP_INTERCEPTORS = "Interceptors";
-
-    public static final String COMPONENT_MAP_VALIDATORS = "Validators";
-
-    public static final String COMPONENT_MAP_DATA_ADAPTERS = "DataAdapters";
-
 }

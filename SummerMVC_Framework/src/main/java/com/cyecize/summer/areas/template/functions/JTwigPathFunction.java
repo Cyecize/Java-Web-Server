@@ -36,6 +36,7 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
     private String createPrefix() {
         final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
         String appName = request.getRequestURL().replace(request.getRelativeRequestURL(), "");
+
         if (appName.length() < 1) {
             return appName;
         }

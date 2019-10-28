@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>summer</artifactId>
-    <version>1.1</version>
+    <version>${version.summer}</version>
     <build>
         <plugins>
             <plugin>
@@ -37,9 +37,8 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <!--<exclude>mysql:mysql-connector-java</exclude>-->
-<!--                                    <exclude>cyecize:http</exclude>-->
-<!--                                    <exclude>cyecize:solet</exclude>-->
+                                    <!--<exclude>cyecize:http</exclude>-->
+                                    <!--<exclude>cyecize:solet</exclude>-->
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -59,11 +58,11 @@
         <dependency>
             <groupId>com.cyecize</groupId>
             <artifactId>ioc</artifactId>
-            <version>1.1</version>
+            <version>${version.magic-injector}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Third party dependencies -->
-        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -76,7 +75,6 @@
             <version>5.87.0.RELEASE</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>

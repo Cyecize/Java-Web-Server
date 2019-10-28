@@ -70,7 +70,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     @Override
     public ActionMethod findAction(HttpSoletRequest request) throws HttpNotFoundException {
         this.currentRequest = request;
-        ActionMethod actionMethod = this.findActionMethod();
+        final ActionMethod actionMethod = this.findActionMethod();
 
         if (actionMethod == null) {
             if (!this.currentRequest.isResource()) {
@@ -87,8 +87,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      */
     @Override
     public ActionInvokeResult invokeMethod(ActionMethod actionMethod) {
-        Map<String, Object> pathVariables = this.getPathVariables(actionMethod);
-        Object methodResult = this.invokeAction(actionMethod, pathVariables);
+        final Map<String, Object> pathVariables = this.getPathVariables(actionMethod);
+        final Object methodResult = this.invokeAction(actionMethod, pathVariables);
 
         this.currentRequest = null;
         return new ActionInvokeResult(actionMethod, methodResult, actionMethod.getContentType());
@@ -101,7 +101,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     @Override
     public ActionInvokeResult invokeMethod(Exception ex) {
         this.currentRequest = this.dependencyContainer.getService(HttpSoletRequest.class);
-        List<Throwable> exceptionStack = this.getExceptionStack(ex);
+        final List<Throwable> exceptionStack = this.getExceptionStack(ex);
         exceptionStack.forEach(this.dependencyContainer::addFlashService);
 
         final ActionMethod actionMethod = this.findActionMethod(exceptionStack);
@@ -109,7 +109,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             return null;
         }
 
-        Object methodResult = this.invokeAction(actionMethod, new HashMap<>());
+        final Object methodResult = this.invokeAction(actionMethod, new HashMap<>());
         this.currentRequest = null;
 
         return new ActionInvokeResult(actionMethod, methodResult, actionMethod.getContentType());
@@ -127,6 +127,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 .findFirst().orElse(null).getValue(); //never null
 
         final Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);
+
         try {
             actionMethod.getMethod().setAccessible(true);
             return actionMethod.getMethod().invoke(controller, methodParams);
@@ -143,11 +144,11 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      * If the object is bindingModel, it is populated and validated if needed.
      */
     private Object[] getMethodParameters(ActionMethod actionMethod, Map<String, Object> pathVariables) {
-        Parameter[] parameters = actionMethod.getMethod().getParameters();
-        Object[] parameterInstances = new Object[parameters.length];
+        final Parameter[] parameters = actionMethod.getMethod().getParameters();
+        final Object[] parameterInstances = new Object[parameters.length];
 
         for (int i = 0; i < parameters.length; i++) {
-            Parameter parameter = parameters[i];
+            final Parameter parameter = parameters[i];
             if (parameter.isAnnotationPresent(RequestParam.class)) {
                 parameterInstances[i] = this.handleRequestParam(parameter, parameter.getAnnotation(RequestParam.class));
                 continue;
@@ -165,11 +166,12 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             if (parameterInstances[i] != null) continue;
 
             try {
-                Object instanceOfBindingModel = parameter.getType().getConstructor().newInstance();
+                final Object instanceOfBindingModel = parameter.getType().getConstructor().newInstance();
                 this.bindingService.populateBindingModel(instanceOfBindingModel);
                 if (parameter.isAnnotationPresent(Valid.class)) {
                     this.validationService.validateBindingModel(instanceOfBindingModel, this.dependencyContainer.getService(BindingResult.class));
                 }
+
                 parameterInstances[i] = instanceOfBindingModel;
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException cause) {
                 throw new RuntimeException(String.format(CANNOT_INSTANTIATE_CLASS_FORMAT, parameter.getType().getName()), cause);
@@ -186,7 +188,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      * @throws UnsatisfiedRequestParamException if the request param value is missing and the value is required.
      */
     private Object handleRequestParam(Parameter parameter, RequestParam requestParam) {
-        String paramName = requestParam.value();
+        final String paramName = requestParam.value();
 
         Map.Entry<String, String> matchingKeyValuePair = this.currentRequest.getQueryParameters().entrySet().stream()
                 .filter(kvp -> kvp.getKey().equals(paramName))
@@ -202,7 +204,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
         if (matchingKeyValuePair != null) {
             if (parameter.isAnnotationPresent(ConvertedBy.class)) {
-                DataAdapter dataAdapter = this.dataAdapters.getDataAdapter(parameter.getAnnotation(ConvertedBy.class).value());
+                final DataAdapter dataAdapter = this.dataAdapters.getDataAdapter(parameter.getAnnotation(ConvertedBy.class).value());
 
                 if (dataAdapter != null) {
                     resultValue = dataAdapter.resolve(paramName, this.currentRequest);
@@ -235,17 +237,17 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      *                                               and that value is required.
      */
     private Map<String, Object> getPathVariables(ActionMethod actionMethod) {
-        Map<String, Object> pathVariables = new HashMap<>();
-        Pattern routePattern = Pattern.compile(actionMethod.getPattern());
-        Matcher routeMatcher = routePattern.matcher(this.currentRequest.getRelativeRequestURL());
+        final Map<String, Object> pathVariables = new HashMap<>();
+        final Pattern routePattern = Pattern.compile(actionMethod.getPattern());
+        final Matcher routeMatcher = routePattern.matcher(this.currentRequest.getRelativeRequestURL());
         routeMatcher.find(); //always true
 
         Arrays.stream(actionMethod.getMethod().getParameters()).forEach(p -> {
             if (p.isAnnotationPresent(PathVariable.class)) {
                 PathVariable pathVariable = p.getAnnotation(PathVariable.class);
 
-                String paramName = pathVariable.value();
-                String paramValue = routeMatcher.group(paramName);
+                final String paramName = pathVariable.value();
+                final String paramValue = routeMatcher.group(paramName);
 
                 Object pathVariableValue = null;
                 if (p.isAnnotationPresent(ConvertedBy.class)) {
@@ -313,7 +315,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      * Used in case of the developer listening for a specific cause, no the currently thrown exception.
      */
     private List<Throwable> getExceptionStack(Throwable ex) {
-        List<Throwable> thList = new ArrayList<>();
+        final List<Throwable> thList = new ArrayList<>();
         if (ex == null) {
             return thList;
         }

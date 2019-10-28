@@ -1,10 +1,10 @@
 package com.cyecize.summer.areas.validation.services;
 
+import com.cyecize.http.MultipartFile;
 import com.cyecize.solet.HttpSoletRequest;
-import com.cyecize.solet.MemoryFile;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
-import com.cyecize.summer.areas.routing.models.MemoryFileImpl;
+import com.cyecize.summer.areas.routing.models.UploadedFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
@@ -23,7 +23,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
     private final DataAdapterStorageService dataAdapters;
 
-    private PrimitiveTypeDataResolver dataResolver;
+    private final PrimitiveTypeDataResolver dataResolver;
 
     private String assetsDir;
 
@@ -40,7 +40,8 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      */
     @Override
     public void populateBindingModel(Object bindingModel) {
-        HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
+        final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
+
         if (request.getBodyParameters() == null) {
             return;
         }
@@ -50,7 +51,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
             Object parsedVal;
             //add other types here
-            String fieldGenericType = ReflectionUtils.getFieldGenericType(field);
+            final String fieldGenericType = ReflectionUtils.getFieldGenericType(field);
 
             if (this.dataAdapters.hasDataAdapter(fieldGenericType)) {
                 parsedVal = this.handleCustomTypeField(fieldGenericType, field, request);
@@ -81,7 +82,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         DataAdapter dataAdapter = null;
 
         if (field.isAnnotationPresent(ConvertedBy.class)) {
-            Class<? extends DataAdapter> convertedClass = field.getAnnotation(ConvertedBy.class).value();
+            final Class<? extends DataAdapter> convertedClass = field.getAnnotation(ConvertedBy.class).value();
 
             dataAdapter = this.dataAdapters.getDataAdapter(fieldGenericType, convertedClass);
         } else {
@@ -100,10 +101,14 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      * Returns a MultipartFileImpl if present or otherwise returns null.
      */
     private UploadedFile handleMultipartField(Field field, HttpSoletRequest request) {
-        MemoryFile memoryFile = request.getUploadedFiles().get(field.getName());
-        if (memoryFile != null) {
-            return new MemoryFileImpl(this.getAssetsDir(), memoryFile);
+        final MultipartFile multipartFile = request.getMultipartFiles().stream()
+                .filter(mf -> mf.getFileName().equalsIgnoreCase(field.getName()))
+                .findFirst().orElse(null);
+
+        if (multipartFile != null) {
+            return new UploadedFileImpl(this.getAssetsDir(), multipartFile);
         }
+
         return null;
     }
 
@@ -122,7 +127,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      * Returns the list of converted values.
      */
     private List<Object> handleListField(Field field, HttpSoletRequest request) {
-        List<Object> parsedParams = new ArrayList<>();
+        final List<Object> parsedParams = new ArrayList<>();
         if (request.getBodyParametersAsList().get(field.getName()) == null) return parsedParams;
 
         Class<?> fieldGenericType = String.class;
@@ -131,10 +136,10 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         } catch (ClassCastException ignored) {
         }
 
-        List<String> paramsForField = request.getBodyParametersAsList().get(field.getName());
+        final List<String> paramsForField = request.getBodyParametersAsList().get(field.getName());
 
         for (String param : paramsForField) {
-            Object parsedParam = this.dataResolver.resolve(fieldGenericType, param);
+            final Object parsedParam = this.dataResolver.resolve(fieldGenericType, param);
             parsedParams.add(parsedParam);
         }
 

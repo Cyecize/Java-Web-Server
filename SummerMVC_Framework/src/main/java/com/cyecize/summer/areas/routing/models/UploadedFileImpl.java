@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
-public class MemoryFileImpl implements UploadedFile {
+public class UploadedFileImpl implements UploadedFile {
 
     private static final String FILE_IS_NULL_MSG = "File is null";
 
@@ -18,7 +18,7 @@ public class MemoryFileImpl implements UploadedFile {
 
     private final MultipartFile multipartFile;
 
-    public MemoryFileImpl(String assetsFir, MultipartFile memoryFile) {
+    public UploadedFileImpl(String assetsFir, MultipartFile memoryFile) {
         this.assetsDir = assetsFir;
         this.multipartFile = memoryFile;
     }

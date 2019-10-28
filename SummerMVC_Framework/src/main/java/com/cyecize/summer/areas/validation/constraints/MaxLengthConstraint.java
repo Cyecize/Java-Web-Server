@@ -1,6 +1,6 @@
 package com.cyecize.summer.areas.validation.constraints;
 
-import com.cyecize.summer.areas.routing.interfaces.MultipartFile;
+import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
 import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.common.annotations.Component;
 
@@ -21,8 +21,8 @@ public class MaxLengthConstraint implements ConstraintValidator<MaxLength, Objec
     public boolean isValid(Object field, Object bindingModel) {
         if (field == null) return 0 <= this.maxLen;
 
-        if (MultipartFile.class.isAssignableFrom(field.getClass())) {
-            return ((MultipartFile) field).getUploadedFile().getFileLength() <= this.maxLen;
+        if (UploadedFile.class.isAssignableFrom(field.getClass())) {
+            return ((UploadedFile) field).getUploadedFile().getFileLength() <= this.maxLen;
         }
 
         if (Collection.class.isAssignableFrom(field.getClass())) {

@@ -3,8 +3,8 @@ package com.cyecize.summer.areas.validation.services;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.MemoryFile;
 import com.cyecize.solet.SoletConfig;
-import com.cyecize.summer.areas.routing.interfaces.MultipartFile;
-import com.cyecize.summer.areas.routing.models.MultipartFileImpl;
+import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
+import com.cyecize.summer.areas.routing.models.MemoryFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
@@ -54,7 +54,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
             if (this.dataAdapters.hasDataAdapter(fieldGenericType)) {
                 parsedVal = this.handleCustomTypeField(fieldGenericType, field, request);
-            } else if (field.getType() == MultipartFile.class) {
+            } else if (field.getType() == UploadedFile.class) {
                 parsedVal = this.handleMultipartField(field, request);
             } else if (field.getType() == List.class) {
                 parsedVal = this.handleListField(field, request);
@@ -99,10 +99,10 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      * Checks if the request contains a memory file with the same name as the field name.
      * Returns a MultipartFileImpl if present or otherwise returns null.
      */
-    private MultipartFile handleMultipartField(Field field, HttpSoletRequest request) {
+    private UploadedFile handleMultipartField(Field field, HttpSoletRequest request) {
         MemoryFile memoryFile = request.getUploadedFiles().get(field.getName());
         if (memoryFile != null) {
-            return new MultipartFileImpl(this.getAssetsDir(), memoryFile);
+            return new MemoryFileImpl(this.getAssetsDir(), memoryFile);
         }
         return null;
     }

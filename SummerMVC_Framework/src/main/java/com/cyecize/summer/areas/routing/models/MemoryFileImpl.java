@@ -1,7 +1,7 @@
 package com.cyecize.summer.areas.routing.models;
 
-import com.cyecize.solet.MemoryFile;
-import com.cyecize.summer.areas.routing.interfaces.MultipartFile;
+import com.cyecize.http.MultipartFile;
+import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.*;
@@ -10,65 +10,67 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
-public class MultipartFileImpl implements MultipartFile {
+public class MemoryFileImpl implements UploadedFile {
 
     private static final String FILE_IS_NULL_MSG = "File is null";
 
     private final String assetsDir;
 
-    private final MemoryFile memoryFile;
+    private final MultipartFile multipartFile;
 
-    public MultipartFileImpl(String assetsFir, MemoryFile memoryFile) {
+    public MemoryFileImpl(String assetsFir, MultipartFile memoryFile) {
         this.assetsDir = assetsFir;
-        this.memoryFile = memoryFile;
+        this.multipartFile = memoryFile;
     }
 
     @Override
     public String save(String relativePath) throws IOException {
-        if (this.memoryFile == null) {
+        if (this.multipartFile == null) {
             throw new IOException(FILE_IS_NULL_MSG);
         }
 
-        String name = this.memoryFile.getFieldName() + new Date().getTime();
+        String name = this.multipartFile.getFieldName() + new Date().getTime();
         name = DigestUtils.md5Hex(name);
-        name += this.getFileExtension(this.memoryFile.getFileName());
+        name += this.getFileExtension(this.multipartFile.getFileName());
 
         return this.save(relativePath, name);
     }
 
     @Override
     public String save(String relativePath, String fileName) throws IOException {
-        if (this.memoryFile == null) {
+        if (this.multipartFile == null) {
             throw new IOException(FILE_IS_NULL_MSG);
         }
+
         relativePath = this.stripSlashes(relativePath);
         fileName = this.stripSlashes(fileName);
         fileName = fileName.replaceAll("\\\\", "").replaceAll("/", "");
 
-        File dirs = new File(this.assetsDir + File.separator + relativePath);
+        final File dirs = new File(this.assetsDir + File.separator + relativePath);
         if (!dirs.exists()) {
             dirs.mkdirs();
         }
 
-        String pathToFile = File.separator + relativePath + File.separator + fileName;
-        Path path = Files.createFile(Paths.get(this.assetsDir + pathToFile));
-        FileOutputStream outputStream = new FileOutputStream(path.toFile());
-        this.memoryFile.getInputStream().transferTo(outputStream);
+        final String pathToFile = File.separator + relativePath + File.separator + fileName;
+        final Path path = Files.createFile(Paths.get(this.assetsDir + pathToFile));
 
-        this.memoryFile.getInputStream().close();
-        outputStream.close();
+        try (final FileOutputStream outputStream = new FileOutputStream(path.toFile())) {
+            this.multipartFile.getInputStream().transferTo(outputStream);
+        }
+
         return pathToFile;
     }
 
     @Override
-    public MemoryFile getUploadedFile() {
-        return this.memoryFile;
+    public MultipartFile getUploadedFile() {
+        return this.multipartFile;
     }
 
     private String stripSlashes(String str) {
         str = str.replaceAll("\\.\\.\\/", "");
         str = this.trimStaringSlash(str);
         str = this.trimEndingSlash(str);
+
         return str.trim();
     }
 
@@ -76,6 +78,7 @@ public class MultipartFileImpl implements MultipartFile {
         if (path.startsWith("/") || path.startsWith("\\")) {
             path = path.substring(1);
         }
+
         return path;
     }
 
@@ -83,6 +86,7 @@ public class MultipartFileImpl implements MultipartFile {
         if (path.endsWith("/") || path.endsWith("\\")) {
             path = path.substring(0, path.length() - 1);
         }
+
         return path;
     }
 

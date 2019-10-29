@@ -64,6 +64,7 @@ public class SummerBootApplication {
                     //interceptors
                     put(SecurityInterceptor.class, Component.class);
                 }})
+                .setClassLoader(startupSolet.getClass().getClassLoader())
                 .and()
                 .build();
 

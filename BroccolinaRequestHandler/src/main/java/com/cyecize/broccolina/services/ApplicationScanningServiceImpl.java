@@ -68,7 +68,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * Returns map of application name and a list of solet classes.
      */
     @Override
-    public Map<String, List<Class<HttpSolet>>> findSoletClasses() throws IOException, ClassNotFoundException {
+    public Map<String, List<Class<HttpSolet>>> findSoletClasses() throws IOException {
         final File applicationsFolder = new File(this.applicationsFolderPath);
 
         if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
@@ -96,7 +96,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * Loads application classes.
      * Adds the application name to the applicationNames list.
      */
-    private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException {
+    private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException {
         final String classesRootFolderPath = applicationRootFolderPath + this.compileOutputFolderName + File.separator;
         final String librariesRootFolderPath = applicationRootFolderPath + this.applicationLibFolderName + File.separator;
         final File classesRootDirectory = new File(classesRootFolderPath);
@@ -107,9 +107,24 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
         final URLClassLoader classLoader = this.createNewClassLoader(classesRootDirectory.getCanonicalPath() + File.separator);
 
-        this.loadApplicationLibraries(librariesRootFolderPath, classLoader);
-        this.loadClass(classesRootDirectory, "", applicationName, classLoader);
-        this.applicationNames.add("/" + applicationName);
+        final Thread appThread = new Thread(() -> {
+            try {
+                this.loadApplicationLibraries(librariesRootFolderPath, classLoader);
+                this.loadClass(classesRootDirectory, "", applicationName, classLoader);
+                this.applicationNames.add("/" + applicationName);
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        appThread.setContextClassLoader(classLoader);
+
+        appThread.start();
+        try {
+            appThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 

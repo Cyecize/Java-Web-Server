@@ -75,7 +75,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      * Finally sets state to the session and evicts platform beans.
      */
     @Override
-    public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+    public synchronized final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         super.setHasIntercepted(true);
         this.updatePlatformBeans(request, response);
         this.dependencyContainer.clearFlashServices();

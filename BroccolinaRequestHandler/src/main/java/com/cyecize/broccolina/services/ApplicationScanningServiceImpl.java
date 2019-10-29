@@ -105,11 +105,11 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
             return;
         }
 
-        final URLClassLoader classLoader = this.createNewClassLoader(classesRootDirectory.getCanonicalPath() + File.separator);
+        final List<URL> appLibs = this.collectApplicationLibraries(librariesRootFolderPath);
+        final URLClassLoader classLoader = this.createNewClassLoader(classesRootDirectory.getCanonicalPath() + File.separator, appLibs);
 
         final Thread appThread = new Thread(() -> {
             try {
-                this.loadApplicationLibraries(librariesRootFolderPath, classLoader);
                 this.loadClass(classesRootDirectory, "", applicationName, classLoader);
                 this.applicationNames.add("/" + applicationName);
             } catch (ClassNotFoundException ex) {
@@ -165,42 +165,43 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     /**
      * Iterates the given directory's files and filters jar files
-     * then adds them to the system classpath.
+     * then returns a collection of URLS for each library.
      */
-    private void loadApplicationLibraries(String librariesRootFolderPath, URLClassLoader classLoader) {
+    private List<URL> collectApplicationLibraries(String librariesRootFolderPath) {
         final File libraryFolder = new File(librariesRootFolderPath);
+        final List<URL> libraryURLs = new ArrayList<>();
 
         if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
-            return;
+            return new ArrayList<>();
         }
 
         Arrays.stream(Objects.requireNonNull(libraryFolder.listFiles()))
                 .filter(this::isJarFile)
                 .forEach(jf -> {
                     try {
-                        this.addJarFileToClassLoader(jf.getCanonicalPath(), classLoader);
+                        libraryURLs.add(this.createJarURL(jf.getCanonicalPath()));
                     } catch (IOException ignored) {
                     }
                 });
+
+        return libraryURLs;
     }
 
-    private URLClassLoader createNewClassLoader(String canonicalPath) {
+    private URLClassLoader createNewClassLoader(String canonicalPath, List<URL> urls) {
         try {
+            urls.add(new URL("file:/" + canonicalPath));
             return new URLClassLoader(
-                    new URL[]{new URL("file:/" + canonicalPath)},
-                    Thread.currentThread().getContextClassLoader()
+                    urls.toArray(URL[]::new)
+                    //Thread.currentThread().getContextClassLoader()
             );
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Creates a proper URL format for .jar files and adds it to a given classloader.
-     */
-    private void addJarFileToClassLoader(String canonicalPath, URLClassLoader classLoader) {
+    private URL createJarURL(String canonicalPath) {
         try {
-            ReflectionUtils.addUrlToClassLoader(new URL("jar:file:" + canonicalPath + "!/"), classLoader);
+            return new URL("jar:file:" + canonicalPath + "!/");
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }

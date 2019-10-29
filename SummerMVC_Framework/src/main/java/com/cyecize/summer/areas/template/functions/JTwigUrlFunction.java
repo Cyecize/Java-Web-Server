@@ -26,6 +26,7 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
         if (functionRequest.getArguments().size() != 1 || !(functionRequest.get(0) instanceof String)) {
             throw new JtwigException(INVALID_PARAM_ERROR);
         }
+
         return this.getURI() + functionRequest.get(0);
     }
 
@@ -34,8 +35,9 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
      * so the leftover is the app name prefix.
      */
     private String getURI() {
-        HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
+        final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
         String URI = request.getHost() + "/" + request.getRequestURL().replace(request.getRelativeRequestURL(), "");
+
         if (URI.endsWith("/")) {
             URI = URI.substring(0, URI.length() - 1);
         }

@@ -6,11 +6,11 @@ import java.util.UUID;
 
 public class HttpSessionImpl implements HttpSession {
 
+    private final Map<String, Object> sessionAttributes;
+
+    private final String sessionId;
+
     private boolean isSessionValid;
-
-    private String sessionId;
-
-    private Map<String, Object> sessionAttributes;
 
     public HttpSessionImpl(){
         this.isSessionValid = true;
@@ -21,8 +21,7 @@ public class HttpSessionImpl implements HttpSession {
     @Override
     public void invalidate() {
         this.isSessionValid = false;
-        this.sessionAttributes = null;
-        System.gc();
+        this.sessionAttributes.clear();
     }
 
     @Override

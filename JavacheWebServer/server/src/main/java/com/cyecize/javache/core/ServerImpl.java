@@ -1,9 +1,6 @@
 package com.cyecize.javache.core;
 
-import com.cyecize.javache.services.InputStreamCachingServiceImpl;
-import com.cyecize.javache.services.JavacheConfigService;
-import com.cyecize.javache.services.LoggingService;
-import com.cyecize.javache.services.RequestHandlerLoadingService;
+import com.cyecize.javache.services.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -16,54 +13,39 @@ public class ServerImpl implements Server {
 
     private static final String LISTENING_MESSAGE_FORMAT = "http://localhost:%d";
 
-    private int port;
+    private final int port;
 
-    private LoggingService loggingService;
+    private final LoggingService loggingService;
 
-    private RequestHandlerLoadingService requestHandlerLoadingService;
+    private final RequestHandlerLoadingService requestHandlerLoadingService;
 
-    private JavacheConfigService javacheConfigService;
-
-    public ServerImpl(int port, LoggingService loggingService, RequestHandlerLoadingService requestHandlerLoadingService, JavacheConfigService javacheConfigService) {
+    public ServerImpl(int port, LoggingService loggingService, RequestHandlerLoadingService requestHandlerLoadingService) {
         this.port = port;
         this.loggingService = loggingService;
         this.requestHandlerLoadingService = requestHandlerLoadingService;
-        this.javacheConfigService = javacheConfigService;
-        this.initRequestHandlers();
     }
 
     @Override
     public void run() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(this.port);
+        final ServerSocket serverSocket = new ServerSocket(this.port);
         serverSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
+
         this.loggingService.info(String.format(LISTENING_MESSAGE_FORMAT, this.port));
 
         while (true) {
             try {
-                Socket clientSocket = serverSocket.accept();
+                final Socket clientSocket = serverSocket.accept();
                 clientSocket.setSoTimeout(SOCKET_TIMEOUT_MILLISECONDS);
-                clientSocket.setReceiveBufferSize(131072);
 
-                Thread thread = new Thread(new ConnectionHandlerImpl(
+                final Thread thread = new Thread(new ConnectionHandlerImpl(
                         clientSocket,
                         this.requestHandlerLoadingService.getRequestHandlers(),
-                        new InputStreamCachingServiceImpl(),
-                        this.loggingService,
-                        this.javacheConfigService
+                        this.requestHandlerLoadingService.getRequestDestroyHandlers()
                 ));
+
                 thread.start();
             } catch (SocketTimeoutException ignored) {
             }
-        }
-    }
-
-    private void initRequestHandlers() {
-        try {
-            this.requestHandlerLoadingService.loadRequestHandlers(this.javacheConfigService.getRequestHandlerPriority());
-        } catch (Exception e) {
-            this.loggingService.error(e.getMessage());
-            this.loggingService.printStackTrace(e.getStackTrace());
-            e.printStackTrace();
         }
     }
 }

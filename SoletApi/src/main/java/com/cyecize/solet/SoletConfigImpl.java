@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SoletConfigImpl implements SoletConfig {
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
     public SoletConfigImpl() {
         this.attributes = new HashMap<>();
@@ -17,8 +17,18 @@ public class SoletConfigImpl implements SoletConfig {
     }
 
     @Override
+    public void setIfMissing(String name, Object attribute) {
+        this.attributes.putIfAbsent(name, attribute);
+    }
+
+    @Override
     public void deleteAttribute(String name) {
         this.attributes.remove(name);
+    }
+
+    @Override
+    public boolean hasAttribute(String name) {
+        return this.attributes.containsKey(name);
     }
 
     @Override

@@ -12,8 +12,4 @@ public interface HttpSoletRequest extends HttpRequest {
     String getContextPath();
 
     String getRelativeRequestURL();
-
-    InputStream getInputStream();
-
-    Map<String, MemoryFile> getUploadedFiles();
 }

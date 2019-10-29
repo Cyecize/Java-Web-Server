@@ -1,8 +1,11 @@
 package com.cyecize.javache.services;
 
+import com.cyecize.ioc.annotations.Service;
+
+@Service
 public class LoggingServiceImpl implements LoggingService {
 
-    public LoggingServiceImpl(){
+    public LoggingServiceImpl() {
 
     }
 
@@ -28,7 +31,7 @@ public class LoggingServiceImpl implements LoggingService {
         }
     }
 
-    private void print(String type, Object msg, Object... params){
+    private void print(String type, Object msg, Object... params) {
         System.out.println(String.format("[%s] %s", type, String.format(msg + "", params)));
     }
 }

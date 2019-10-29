@@ -1,14 +1,16 @@
 package com.cyecize.javache.services;
 
+import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
 import java.util.List;
 
 public interface RequestHandlerLoadingService {
 
-    void loadRequestHandlers(List<String> requestHandlerPriority) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, ClassNotFoundException;
+    void loadRequestHandlers(List<String> requestHandlerPriority, List<File> libJarFiles);
 
     List<RequestHandler> getRequestHandlers();
+
+    List<RequestDestroyHandler> getRequestDestroyHandlers();
 }

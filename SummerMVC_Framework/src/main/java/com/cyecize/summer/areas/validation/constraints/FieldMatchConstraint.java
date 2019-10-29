@@ -24,7 +24,7 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
 
     @Override
     public boolean isValid(Object fieldVal, Object bindingModel) {
-        Field matchingField = ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass()).stream()
+        final Field matchingField = ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass()).stream()
                 .filter(f -> f.getName().equals(this.fieldName))
                 .findFirst().orElse(null);
 
@@ -51,6 +51,7 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
         if (this.inverted) {
             return !matchingVal.equals(fieldVal);
         }
+
         return matchingVal.equals(fieldVal);
     }
 }

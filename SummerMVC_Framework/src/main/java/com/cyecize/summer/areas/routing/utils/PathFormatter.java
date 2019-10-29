@@ -17,8 +17,8 @@ public class PathFormatter {
      * and extracting PathVariables (?<varName>[a-zA-Z0-9_-]+)
      */
     public String formatPath(String path) {
-        Pattern pathParameterPattern = Pattern.compile(PATH_PARAMETER_PATTERN);
-        Matcher pathParameterMatcher = pathParameterPattern.matcher(path);
+        final Pattern pathParameterPattern = Pattern.compile(PATH_PARAMETER_PATTERN);
+        final Matcher pathParameterMatcher = pathParameterPattern.matcher(path);
 
         String formatterPath = path;
 
@@ -34,6 +34,7 @@ public class PathFormatter {
         } else {
             formatterPath += "/?";
         }
+
         return "^" + formatterPath + "$";
     }
 }

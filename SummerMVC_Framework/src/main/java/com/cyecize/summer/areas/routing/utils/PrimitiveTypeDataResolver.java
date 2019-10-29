@@ -2,6 +2,7 @@ package com.cyecize.summer.areas.routing.utils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.Supplier;
 
 public class PrimitiveTypeDataResolver {
 
@@ -75,9 +76,9 @@ public class PrimitiveTypeDataResolver {
      * Accepts functional interface and tries to call the function.
      * If there is an exception, return the default value of that type.
      */
-    private Object tryParse(Class<?> type, TryParse function) {
+    private Object tryParse(Class<?> type, Supplier<Object> function) {
         try {
-            return function.parse();
+            return function.get();
         } catch (Exception ex) {
             return this.defaultValue(type);
         }

@@ -81,17 +81,17 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         for (Method method : controllerClass.getDeclaredMethods()) {
             method.setAccessible(true);
 
-            AnnotationExtractedValue annotationExtractedValue = this.findRoutingAnnotation(method);
+            final AnnotationExtractedValue annotationExtractedValue = this.findRoutingAnnotation(method);
 
             if (annotationExtractedValue != null) {
-                String pattern = this.pathFormatter.formatPath(baseRoute + annotationExtractedValue.getPattern());
+                final String pattern = this.pathFormatter.formatPath(baseRoute + annotationExtractedValue.getPattern());
                 String contentType = ContentTypes.NONE.equals(annotationExtractedValue.getContentType()) ? baseContentType : annotationExtractedValue.getContentType();
 
                 if (ContentTypes.NONE.equals(contentType)) {
                     contentType = ContentTypes.TEXT_HTML;
                 }
 
-                ActionMethod actionMethod = new ActionMethod(pattern, baseRoute, method, contentType, controllerClass);
+                final ActionMethod actionMethod = new ActionMethod(pattern, baseRoute, method, contentType, controllerClass);
 
                 for (String httpMethod : annotationExtractedValue.getHttpMethods()) {
                     this.actionsByHttpMethod.get(httpMethod).add(actionMethod);
@@ -109,7 +109,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
     @SuppressWarnings("unchecked")
     private AnnotationExtractedValue findRoutingAnnotation(Method method) {
         for (ActionAnnotationHandlerContainer methodAnnotationHandler : METHOD_ANNOTATION_HANDLERS) {
-            Class<? extends Annotation> annotationType = methodAnnotationHandler.getAnnotationType();
+            final Class<? extends Annotation> annotationType = methodAnnotationHandler.getAnnotationType();
 
             if (method.isAnnotationPresent(annotationType)) {
                 return methodAnnotationHandler.getAnnotationValue(method.getAnnotation(annotationType));
@@ -148,5 +148,4 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
             return m1.getPattern().compareTo(m2.getPattern());
         }).collect(Collectors.toCollection(LinkedHashSet::new)));
     }
-
 }

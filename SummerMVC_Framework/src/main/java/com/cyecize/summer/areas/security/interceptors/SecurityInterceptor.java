@@ -50,7 +50,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
             return true;
         }
 
-        ActionMethod actionMethod = (ActionMethod) handler;
+        final ActionMethod actionMethod = (ActionMethod) handler;
 
         PreAuthorize preAuthorize = actionMethod.getMethod().getAnnotation(PreAuthorize.class);
         if (preAuthorize != null) {
@@ -71,7 +71,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
      * If the user is logged in, check if the required role is present and throw Exception if it not present.
      */
     private boolean handleSecuredAreas(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {
-        SecuredArea securedArea = this.securityConfig.getSecuredAreas().stream()
+        final SecuredArea securedArea = this.securityConfig.getSecuredAreas().stream()
                 .filter(sa -> sa.getRoute().matcher(request.getRelativeRequestURL()).find())
                 .findFirst().orElse(null);
 

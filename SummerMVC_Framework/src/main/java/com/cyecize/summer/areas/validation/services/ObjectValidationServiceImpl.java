@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-
 public class ObjectValidationServiceImpl implements ObjectValidationService {
 
     private static final String NO_MESSAGE_PRESENT_FORMAT = "No message method present in annotation \"%s\".";
@@ -88,7 +87,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
      */
     private String getAnnotationMessage(Annotation annotation) {
         try {
-            Method message = annotation.annotationType().getDeclaredMethod("message");
+            final Method message = annotation.annotationType().getDeclaredMethod("message");
             message.setAccessible(true);
             return (String) message.invoke(annotation);
         } catch (NoSuchMethodException e) {

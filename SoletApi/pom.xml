@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>solet</artifactId>
-    <version>1.2.0</version>
+    <version>${version.solet}</version>
 
     <build>
         <plugins>
@@ -24,27 +24,6 @@
                     <target>11</target>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>com.cyecize:http</exclude>
-                                </excludes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -53,22 +32,10 @@
             <groupId>com.cyecize</groupId>
             <artifactId>http</artifactId>
             <version>${version.http}</version>
+            <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.javadelight</groupId>
-            <artifactId>delight-fileupload</artifactId>
-            <version>0.0.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-        </dependency>
-
     </dependencies>
 
     <!-- cd target -->
-    <!-- mvn deploy:deploy-file -Durl=file://C:\_projects\javache\LocalRepository -Dfile=original-solet-1.2.0.jar -DgroupId=com.cyecize  -DartifactId=solet -Dpackaging=jar -Dversion=1.2.0 -DpomFile=../solet-deploy.pom  -->
+    <!-- mvn deploy:deploy-file -Durl=file://C:\_projects\javache\LocalRepository -Dfile=solet-1.3.jar -DgroupId=com.cyecize  -DartifactId=solet -Dpackaging=jar -Dversion=1.3 -DpomFile=../solet-deploy.pom  -->
 </project>

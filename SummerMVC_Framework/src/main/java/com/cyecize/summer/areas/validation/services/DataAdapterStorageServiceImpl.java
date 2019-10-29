@@ -54,7 +54,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      */
     @Override
     public <T extends DataAdapter> DataAdapter getDataAdapter(String fieldGenericType, Class<T> dataAdapterType) {
-        List<DataAdapter> dataAdapters = this.getAdaptersForGenericType(fieldGenericType);
+        final List<DataAdapter> dataAdapters = this.getAdaptersForGenericType(fieldGenericType);
 
         if (dataAdapters == null) {
             return null;
@@ -74,7 +74,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      */
     @Override
     public DataAdapter getDataAdapter(String genericType) {
-        List<DataAdapter> dataAdapters = this.getAdaptersForGenericType(genericType);
+        final List<DataAdapter> dataAdapters = this.getAdaptersForGenericType(genericType);
 
         if (dataAdapters != null) {
             return dataAdapters.get(0);
@@ -90,7 +90,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      * @return adapters for that type.
      */
     private List<DataAdapter> getAdaptersForGenericType(String genericType) {
-        List<DataAdapter> dataAdapters = this.dataAdapters.get(genericType);
+        final List<DataAdapter> dataAdapters = this.dataAdapters.get(genericType);
 
         if (dataAdapters == null || dataAdapters.size() < 1) {
             return null;
@@ -110,7 +110,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
             final DataAdapter adapter = (DataAdapter) serviceDetails.getActualInstance();
 
             try {
-                String genericType = ((ParameterizedType) adapter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
+                final String genericType = ((ParameterizedType) adapter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
 
                 if (!this.dataAdapters.containsKey(genericType)) {
                     this.dataAdapters.put(genericType, new ArrayList<>());

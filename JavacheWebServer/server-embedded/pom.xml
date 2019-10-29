@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>javache-embedded</artifactId>
-    <version>1.0</version>
+    <version>${version.javache-embedded}</version>
 
     <build>
         <plugins>

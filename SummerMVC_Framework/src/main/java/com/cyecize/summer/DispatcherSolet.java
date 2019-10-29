@@ -30,11 +30,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     private InterceptorInvokerService interceptorService;
 
-    private TemplateRenderingTwigService renderingService;
-
     private ScannedObjects scannedObjects;
-
-    private DataAdapterStorageService dataAdapterStorageService;
 
     protected DependencyContainer dependencyContainer;
 
@@ -52,7 +48,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      * Runs interceptors' postHandle.
      */
     private void processRequest(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
-        ActionMethod method = this.methodInvokingService.findAction(request);
+        final ActionMethod method = this.methodInvokingService.findAction(request);
+
         if (method == null) {
             this.setHasIntercepted(false);
             return;
@@ -62,7 +59,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
             return;
         }
 
-        ActionInvokeResult result = this.methodInvokingService.invokeMethod(method);
+        final ActionInvokeResult result = this.methodInvokingService.invokeMethod(method);
+
         this.methodResultHandler.handleActionResult(result);
         this.interceptorService.postHandle(request, response, result, this.dependencyContainer.getService(Model.class));
     }
@@ -77,7 +75,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      * Finally sets state to the session and evicts platform beans.
      */
     @Override
-    public final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+    public synchronized final void service(HttpSoletRequest request, HttpSoletResponse response) throws Exception {
         super.setHasIntercepted(true);
         this.updatePlatformBeans(request, response);
         this.dependencyContainer.clearFlashServices();
@@ -105,7 +103,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      * If a listener is found, proceeds to handle the actionResult.
      */
     private void processException(Exception ex) {
-        ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
+        final ActionInvokeResult exResult = this.methodInvokingService.invokeMethod(ex);
         if (exResult == null) {
             this.whitePageException(this.dependencyContainer.getService(HttpSoletResponse.class), ex);
             return;
@@ -144,7 +142,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         dependencyContainer.update(soletConfig);
 
         this.getSoletConfig().setAttribute(SOLET_CFG_SCANNED_OBJECTS, this.scannedObjects);
-        this.getSoletConfig().setAttribute(SOLET_CFG_ASSETS_DIR, this.assetsFolder);
 
         this.onApplicationLoaded();
     }
@@ -159,18 +156,18 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.scannedObjects = scannedObjects;
         this.workingDir = scannedObjects.getWorkingDir();
 
-        this.dataAdapterStorageService = new DataAdapterStorageServiceImpl(this.dependencyContainer);
+        final DataAdapterStorageService dataAdapterStorageService = new DataAdapterStorageServiceImpl(this.dependencyContainer);
 
         this.methodInvokingService = new ActionMethodInvokingServiceImpl(
                 this.dependencyContainer,
-                new ObjectBindingServiceImpl(this.dependencyContainer, this.dataAdapterStorageService),
+                new ObjectBindingServiceImpl(this.dependencyContainer, dataAdapterStorageService),
                 new ObjectValidationServiceImpl(this.dependencyContainer),
-                this.dataAdapterStorageService,
+                dataAdapterStorageService,
                 scannedObjects.getActionsByMethod(),
                 scannedObjects.getLoadedControllers());
 
-        this.renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
-        this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, this.renderingService);
+        final TemplateRenderingTwigService renderingService = new TemplateRenderingTwigService(this.workingDir, this.dependencyContainer);
+        this.methodResultHandler = new ActionMethodResultHandlerImpl(this.dependencyContainer, renderingService);
 
         this.interceptorService = new InterceptorInvokerServiceImpl(this.dependencyContainer);
     }
@@ -206,11 +203,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     }
 
     @Override
-    public final void setAppNamePrefix(String appName) {
-        super.setAppNamePrefix(appName);
-    }
-
-    @Override
     public final boolean isInitialized() {
         return super.isInitialized();
     }
@@ -223,10 +215,5 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public final SoletConfig getSoletConfig() {
         return super.getSoletConfig();
-    }
-
-    @Override
-    public void setAssetsFolder(String dir) {
-        super.setAssetsFolder(dir);
     }
 }

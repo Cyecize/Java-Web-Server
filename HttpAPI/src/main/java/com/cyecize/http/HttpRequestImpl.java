@@ -1,7 +1,5 @@
 package com.cyecize.http;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class HttpRequestImpl implements HttpRequest {
@@ -12,23 +10,27 @@ public class HttpRequestImpl implements HttpRequest {
 
     private HttpSession session;
 
-    private Map<String, String> headers;
+    private int contentLength;
 
-    private Map<String, String> queryParameters;
+    private final List<MultipartFile> multipartFiles;
 
-    private Map<String, String> bodyParameters;
+    private final Map<String, String> headers;
 
-    private Map<String, List<String>> bodyParametersAsList;
+    private final Map<String, String> queryParameters;
 
-    private Map<String, HttpCookie> cookies;
+    private final Map<String, String> bodyParameters;
 
-    public HttpRequestImpl(String requestContent) {
-        this.initMethod(requestContent);
-        this.initRequestUrl(requestContent);
-        this.initHeaders(requestContent);
-        this.initQueryParameters(requestContent);
-        this.initBodyParameters(requestContent);
-        this.initCookies();
+    private final Map<String, List<String>> bodyParametersAsList;
+
+    private final Map<String, HttpCookie> cookies;
+
+    public HttpRequestImpl() {
+        this.multipartFiles = new ArrayList<>();
+        this.headers = new HashMap<>();
+        this.queryParameters = new HashMap<>();
+        this.bodyParameters = new HashMap<>();
+        this.bodyParametersAsList = new HashMap<>();
+        this.cookies = new HashMap<>();
     }
 
     @Override
@@ -39,6 +41,11 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public void setRequestURL(String requestUrl) {
         this.requestURL = requestUrl;
+    }
+
+    @Override
+    public void setContentLength(int contentLength) {
+        this.contentLength = contentLength;
     }
 
     @Override
@@ -54,15 +61,27 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public void addBodyParameter(String parameter, String value) {
         this.bodyParameters.put(parameter, value);
+
         if (!this.bodyParametersAsList.containsKey(parameter)) {
             this.bodyParametersAsList.put(parameter, new ArrayList<>());
         }
+
         this.bodyParametersAsList.get(parameter).add(value);
+    }
+
+    @Override
+    public void addMultipartFile(MultipartFile multipartFile) {
+        this.multipartFiles.add(multipartFile);
     }
 
     @Override
     public boolean isResource() {
         return this.getRequestURL().contains(".");
+    }
+
+    @Override
+    public int getContentLength() {
+        return this.contentLength;
     }
 
     @Override
@@ -86,8 +105,49 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     @Override
+    public String getContentType() {
+        return this.getHeader("Content-Type");
+    }
+
+    @Override
+    public String getQueryParam(String paramName) {
+        return this.queryParameters.get(paramName);
+    }
+
+    @Override
+    public String getBodyParam(String paramName) {
+        return this.bodyParameters.get(paramName);
+    }
+
+    @Override
+    public String get(String paramName) {
+        String param = this.getQueryParam(paramName);
+
+        if (param == null) {
+            param = this.getBodyParam(paramName);
+        }
+
+        return param;
+    }
+
+    @Override
+    public String getHeader(String headerName) {
+        return this.headers.get(headerName);
+    }
+
+    @Override
     public HttpSession getSession() {
         return this.session;
+    }
+
+    @Override
+    public HttpCookie getCookie(String cookieName) {
+        return this.cookies.get(cookieName);
+    }
+
+    @Override
+    public List<MultipartFile> getMultipartFiles() {
+        return this.multipartFiles;
     }
 
     @Override
@@ -114,88 +174,4 @@ public class HttpRequestImpl implements HttpRequest {
     public Map<String, HttpCookie> getCookies() {
         return this.cookies;
     }
-
-    private void initMethod(String requestContent) {
-        this.setMethod(requestContent.split("\\s")[0]);
-    }
-
-    private void initRequestUrl(String requestContent) {
-        this.setRequestURL(requestContent.split("[\\s\\?]")[1]);
-    }
-
-    private void initHeaders(String requestContent) {
-        this.headers = new HashMap<>();
-
-        List<String> requestParams = Arrays.asList(
-                requestContent.split("\\r\\n"));
-
-        int i = 1;
-        while (i < requestParams.size() && requestParams.get(i).length() > 0) {
-            String[] headerKeyValuePair = requestParams.get(i).split("\\:\\s");
-            this.addHeader(headerKeyValuePair[0], headerKeyValuePair[1]);
-            i++;
-        }
-    }
-
-    private void initQueryParameters(String requestContent) {
-        this.queryParameters = new HashMap<>();
-
-        String fullRequestUrl = requestContent.split("[\\s]")[1];
-
-        if (fullRequestUrl.split("\\?").length < 2) {
-            return;
-        }
-
-        String queryString = fullRequestUrl.split("\\?")[1];
-        String[] queryKeyValuePairs = queryString.split("\\&");
-
-        for (int i = 0; i < queryKeyValuePairs.length; i++) {
-            String[] queryKeyValuePair = queryKeyValuePairs[i].split("\\=");
-
-            String queryParameterKey = this.decode(queryKeyValuePair[0]);
-            String queryParameterValue = queryKeyValuePair.length > 1 ? this.decode(queryKeyValuePair[1]) : null;
-
-            this.queryParameters.putIfAbsent(queryParameterKey, queryParameterValue);
-        }
-    }
-
-    private void initBodyParameters(String requestContent) {
-        this.bodyParameters = new HashMap<>();
-        this.bodyParametersAsList = new HashMap<>();
-
-        if (this.getMethod().equals("POST")) {
-            List<String> requestParams = Arrays.asList(requestContent.split("\\r\\n"));
-
-            if (requestParams.size() > this.headers.size() + 2) {
-                List<String> bodyParams = Arrays.asList(requestParams.get(this.headers.size() + 2).split("\\&"));
-
-                for (int i = 0; i < bodyParams.size(); i++) {
-                    String[] bodyKeyValuePair = bodyParams.get(i).split("\\=");
-                    this.addBodyParameter(this.decode(bodyKeyValuePair[0]), bodyKeyValuePair.length > 1 ? this.decode(bodyKeyValuePair[1]) : null);
-                }
-            }
-        }
-    }
-
-    private void initCookies() {
-        this.cookies = new HashMap<>();
-
-        if (!this.headers.containsKey("Cookie")) {
-            return;
-        }
-
-        String cookiesHeader = this.headers.get("Cookie");
-        String[] allCookies = cookiesHeader.split("\\;\\s");
-
-        for (int i = 0; i < allCookies.length; i++) {
-            String[] cookieNameValuePair = allCookies[i].split("\\=");
-
-            this.cookies.putIfAbsent(cookieNameValuePair[0], new HttpCookieImpl(cookieNameValuePair[0], cookieNameValuePair[1]));
-        }
-    }
-
-    private String decode(String s) {
-        return URLDecoder.decode(s, StandardCharsets.UTF_8);
-    }
-
 }

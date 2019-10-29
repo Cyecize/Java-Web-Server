@@ -1,234 +1,103 @@
 package com.cyecize.broccolina;
 
 import com.cyecize.broccolina.services.*;
+import com.cyecize.http.HttpRequest;
+import com.cyecize.http.HttpResponse;
 import com.cyecize.http.HttpStatus;
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.ioc.annotations.Service;
+import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.RequestHandler;
-import com.cyecize.javache.exceptions.RequestReadException;
+import com.cyecize.javache.api.RequestHandlerSharedData;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.*;
-import com.cyecize.solet.service.TemporaryStorageService;
-import com.cyecize.solet.service.TemporaryStorageServiceImpl;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+@Service
 public class SoletDispatcher implements RequestHandler {
-
-    private static final String REQUEST_READ_EXCEPTION_FORMAT = "Could not parse Http Request:\n %s";
-
-    private static final String TEMP_FOLDER_NAME = "temp/";
-
-    private final String workingDir;
 
     private final JavacheConfigService configService;
 
     private final ApplicationLoadingService applicationLoadingService;
 
-    private String tempDir;
+    private final SessionManagementService sessionManagementService;
 
-    private String rootAppName;
+    private final SoletCandidateFinder soletCandidateFinder;
 
-    private boolean showRequestContent;
+    private final boolean trackResources;
 
-    private boolean trackResources;
-
-    private SessionManagementService sessionManagementService;
-
-    private Map<String, HttpSolet> soletMap;
-
-    private List<String> applicationNames;
-
-    private boolean hasIntercepted;
-
-    private String currentRequestAppName;
-
-    public SoletDispatcher(String workingDir, JavacheConfigService configService) {
-        this(
-                workingDir,
-                new ApplicationLoadingServiceImpl(
-                        new ApplicationScanningServiceImpl(workingDir, new JarFileUnzipServiceImpl(), configService),
-                        configService,
-                        workingDir + configService.getConfigParam(ConfigConstants.ASSETS_DIR_NAME, String.class)
-                ),
-                configService
-        );
-    }
-
-    public SoletDispatcher(String workingDir, ApplicationLoadingService applicationLoadingService, JavacheConfigService configService) {
-        this.workingDir = workingDir;
+    @Autowired
+    public SoletDispatcher(ApplicationLoadingService applicationLoadingService, JavacheConfigService configService, SessionManagementService sessionManagementService, SoletCandidateFinder soletCandidateFinder) {
         this.configService = configService;
         this.applicationLoadingService = applicationLoadingService;
-        this.sessionManagementService = new SessionManagementServiceImpl();
-        this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
-        this.hasIntercepted = false;
-        this.initializeSoletMap();
-        this.currentRequestAppName = "";
-        this.initTempDir();
-        this.showRequestContent = configService.getConfigParam(ConfigConstants.SHOW_REQUEST_LOG, boolean.class);
-        this.trackResources = configService.getConfigParam(ConfigConstants.BROCCOLINA_TRACK_RESOURCES, boolean.class);
+        this.sessionManagementService = sessionManagementService;
+        this.soletCandidateFinder = soletCandidateFinder;
+        this.trackResources = configService.getConfigParam(JavacheConfigValue.BROCCOLINA_TRACK_RESOURCES, boolean.class);
     }
 
-    /**
-     * Creates temporaryStorageService
-     * Creates HttpSoletRequest and HttpSoletResponse.
-     * Resolves the current request's app name.
-     * <p>
-     * Initializes the session.
-     * Finds a matching solet and runs it.
-     * If no solet is found or solet has not intercepted, sets the hasIntercepted field to false.
-     * <p>
-     * Sends a session cookie.
-     * Clears invalid sessions.
-     * Writes the response.
-     * <p>
-     * Finally removes any temp files if available.
-     */
     @Override
-    public void handleRequest(byte[] bytes, OutputStream outputStream) throws IOException {
-        TemporaryStorageService temporaryStorageService = new TemporaryStorageServiceImpl(this.tempDir);
-
-        HttpSoletRequest request;
-        HttpSoletResponse response = new HttpSoletResponseImpl(outputStream);
-
+    public void init() {
         try {
+            this.soletCandidateFinder.init(
+                    this.applicationLoadingService.loadApplications(this.createSoletConfig()),
+                    this.applicationLoadingService.getApplicationNames()
+            );
 
-            String requestContent = this.extractRequestContent(bytes);
-            try {
-                request = new HttpSoletRequestImpl(requestContent, bytes, temporaryStorageService);
-            } catch (Exception ex) { //assume the exception is due to parse error
-                throw new RequestReadException(String.format(REQUEST_READ_EXCEPTION_FORMAT, showRequestContent), ex);
-            } finally {
-                requestContent = null;
-            }
-
-
-            this.resolveCurrentRequestAppName(request);
-
-            this.sessionManagementService.initSessionIfExistent(request);
-            HttpSolet solet = this.findSoletCandidate(request);
-            if (solet == null || (request.isResource() && !this.trackResources)) {
-                this.hasIntercepted = false;
-                return;
-            }
-
-            if (!this.runSolet(solet, request, response)) {
-                this.hasIntercepted = false;
-                return;
-            }
-
-            if (response.getStatusCode() == null) {
-                response.setStatusCode(HttpStatus.OK);
-            }
-
-            this.sessionManagementService.sendSessionIfExistent(request, response);
-            this.sessionManagementService.clearInvalidSessions();
-            response.getOutputStream().write(response.getBytes());
-
-            this.hasIntercepted = true;
-        } finally {
-            temporaryStorageService.removeTemporaryFiles();
-            response = null;
-            request = null;
-            bytes = null;
+            System.out.println("Loaded Applications: " + String.join(", ", this.applicationLoadingService.getApplicationNames()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public boolean hasIntercepted() {
-        return this.hasIntercepted;
-    }
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData) throws IOException {
+        final HttpSoletRequest request = new HttpSoletRequestImpl(
+                sharedData.getObject(BroccolinaConstants.SHARED_DATA_HTTP_REQUEST_KEY, HttpRequest.class)
+        );
 
-    /**
-     * Filter larger requests with Multipart Encoding to save memory
-     * by getting only the first 2048 bytes and leaving the rest to the multipart parser.
-     */
-    private String extractRequestContent(byte[] bytes) {
-        String requestContent = "";
-        if (bytes.length <= 2048) {
-            requestContent = new String(bytes, StandardCharsets.UTF_8);
-        } else {
-            requestContent = new String(Arrays.copyOf(bytes, 2048), StandardCharsets.UTF_8);
-            if (!requestContent.contains("Content-Type: multipart")) {
-                requestContent = new String(bytes, StandardCharsets.UTF_8);
-            }
+        final HttpSoletResponse response = new HttpSoletResponseImpl(
+                sharedData.getObject(BroccolinaConstants.SHARED_DATA_HTTP_RESPONSE_KEY, HttpResponse.class)
+        );
+
+        final HttpSolet solet = this.soletCandidateFinder.findSoletCandidate(request);
+        this.sessionManagementService.initSessionIfExistent(request);
+
+        if (solet == null || (request.isResource() && !this.trackResources)) {
+            return false;
         }
 
-        //print the content if the SHOW_REQUEST_LOG is set to true
-        if (this.showRequestContent) {
-            System.out.println(requestContent);
+        if (!this.runSolet(solet, request, response)) {
+            return false;
         }
 
-        bytes = null;
-        return requestContent;
+        if (response.getStatusCode() == null) {
+            response.setStatusCode(HttpStatus.OK);
+        }
+
+        this.sessionManagementService.sendSessionIfExistent(request, response);
+        this.sessionManagementService.clearInvalidSessions();
+
+        outputStream.write(response.getBytes());
+
+        return true;
     }
 
-    /**
-     * This method is synchronized because otherwise There is an interference with the request and response objects.
-     * Calls the run method of the solet
-     * returns whether the solet has intercepted the request.
-     */
-    private synchronized boolean runSolet(HttpSolet solet, HttpSoletRequest request, HttpSoletResponse response) {
+    @Override
+    public int order() {
+        return this.configService.getConfigParam(JavacheConfigValue.BROCCOLINA_SOLET_DISPATCHER_ORDER, int.class);
+    }
+
+    private boolean runSolet(HttpSolet solet, HttpSoletRequest request, HttpSoletResponse response) {
         try {
             solet.service(request, response);
             return solet.hasIntercepted();
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
+
         return true;
-    }
-
-    /**
-     * Checks if the request's route starts with any of the loaded application names.
-     * If that is the case, set the currentRequestAppName to the matching appName.
-     * Otherwise set the currentRequestAppName to ""
-     */
-    private void resolveCurrentRequestAppName(HttpSoletRequest request) {
-        boolean isAppNameFound = false;
-        for (String applicationName : this.applicationNames) {
-            if (request.getRequestURL().startsWith(applicationName) && !applicationName.equals(this.rootAppName)) {
-                this.currentRequestAppName = applicationName;
-                isAppNameFound = true;
-                break;
-            }
-        }
-
-        if (!isAppNameFound) {
-            this.currentRequestAppName = "";
-        }
-        request.setContextPath(this.currentRequestAppName);
-    }
-
-    /**
-     * Search by constant route, then by regex and finally look for "/*" type routes.
-     */
-    private HttpSolet findSoletCandidate(HttpSoletRequest request) {
-        String requestUrl = request.getRequestURL();
-        Pattern applicationRouteMatchPattern = Pattern.compile(Pattern.quote(this.currentRequestAppName) + "\\/[a-zA-Z0-9]+\\/");
-        Matcher applicationRouteMatcher = applicationRouteMatchPattern.matcher(requestUrl);
-
-        if (this.soletMap.containsKey(requestUrl)) {
-            return this.soletMap.get(requestUrl);
-        }
-
-        if (applicationRouteMatcher.find()) {
-            String applicationRoute = applicationRouteMatcher.group(0) + "*";
-            if (this.soletMap.containsKey(applicationRoute)) {
-                return this.soletMap.get(applicationRoute);
-            }
-        }
-
-        if (this.soletMap.containsKey(this.currentRequestAppName + "/*")) {
-            return this.soletMap.get(this.currentRequestAppName + "/*");
-        }
-
-        return null;
     }
 
     /**
@@ -239,34 +108,8 @@ public class SoletDispatcher implements RequestHandler {
         SoletConfig soletConfig = new SoletConfigImpl();
         soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY, this.sessionManagementService.getSessionStorage());
         soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY, this.configService);
+        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY, IoC.getRequestHandlersDependencyContainer());
         //TODO add more items here
         return soletConfig;
-    }
-
-    /**
-     * Gets all available solets and applicationNames.
-     * Prints the loaded applications.
-     */
-    private void initializeSoletMap() {
-        try {
-            this.soletMap = this.applicationLoadingService.loadApplications(this.createSoletConfig());
-            this.applicationNames = this.applicationLoadingService.getApplicationNames();
-            System.out.println("Loaded Applications: " + String.join(", ", this.applicationNames));
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
-
-    /**
-     * Create javache's temporary directory if it doesn't exist.
-     */
-    private void initTempDir() {
-        this.tempDir = this.workingDir + TEMP_FOLDER_NAME;
-
-        File workingDir = new File(this.tempDir);
-        if (!workingDir.exists()) {
-            workingDir.mkdir();
-        }
     }
 }

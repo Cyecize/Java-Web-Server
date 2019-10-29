@@ -27,3 +27,7 @@ CoyoteResourceHandler/toyote.iml
 JavacheWebServer/server-embedded/Javache Embedded.iml
 JavacheWebServer/server-embedded/javache-embedded.iml
 CoyoteResourceHandler/dependency-reduced-pom.xml
+JavacheWebServer/api/javache-api.iml
+JavacheWebServer/server/javache.iml
+HttpAPI/http.iml
+JavacheWebServer/server-embedded/dependency-reduced-pom.xml

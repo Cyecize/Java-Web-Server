@@ -1,12 +1,14 @@
 package com.cyecize.broccolina.services;
 
 import com.cyecize.broccolina.utils.FileUtils;
+import com.cyecize.ioc.annotations.Service;
 
 import java.io.*;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+@Service
 public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
     public JarFileUnzipServiceImpl() {
@@ -25,12 +27,12 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
 
     @Override
     public void unzipJar(File jarFile, boolean overwriteExistingFiles, String outputDirectory) throws IOException {
-        String rootCanonicalPath = jarFile.getCanonicalPath();
+        final String rootCanonicalPath = jarFile.getCanonicalPath();
 
         try (JarFile fileAsJarArchive = new JarFile(rootCanonicalPath)) {
-            Enumeration<JarEntry> jarEntries = fileAsJarArchive.entries();
+            final Enumeration<JarEntry> jarEntries = fileAsJarArchive.entries();
 
-            File jarFolder = new File(outputDirectory);
+            final File jarFolder = new File(outputDirectory);
 
             if (jarFolder.exists() && jarFolder.isDirectory() && overwriteExistingFiles) {
                 this.deleteFolder(jarFolder);
@@ -41,10 +43,10 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
             }
 
             while (jarEntries.hasMoreElements()) {
-                JarEntry currentEntry = jarEntries.nextElement();
+                final JarEntry currentEntry = jarEntries.nextElement();
 
-                String currentEntryCanonicalPath = jarFolder.getCanonicalPath() + File.separator + currentEntry.getName();
-                File currentEntryAsFile = new File(currentEntryCanonicalPath);
+                final String currentEntryCanonicalPath = jarFolder.getCanonicalPath() + File.separator + currentEntry.getName();
+                final File currentEntryAsFile = new File(currentEntryCanonicalPath);
 
                 if (currentEntry.isDirectory()) {
                     currentEntryAsFile.mkdir();
@@ -78,6 +80,7 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
             if (file.isDirectory()) {
                 deleteFolder(file);
             }
+
             file.delete();
         }
     }

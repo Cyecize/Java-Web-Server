@@ -9,13 +9,19 @@ public interface HttpRequest {
 
     void setRequestURL(String requestUrl);
 
+    void setContentLength(int contentLength);
+
     void setSession(HttpSession session);
 
     void addHeader(String header, String value);
 
     void addBodyParameter(String parameter, String value);
 
+    void addMultipartFile(MultipartFile multipartFile);
+
     boolean isResource();
+
+    int getContentLength();
 
     String getMethod();
 
@@ -25,7 +31,21 @@ public interface HttpRequest {
 
     String getRequestURI();
 
+    String getContentType();
+
+    String getQueryParam(String paramName);
+
+    String getBodyParam(String paramName);
+
+    String get(String paramName);
+
+    String getHeader(String headerName);
+
     HttpSession getSession();
+
+    HttpCookie getCookie(String cookieName);
+
+    List<MultipartFile> getMultipartFiles();
 
     Map<String, String> getHeaders();
 

@@ -4,9 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cyecize</groupId>
+    <parent>
+        <groupId>com.cyecize</groupId>
+        <artifactId>javache-parent</artifactId>
+        <version>1.0</version>
+        <relativePath>../</relativePath>
+    </parent>
+
     <artifactId>http</artifactId>
-    <version>1.2.2</version>
+    <version>${version.http}</version>
     <build>
         <plugins>
             <plugin>
@@ -21,5 +27,5 @@
     </build>
 
     <!-- To deploy cd target, and then: -->
-   <!-- mvn deploy:deploy-file -Durl=file://C:\_projects\javache\LocalRepository -Dfile=http-1.2.2.jar -DgroupId=com.cyecize  -DartifactId=http -Dpackaging=jar -Dversion=1.2.2  -->
+   <!-- mvn deploy:deploy-file -Durl=file://C:\_projects\javache\LocalRepository -Dfile=http-1.3.jar -DgroupId=com.cyecize  -DartifactId=http -Dpackaging=jar -Dversion=1.3  -->
 </project>

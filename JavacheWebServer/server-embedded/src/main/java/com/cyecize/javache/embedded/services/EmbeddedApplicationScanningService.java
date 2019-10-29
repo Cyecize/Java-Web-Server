@@ -1,35 +1,37 @@
 package com.cyecize.javache.embedded.services;
 
 import com.cyecize.broccolina.services.ApplicationScanningService;
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.common.ReflectionUtils;
+import com.cyecize.javache.embedded.internal.JavacheEmbeddedComponent;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 
+@JavacheEmbeddedComponent
 public class EmbeddedApplicationScanningService implements ApplicationScanningService {
+
+    private final Map<String, List<Class<HttpSolet>>> soletClasses;
 
     private final JavacheConfigService configService;
 
-    private final String workingDir;
+    private final String rootAppName;
 
     private boolean isRootDir;
 
-    private String rootAppName;
-
-    private Map<String, List<Class<HttpSolet>>> soletClasses;
-
-    public EmbeddedApplicationScanningService(JavacheConfigService configService, String workingDir) {
-        this.configService = configService;
-        this.workingDir = workingDir;
+    @Autowired
+    public EmbeddedApplicationScanningService(JavacheConfigService configService) {
         this.soletClasses = new HashMap<>();
-        this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
+        this.configService = configService;
+        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
         this.soletClasses.put(this.rootAppName, new ArrayList<>());
         this.isRootDir = true;
+
         this.loadLibraries();
     }
 
@@ -43,7 +45,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
 
     @Override
     public Map<String, List<Class<HttpSolet>>> findSoletClasses() throws ClassNotFoundException {
-        this.loadClass(new File(this.workingDir), "");
+        this.loadClass(new File(this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class)), "");
         return this.soletClasses;
     }
 
@@ -76,13 +78,13 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
                 return;
             }
 
-            String className = packageName + currentFile
+            final String className = packageName + currentFile
                     .getName()
                     .replace(".class", "")
                     .replace("/", ".");
 
 
-            Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            final Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
 
             if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
                 this.soletClasses.get(this.rootAppName).add(currentClassFile);
@@ -95,11 +97,12 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
      * Iterates all elements and adds the .jar files to the system's classpath.
      */
     private void loadLibraries() {
-        String workingDir = this.workingDir;
+        String workingDir = this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class);
         if (!workingDir.endsWith("/") && !workingDir.endsWith("\\")) {
             workingDir += "/";
         }
-        File libFolder = new File(workingDir + this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class));
+
+        final File libFolder = new File(workingDir + this.configService.getConfigParam(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class));
 
         if (!libFolder.exists()) {
             return;
@@ -108,7 +111,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
         for (File file : libFolder.listFiles()) {
             if (file.getName().endsWith(".jar")) {
                 try {
-                    this.addUrlToClassPath(new URL("jar:file:" + file.getCanonicalPath() + "!/"));
+                    ReflectionUtils.addJarFileToClassPath(file.getCanonicalPath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

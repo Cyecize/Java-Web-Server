@@ -1,9 +1,13 @@
 package com.cyecize.broccolina.services;
 
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.broccolina.BroccolinaConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.ioc.annotations.Service;
+import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfig;
+import com.cyecize.solet.SoletConfigImpl;
 import com.cyecize.solet.WebSolet;
 
 import java.io.File;
@@ -11,6 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+@Service
 public class ApplicationLoadingServiceImpl implements ApplicationLoadingService {
 
     private static final String MISSING_SOLET_ANNOTATION_FORMAT = "Missing solet annotation for class named %s.";
@@ -19,16 +24,19 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private final String assetsDir;
 
-    private String rootAppName;
+    private final String rootAppName;
 
-    private Map<String, HttpSolet> solets;
+    private final Map<String, HttpSolet> solets;
 
     private SoletConfig soletConfig;
 
-    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService, String assetsDir) {
+    @Autowired
+    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService) {
         this.scanningService = scanningService;
-        this.assetsDir = assetsDir;
-        this.rootAppName = configService.getConfigParam(ConfigConstants.MAIN_APP_JAR_NAME, String.class);
+        this.assetsDir = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
+                configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class);
+
+        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
         this.solets = new HashMap<>();
         this.makeAppAssetDir(this.assetsDir);
     }
@@ -48,10 +56,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     @Override
     public Map<String, HttpSolet> loadApplications(SoletConfig soletConfig) throws IOException {
         this.soletConfig = soletConfig;
+
         try {
-            Map<String, List<Class<HttpSolet>>> soletClasses = this.scanningService.findSoletClasses();
+            final Map<String, List<Class<HttpSolet>>> soletClasses = this.scanningService.findSoletClasses();
             for (Map.Entry<String, List<Class<HttpSolet>>> entry : soletClasses.entrySet()) {
-                String applicationName = entry.getKey();
+                final String applicationName = entry.getKey();
                 this.makeAppAssetDir(this.assetsDir + applicationName + File.separator);
 
                 for (Class<HttpSolet> soletClass : entry.getValue()) {
@@ -60,7 +69,6 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
             }
 
         } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
-            System.out.println(e.getMessage());
             e.printStackTrace();
         }
 
@@ -73,10 +81,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
      * Put the solet in a solet map with a key being the soletRoute.
      */
     private void loadSolet(Class<HttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        HttpSolet soletInstance = soletClass.getDeclaredConstructor().newInstance();
-        soletInstance.setAssetsFolder(this.assetsDir + applicationName);
+        final HttpSolet soletInstance = soletClass.getDeclaredConstructor().newInstance();
 
-        WebSolet soletAnnotation = this.getSoletAnnotation(soletInstance.getClass());
+        final WebSolet soletAnnotation = this.getSoletAnnotation(soletInstance.getClass());
         if (soletAnnotation == null) {
             throw new IllegalArgumentException(String.format(MISSING_SOLET_ANNOTATION_FORMAT, soletClass.getName()));
         }
@@ -86,12 +93,14 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
             soletRoute = "/" + applicationName + soletRoute;
         }
 
-        if (!soletInstance.isInitialized()) {
-            soletInstance.init(this.soletConfig);
+        final SoletConfig soletConfigCopy = this.copySoletConfig();
+        soletConfigCopy.setAttribute(BroccolinaConstants.SOLET_CONFIG_ASSETS_DIR, this.assetsDir + applicationName);
+        if (!applicationName.equals("") && !applicationName.equals(this.rootAppName)) {
+            soletConfigCopy.setAttribute(BroccolinaConstants.SOLET_CONFIG_APP_NAME_PREFIX, "/" + applicationName);
         }
 
-        if (!applicationName.equals("") && !applicationName.equals(this.rootAppName)) {
-            soletInstance.setAppNamePrefix("/" + applicationName);
+        if (!soletInstance.isInitialized()) {
+            soletInstance.init(soletConfigCopy);
         }
 
         this.solets.put(soletRoute, soletInstance);
@@ -103,10 +112,12 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
      * and not the child.
      */
     private WebSolet getSoletAnnotation(Class<?> soletClass) {
-        WebSolet solet = soletClass.getAnnotation(WebSolet.class);
+        final WebSolet solet = soletClass.getAnnotation(WebSolet.class);
+
         if (solet == null && soletClass.getSuperclass() != null) {
             return getSoletAnnotation(soletClass.getSuperclass());
         }
+
         return solet;
     }
 
@@ -114,9 +125,18 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
      * Creates asset directory for the current app in javache's assets directory.
      */
     private void makeAppAssetDir(String dir) {
-        File file = new File(dir);
+        final File file = new File(dir);
+
         if (!file.exists()) {
             file.mkdir();
         }
+    }
+
+    private SoletConfig copySoletConfig() {
+        final SoletConfig soletConfig = new SoletConfigImpl();
+
+        this.soletConfig.getAllAttributes().forEach(soletConfig::setAttribute);
+
+        return soletConfig;
     }
 }

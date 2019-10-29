@@ -1,31 +1,34 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.cyecize</groupId>
-  <artifactId>javache-parent</artifactId>
-  <version>1.0</version>
+    <groupId>com.cyecize</groupId>
+    <artifactId>javache-parent</artifactId>
+    <version>1.0</version>
 
-  <name>Javache Web ServerParent</name>
-  <description>Javache Web Server: Parent</description>
+    <name>Javache Web ServerParent</name>
+    <description>Javache Web Server: Parent</description>
 
-  <packaging>pom</packaging>
-  
-  <properties>
-	<version.http>1.2.2</version.http>
-	<version.solet>1.2.0</version.solet>
-	<version.toyote>1.1</version.toyote>
-	<version.javache-api>1.2.7</version.javache-api>
-	<version.broccolina>1.1</version.broccolina>
-	<version.javache>1.0</version.javache>
-  </properties>
-  
-  <repositories>
-    <repository>
-        <id>project.local</id>
-        <name>project-repository</name>
-        <url>file:${pom.basedir}/${pom.parent.relativePath}/LocalRepository</url>
-    </repository>
-  </repositories>
-  
-  </project>
+    <packaging>pom</packaging>
+
+    <properties>
+        <version.http>1.3</version.http>
+        <version.solet>1.3</version.solet>
+        <version.toyote>1.3</version.toyote>
+        <version.javache-api>1.3</version.javache-api>
+        <version.broccolina>1.3</version.broccolina>
+        <version.javache>1.3</version.javache>
+        <version.javache-embedded>1.3</version.javache-embedded>
+        <version.summer>1.3</version.summer>
+        <version.magic-injector>1.1</version.magic-injector>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>project.local</id>
+            <name>project-repository</name>
+            <url>file:${pom.basedir}/${pom.parent.relativePath}/LocalRepository</url>
+        </repository>
+    </repositories>
+
+</project>

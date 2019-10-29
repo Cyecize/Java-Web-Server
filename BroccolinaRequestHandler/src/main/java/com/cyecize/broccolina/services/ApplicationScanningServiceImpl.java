@@ -1,6 +1,9 @@
 package com.cyecize.broccolina.services;
 
-import com.cyecize.javache.ConfigConstants;
+import com.cyecize.ioc.annotations.Autowired;
+import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.JavacheComponent;
+import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
@@ -9,39 +12,46 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@JavacheComponent
 public class ApplicationScanningServiceImpl implements ApplicationScanningService {
-
-    private final String workingDir;
 
     private final JarFileUnzipService jarFileUnzipService;
 
     private final JavacheConfigService configService;
 
-    private List<String> applicationNames;
+    private final List<String> applicationNames;
 
-    private Map<String, List<Class<HttpSolet>>> soletClasses;
+    private final Map<String, List<Class<HttpSolet>>> soletClasses;
 
-    private String applicationsFolderPath;
+    private final String applicationsFolderPath;
 
-    private String compileOutputFolderName;
+    private final String compileOutputFolderName;
 
-    private String applicationLibFolderName;
+    private final String applicationLibFolderName;
 
-    private boolean skipExtractingAppsWithExistingFolder;
+    private final boolean skipExtractingAppsWithExistingFolder;
 
-    public ApplicationScanningServiceImpl(String workingDir, JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
-        this.workingDir = workingDir;
+    @Autowired
+    public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
         this.jarFileUnzipService = jarFileUnzipService;
         this.configService = configService;
 
         this.applicationNames = new ArrayList<>();
         this.soletClasses = new HashMap<>();
-        this.initConfig();
+
+        this.compileOutputFolderName = this.configService.getConfigParam(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
+        this.applicationsFolderPath = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class)
+                + this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class);
+
+        this.applicationLibFolderName = this.configService.getConfigParam(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
+
+        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, Boolean.class);
     }
 
     @Override
@@ -58,17 +68,20 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * Returns map of application name and a list of solet classes.
      */
     @Override
-    public Map<String, List<Class<HttpSolet>>> findSoletClasses() throws IOException, ClassNotFoundException {
-        File applicationsFolder = new File(this.applicationsFolderPath);
+    public Map<String, List<Class<HttpSolet>>> findSoletClasses() throws IOException {
+        final File applicationsFolder = new File(this.applicationsFolderPath);
 
         if (applicationsFolder.exists() && applicationsFolder.isDirectory()) {
-            List<File> allJarFiles = Arrays.stream(applicationsFolder.listFiles()).filter(this::isJarFile).collect(Collectors.toList());
+            final List<File> allJarFiles = Arrays.stream(Objects.requireNonNull(applicationsFolder.listFiles()))
+                    .filter(this::isJarFile)
+                    .collect(Collectors.toList());
+
             for (File applicationJarFile : allJarFiles) {
-                String appName = applicationJarFile.getName().replace(".jar", "");
-                String extractedJarFolderName = applicationJarFile.getCanonicalPath().replace(".jar", File.separator);
+                final String appName = applicationJarFile.getName().replace(".jar", "");
+                final String extractedJarFolderName = applicationJarFile.getCanonicalPath().replace(".jar", File.separator);
 
                 if (!this.skipExtractingAppsWithExistingFolder || !Files.exists(Paths.get(extractedJarFolderName))) {
-                    this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(ConfigConstants.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
+                    this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(JavacheConfigValue.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
                 }
 
                 this.loadApplicationFromFolder(extractedJarFolderName, appName);
@@ -79,40 +92,41 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     }
 
     /**
-     * Default implementation for adding URL to the classLoader.
-     */
-    @Override
-    public void addUrlToClassPath(URL url) {
-        ApplicationScanningService.super.addUrlToClassPath(url);
-    }
-
-    /**
      * Loads application libraries.
      * Loads application classes.
      * Adds the application name to the applicationNames list.
      */
-    private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException, ClassNotFoundException {
-        String classesRootFolderPath = applicationRootFolderPath + this.compileOutputFolderName + File.separator;
-        String librariesRootFolderPath = applicationRootFolderPath + this.applicationLibFolderName + File.separator;
+    private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException {
+        final String classesRootFolderPath = applicationRootFolderPath + this.compileOutputFolderName + File.separator;
+        final String librariesRootFolderPath = applicationRootFolderPath + this.applicationLibFolderName + File.separator;
+        final File classesRootDirectory = new File(classesRootFolderPath);
 
-        this.loadApplicationLibraries(librariesRootFolderPath);
-        this.loadApplicationClasses(classesRootFolderPath, applicationName);
-        this.applicationNames.add("/" + applicationName);
-    }
-
-    /**
-     * If the directory does not exist, return.
-     * Adds the directory to the classpath.
-     * Starts a recursion for loading classes and finding solets.
-     */
-    private void loadApplicationClasses(String classesRootFolderPath, String currentApplicationName) throws IOException, ClassNotFoundException {
-        File classesRootDirectory = new File(classesRootFolderPath);
         if (!classesRootDirectory.exists() || !classesRootDirectory.isDirectory()) {
             return;
         }
-        this.addDirectoryToClassPath(classesRootDirectory.getCanonicalPath() + File.separator);
-        this.loadClass(classesRootDirectory, "", currentApplicationName);
+
+        final List<URL> appLibs = this.collectApplicationLibraries(librariesRootFolderPath);
+        final URLClassLoader classLoader = this.createNewClassLoader(classesRootDirectory.getCanonicalPath() + File.separator, appLibs);
+
+        final Thread appThread = new Thread(() -> {
+            try {
+                this.loadClass(classesRootDirectory, "", applicationName, classLoader);
+                this.applicationNames.add("/" + applicationName);
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        appThread.setContextClassLoader(classLoader);
+
+        appThread.start();
+        try {
+            appThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
+
 
     /**
      * Recursive method for loading classes, starts with empty packageName.
@@ -122,22 +136,22 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * If the file is file and the file name ends with .class, load it and check if the class
      * is assignable from BaseHttpSolet. If it is, add it to the map of solet classes.
      */
-    private void loadClass(File currentFile, String packageName, String applicationName) throws ClassNotFoundException {
+    private void loadClass(File currentFile, String packageName, String applicationName, URLClassLoader classLoader) throws ClassNotFoundException {
         if (currentFile.isDirectory()) {
             for (File childFile : currentFile.listFiles()) {
-                this.loadClass(childFile, (packageName + currentFile.getName() + "."), applicationName);
+                this.loadClass(childFile, (packageName + currentFile.getName() + "."), applicationName, classLoader);
             }
         } else {
             if (!currentFile.getName().endsWith(".class")) {
                 return;
             }
 
-            String className = (packageName.replace(this.compileOutputFolderName + ".", "")) + currentFile
+            final String className = (packageName.replace(this.compileOutputFolderName + ".", "")) + currentFile
                     .getName()
                     .replace(".class", "")
                     .replace("/", ".");
 
-            Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            final Class currentClassFile = Class.forName(className, true, classLoader);
 
             if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
                 if (!this.soletClasses.containsKey(applicationName)) {
@@ -151,41 +165,45 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     /**
      * Iterates the given directory's files and filters jar files
-     * then adds them to the system classpath.
+     * then returns a collection of URLS for each library.
      */
-    private void loadApplicationLibraries(String librariesRootFolderPath) {
+    private List<URL> collectApplicationLibraries(String librariesRootFolderPath) {
+        final File libraryFolder = new File(librariesRootFolderPath);
+        final List<URL> libraryURLs = new ArrayList<>();
 
-        File libraryFolder = new File(librariesRootFolderPath);
         if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
-            return;
+            return new ArrayList<>();
         }
 
-        Arrays.stream(libraryFolder.listFiles()).filter(this::isJarFile)
+        Arrays.stream(Objects.requireNonNull(libraryFolder.listFiles()))
+                .filter(this::isJarFile)
                 .forEach(jf -> {
                     try {
-                        this.addJarFileToClassPath(jf.getCanonicalPath());
+                        libraryURLs.add(this.createJarURL(jf.getCanonicalPath()));
                     } catch (IOException ignored) {
                     }
                 });
+
+        return libraryURLs;
     }
 
-    /**
-     * Creates a proper URL for directory and adds it to the system classloader.
-     */
-    private void addDirectoryToClassPath(String canonicalPath) {
+    private URLClassLoader createNewClassLoader(String canonicalPath, List<URL> urls) {
         try {
-            this.addUrlToClassPath(new URL("file:/" + canonicalPath));
-        } catch (MalformedURLException ignored) {
+            urls.add(new URL("file:/" + canonicalPath));
+            return new URLClassLoader(
+                    urls.toArray(URL[]::new)
+                    //Thread.currentThread().getContextClassLoader()
+            );
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Creates a proper URL format for .jar files and adds it to the system classloader.
-     */
-    private void addJarFileToClassPath(String canonicalPath) {
+    private URL createJarURL(String canonicalPath) {
         try {
-            this.addUrlToClassPath(new URL("jar:file:" + canonicalPath + "!/"));
-        } catch (MalformedURLException ignored) {
+            return new URL("jar:file:" + canonicalPath + "!/");
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -194,16 +212,5 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      */
     private boolean isJarFile(File file) {
         return file.isFile() && file.getName().endsWith(".jar");
-    }
-
-    /**
-     * Initializes configuration values
-     */
-    private void initConfig() {
-        this.compileOutputFolderName = this.configService.getConfigParam(ConfigConstants.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
-        this.applicationsFolderPath = this.workingDir + this.configService.getConfigParam(ConfigConstants.WEB_APPS_DIR_NAME, String.class);
-        this.applicationLibFolderName = this.configService.getConfigParam(ConfigConstants.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
-
-        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(ConfigConstants.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, Boolean.class);
     }
 }

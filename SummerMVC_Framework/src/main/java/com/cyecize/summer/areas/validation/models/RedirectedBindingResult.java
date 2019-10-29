@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.validation.models;
 
 import com.cyecize.http.HttpSession;
+import com.cyecize.summer.common.annotations.Autowired;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.constants.RoutingConstants;
@@ -17,6 +18,8 @@ public class RedirectedBindingResult {
         this.errors = new ArrayList<>();
     }
 
+    @Autowired
+    @SuppressWarnings("unchecked")
     public RedirectedBindingResult(HttpSession session) {
         this();
         List<FieldError> errors = (List<FieldError>) session.getAttribute(RoutingConstants.BINDING_ERRORS_SESSION_ID);

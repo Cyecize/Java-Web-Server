@@ -110,11 +110,12 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
 
         for (File file : libFolder.listFiles()) {
             if (file.getName().endsWith(".jar")) {
-                try {
-                    ReflectionUtils.addJarFileToClassPath(file.getCanonicalPath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                //TODO: add libs
+//                try {
+//                    ReflectionUtils.addJarFileToClassPath(file.getCanonicalPath());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
         }
     }

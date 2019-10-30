@@ -11,6 +11,8 @@ import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,11 +30,15 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
     }
 
     @Override
-    public void loadRequestHandlers(List<String> requestHandlerPriority, List<File> libJarFiles) {
+    public void loadRequestHandlers(List<String> requestHandlerPriority, Map<File, URL> libURLs, Map<File, URL> apiURLs) {
+
+        IoC.setApiClassLoader(new URLClassLoader(apiURLs.values().toArray(URL[]::new)));
+        IoC.setRequestHandlersClassLoader(new URLClassLoader(libURLs.values().toArray(URL[]::new), IoC.getApiClassLoader()));
 
         final MagicConfiguration magicConfiguration = new MagicConfiguration()
                 .scanning()
                 .addCustomServiceAnnotations(WebConstants.JAVACHE_IOC_CONFIGURATION.scanning().getCustomServiceAnnotations())
+                .setClassLoader(IoC.getRequestHandlersClassLoader())
                 .and()
                 .instantiations()
                 .addProvidedServices(IoC.getJavacheDependencyContainer().getAllServices())
@@ -40,7 +46,7 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
                 .build();
 
         final DependencyContainer requestHandlersDependencyContainer = MagicInjector.run(
-                libJarFiles.stream()
+                libURLs.keySet().stream()
                         .filter(jarFile -> requestHandlerPriority.stream().anyMatch(rh -> jarFile.getName().endsWith(rh + ".jar")))
                         .toArray(File[]::new),
                 magicConfiguration
@@ -58,9 +64,9 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
         this.destroyHandlers.addAll(
                 requestHandlersDependencyContainer.getImplementations(RequestDestroyHandler.class)
-                .stream()
-                .map(sd -> (RequestDestroyHandler) sd.getProxyInstance())
-                .collect(Collectors.toList())
+                        .stream()
+                        .map(sd -> (RequestDestroyHandler) sd.getProxyInstance())
+                        .collect(Collectors.toList())
         );
 
         this.requestHandlers.forEach(RequestHandler::init);

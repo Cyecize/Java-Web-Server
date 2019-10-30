@@ -30,7 +30,11 @@ public class ServerInitializerImpl implements ServerInitializer {
     @Override
     public void initializeServer() {
         this.libraryLoadingService.loadLibraries();
-        this.requestHandlerLoadingService.loadRequestHandlers(this.configService.getRequestHandlerPriority(), this.libraryLoadingService.getJarLibs());
+        this.requestHandlerLoadingService.loadRequestHandlers(
+                this.configService.getRequestHandlerPriority(),
+                this.libraryLoadingService.getLibURLs(),
+                this.libraryLoadingService.getApiURLs()
+        );
 
         final String[] startupArgs = this.configService.getConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, String[].class);
 

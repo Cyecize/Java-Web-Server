@@ -38,7 +38,7 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>com.cyecize:http</exclude>
+<!--                                    <exclude>com.cyecize:http</exclude>-->
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -73,7 +73,6 @@
             <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
             <version>${version.solet}</version>
-            <scope>provided</scope>
         </dependency>
 
     </dependencies>

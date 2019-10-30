@@ -2,9 +2,11 @@ package com.cyecize.broccolina.services;
 
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LibraryLoadingService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
@@ -25,6 +27,8 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private final JavacheConfigService configService;
 
+    private final LibraryLoadingService libraryLoadingService;
+
     private final List<String> applicationNames;
 
     private final Map<String, List<Class<HttpSolet>>> soletClasses;
@@ -38,9 +42,10 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     private final boolean skipExtractingAppsWithExistingFolder;
 
     @Autowired
-    public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService) {
+    public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService, LibraryLoadingService libraryLoadingService) {
         this.jarFileUnzipService = jarFileUnzipService;
         this.configService = configService;
+        this.libraryLoadingService = libraryLoadingService;
 
         this.applicationNames = new ArrayList<>();
         this.soletClasses = new HashMap<>();
@@ -81,7 +86,10 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
                 final String extractedJarFolderName = applicationJarFile.getCanonicalPath().replace(".jar", File.separator);
 
                 if (!this.skipExtractingAppsWithExistingFolder || !Files.exists(Paths.get(extractedJarFolderName))) {
-                    this.jarFileUnzipService.unzipJar(applicationJarFile, this.configService.getConfigParam(JavacheConfigValue.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class));
+                    this.jarFileUnzipService.unzipJar(
+                            applicationJarFile,
+                            this.configService.getConfigParam(JavacheConfigValue.BROCCOLINA_FORCE_OVERWRITE_FILES, Boolean.class)
+                    );
                 }
 
                 this.loadApplicationFromFolder(extractedJarFolderName, appName);
@@ -106,7 +114,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         }
 
         final List<URL> appLibs = this.collectApplicationLibraries(librariesRootFolderPath);
-        final URLClassLoader classLoader = this.createNewClassLoader(classesRootDirectory.getCanonicalPath() + File.separator, appLibs);
+        final URLClassLoader classLoader = this.createNewClassLoader(classesRootDirectory.getCanonicalPath(), appLibs);
 
         final Thread appThread = new Thread(() -> {
             try {
@@ -169,17 +177,17 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      */
     private List<URL> collectApplicationLibraries(String librariesRootFolderPath) {
         final File libraryFolder = new File(librariesRootFolderPath);
-        final List<URL> libraryURLs = new ArrayList<>();
+        final List<URL> libraryURLs = new ArrayList<>(this.libraryLoadingService.getLibURLs().values());
 
         if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
-            return new ArrayList<>();
+            return libraryURLs;
         }
 
         Arrays.stream(Objects.requireNonNull(libraryFolder.listFiles()))
                 .filter(this::isJarFile)
                 .forEach(jf -> {
                     try {
-                        libraryURLs.add(this.createJarURL(jf.getCanonicalPath()));
+                        libraryURLs.add(ReflectionUtils.createJarURL(jf.getCanonicalPath()));
                     } catch (IOException ignored) {
                     }
                 });
@@ -189,21 +197,13 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private URLClassLoader createNewClassLoader(String canonicalPath, List<URL> urls) {
         try {
-            urls.add(new URL("file:/" + canonicalPath));
+            urls.add(ReflectionUtils.createDirURL(canonicalPath));
             return new URLClassLoader(
-                    urls.toArray(URL[]::new)
-                    //Thread.currentThread().getContextClassLoader()
+                    urls.toArray(URL[]::new),
+                    IoC.getApiClassLoader()
             );
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private URL createJarURL(String canonicalPath) {
-        try {
-            return new URL("jar:file:" + canonicalPath + "!/");
-        } catch (MalformedURLException ex) {
-            throw new RuntimeException(ex);
         }
     }
 

@@ -113,6 +113,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.SERVER_STARTUP_ARGS.name(), new String[0]);
         this.configParameters.put(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY.name(), WebConstants.WORKING_DIRECTORY);
         this.configParameters.put(JavacheConfigValue.LIB_DIR_NAME.name(), "lib/");
+        this.configParameters.put(JavacheConfigValue.API_DIR_NAME.name(), "api/");
         this.configParameters.put(JavacheConfigValue.JAVACHE_PRINT_EXCEPTIONS.name(), true);
         this.configParameters.put(JavacheConfigValue.TOYOTE_RESOURCE_HANDLER_ORDER.name(), 1);
         this.configParameters.put(JavacheConfigValue.BROCCOLINA_SOLET_DISPATCHER_ORDER.name(), 2);

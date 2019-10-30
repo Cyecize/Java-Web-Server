@@ -6,9 +6,10 @@ import com.cyecize.javache.common.ReflectionUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @JavacheComponent
 public class LibraryLoadingServiceImpl implements LibraryLoadingService {
@@ -17,43 +18,60 @@ public class LibraryLoadingServiceImpl implements LibraryLoadingService {
 
     private final JavacheConfigService configService;
 
-    private List<File> jarFiles;
+    private final Map<File, URL> libURLs;
+
+    private final Map<File, URL> apiURLs;
 
     public LibraryLoadingServiceImpl(JavacheConfigService configService) {
         this.configService = configService;
+        this.libURLs = new HashMap<>();
+        this.apiURLs = new HashMap<>();
     }
 
     @Override
     public void loadLibraries() {
         final String libDir = this.getLibraryDirectory();
-        final File libraryFolder = new File(libDir);
+        final String apiDir = this.getApiDirectory();
+        this.setLibraries(new File(libDir), this.libURLs);
+        this.setLibraries(new File(apiDir), this.apiURLs);
 
-        if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
-            throw new IllegalArgumentException(String.format(INVALID_FOLDER_MESSAGE_FORMAT, libDir));
+        int b = 10;
+    }
+
+    private void setLibraries(File dir, Map<File, URL> libs) {
+        if (!dir.exists() || !dir.isDirectory()) {
+            throw new IllegalArgumentException(String.format(INVALID_FOLDER_MESSAGE_FORMAT, dir));
         }
 
-        this.jarFiles = Arrays.stream(libraryFolder.listFiles())
+        Arrays.stream(dir.listFiles())
                 .filter(this::isJarFile)
-                .collect(Collectors.toList());
-
-        for (File jFile : this.jarFiles) {
-            try {
-                ReflectionUtils.addJarFileToClassPath(jFile.getCanonicalPath());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
+                .forEach(f -> {
+                    try {
+                        libs.put(f, ReflectionUtils.createJarURL(f.getCanonicalPath()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     @Override
-    public List<File> getJarLibs() {
-        return this.jarFiles;
+    public Map<File, URL> getLibURLs() {
+        return this.libURLs;
+    }
+
+    @Override
+    public Map<File, URL> getApiURLs() {
+        return this.apiURLs;
     }
 
     private String getLibraryDirectory() {
         return this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
                 this.configService.getConfigParam(JavacheConfigValue.LIB_DIR_NAME, String.class);
+    }
+
+    private String getApiDirectory() {
+        return this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
+                this.configService.getConfigParam(JavacheConfigValue.API_DIR_NAME, String.class);
     }
 
     /**

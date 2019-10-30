@@ -1,10 +1,13 @@
 package com.cyecize.javache.services;
 
 import java.io.File;
-import java.util.List;
+import java.net.URL;
+import java.util.Map;
 
 public interface LibraryLoadingService {
     void loadLibraries();
 
-    List<File> getJarLibs();
+    Map<File, URL> getLibURLs();
+
+    Map<File, URL> getApiURLs();
 }

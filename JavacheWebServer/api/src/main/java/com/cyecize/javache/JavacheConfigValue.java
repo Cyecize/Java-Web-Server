@@ -12,6 +12,8 @@ public enum JavacheConfigValue {
 
     LIB_DIR_NAME,
 
+    API_DIR_NAME,
+
     APP_COMPILE_OUTPUT_DIR_NAME,
 
     MAIN_APP_JAR_NAME,

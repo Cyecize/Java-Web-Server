@@ -4,7 +4,6 @@ import com.cyecize.ioc.MagicInjector;
 import com.cyecize.ioc.config.MagicConfiguration;
 import com.cyecize.ioc.services.DependencyContainer;
 import com.cyecize.javache.api.IoC;
-import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.core.Server;
 import com.cyecize.javache.core.ServerImpl;
 import com.cyecize.javache.embedded.internal.JavacheConfigBeanCreator;
@@ -24,7 +23,6 @@ public class JavacheEmbedded {
 
     public static void startServer(int port, Map<String, Object> config, Class<?> mainClass, Runnable onServerLoadedEvent) {
         try {
-            ReflectionUtils.replaceSystemClassLoader();
 
             final MagicConfiguration magicConfiguration = new MagicConfiguration()
                     .scanning().addCustomServiceAnnotation(JavacheEmbeddedComponent.class)
@@ -40,8 +38,7 @@ public class JavacheEmbedded {
             IoC.setRequestHandlersDependencyContainer(dependencyContainer);
 
             dependencyContainer.getService(RequestHandlerLoadingService.class).loadRequestHandlers(
-                    new ArrayList<>(),
-                    new ArrayList<>()
+                    new ArrayList<>(), null, null
             );
 
             final Server server = new ServerImpl(

@@ -100,6 +100,11 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
+    public void update(Class<?> serviceType, Object serviceInstance) {
+        this.dependencyContainer.update(serviceType, serviceInstance);
+    }
+
+    @Override
     public <T> T getService(Class<T> serviceType) {
         return this.dependencyContainer.getService(serviceType);
     }

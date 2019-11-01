@@ -7,6 +7,8 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.*;
 import com.cyecize.summer.areas.scanning.models.ScannedObjects;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.scanning.services.SessionScopeManager;
+import com.cyecize.summer.areas.scanning.services.SessionScopeManagerImpl;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
@@ -24,6 +26,8 @@ import static com.cyecize.summer.constants.IocConstants.*;
 @WebSolet("/*")
 public abstract class DispatcherSolet extends BaseHttpSolet {
 
+    private final SessionScopeManager sessionScopeManager;
+
     private ActionMethodInvokingService methodInvokingService;
 
     private ActionMethodResultHandler methodResultHandler;
@@ -38,6 +42,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
     protected DispatcherSolet() {
         super();
+        this.sessionScopeManager = new SessionScopeManagerImpl();
     }
 
     /**
@@ -80,6 +85,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.updatePlatformBeans(request, response);
         this.dependencyContainer.clearFlashServices();
         this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
+        this.sessionScopeManager.setSessionScopedServices(request);
 
         try {
             if (this.interceptorService.preHandle(request, response, dependencyContainer)) {
@@ -155,6 +161,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
         this.dependencyContainer = SummerBootApplication.dependencyContainer;
         this.scannedObjects = scannedObjects;
         this.workingDir = scannedObjects.getWorkingDir();
+        this.sessionScopeManager.initialize(dependencyContainer);
 
         final DataAdapterStorageService dataAdapterStorageService = new DataAdapterStorageServiceImpl(this.dependencyContainer);
 

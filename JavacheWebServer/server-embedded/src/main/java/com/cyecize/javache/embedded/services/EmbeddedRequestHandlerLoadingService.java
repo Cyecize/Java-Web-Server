@@ -25,7 +25,6 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
         this.destroyHandlers = new ArrayList<>();
     }
 
-
     @Override
     public void loadRequestHandlers(List<String> requestHandlerPriority, Map<File, URL> libURLs, Map<File, URL> apiURLs) {
         this.requestHandlers.addAll(IoC.getJavacheDependencyContainer().getImplementations(RequestHandler.class)

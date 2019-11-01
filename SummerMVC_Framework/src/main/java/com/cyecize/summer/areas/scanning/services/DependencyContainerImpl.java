@@ -3,6 +3,7 @@ package com.cyecize.summer.areas.scanning.services;
 import com.cyecize.ioc.exceptions.AlreadyInitializedException;
 import com.cyecize.ioc.models.ServiceDetails;
 import com.cyecize.ioc.services.ObjectInstantiationService;
+import com.cyecize.summer.common.annotations.Bean;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.constants.IocConstants;
 
@@ -27,34 +28,9 @@ public class DependencyContainerImpl implements DependencyContainer {
 
     @Override
     public void reloadServices(ServiceLifeSpan lifeSpan) {
-        for (ServiceDetails serviceDetails : this.getOrCacheServicesByLifeSpan(lifeSpan)) {
+        for (ServiceDetails serviceDetails : this.getServicesByLifeSpan(lifeSpan)) {
             this.reload(serviceDetails);
         }
-    }
-
-    private Collection<ServiceDetails> getOrCacheServicesByLifeSpan(ServiceLifeSpan serviceLifeSpan) {
-        if (!this.cachedServicesByLifespan.containsKey(serviceLifeSpan)) {
-            final Set<ServiceDetails> servicesByAnnotation = new HashSet<>();
-
-            for (Class<? extends Annotation> serviceAnnotation : IocConstants.SERVICE_ANNOTATIONS) {
-                servicesByAnnotation.addAll(this.getServicesByAnnotation(serviceAnnotation).stream().filter(sd -> {
-                    try {
-                        final Method method = sd.getAnnotation().annotationType().getDeclaredMethod(IocConstants.SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME);
-                        method.setAccessible(true);
-
-                        final ServiceLifeSpan lifeSpan = (ServiceLifeSpan) method.invoke(sd.getAnnotation());
-
-                        return lifeSpan == serviceLifeSpan;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toSet()));
-            }
-
-            this.cachedServicesByLifespan.put(serviceLifeSpan, servicesByAnnotation);
-        }
-
-        return this.cachedServicesByLifespan.get(serviceLifeSpan);
     }
 
     @Override
@@ -77,6 +53,42 @@ public class DependencyContainerImpl implements DependencyContainer {
     @Override
     public void clearFlashServices() {
         this.flashServices.clear();
+    }
+
+    @Override
+    public Collection<ServiceDetails> getServicesByLifeSpan(ServiceLifeSpan serviceLifeSpan) {
+        if (!this.cachedServicesByLifespan.containsKey(serviceLifeSpan)) {
+            final Set<ServiceDetails> servicesByAnnotation = new HashSet<>();
+
+            for (Class<? extends Annotation> serviceAnnotation : IocConstants.SERVICE_ANNOTATIONS) {
+                servicesByAnnotation.addAll(this.getServicesByAnnotation(serviceAnnotation)
+                        .stream()
+                        .filter(sd -> this.filterServiceDetails(sd, serviceLifeSpan))
+                        .collect(Collectors.toSet()));
+            }
+
+            servicesByAnnotation.addAll(this.getServicesByAnnotation(Bean.class).stream()
+                    .filter(sd -> this.filterServiceDetails(sd, serviceLifeSpan))
+                    .collect(Collectors.toList())
+            );
+
+            this.cachedServicesByLifespan.put(serviceLifeSpan, servicesByAnnotation);
+        }
+
+        return this.cachedServicesByLifespan.get(serviceLifeSpan);
+    }
+
+    private boolean filterServiceDetails(ServiceDetails sd, ServiceLifeSpan serviceLifeSpan) {
+        try {
+            final Method method = sd.getAnnotation().annotationType().getDeclaredMethod(IocConstants.SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME);
+            method.setAccessible(true);
+
+            final ServiceLifeSpan lifeSpan = (ServiceLifeSpan) method.invoke(sd.getAnnotation());
+
+            return lifeSpan == serviceLifeSpan;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -105,8 +117,18 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
+    public void update(Class<?> serviceType, Object serviceInstance, boolean destroyOldInstance) {
+        this.dependencyContainer.update(serviceType, serviceInstance, destroyOldInstance);
+    }
+
+    @Override
     public <T> T getService(Class<T> serviceType) {
         return this.dependencyContainer.getService(serviceType);
+    }
+
+    @Override
+    public <T> T getNewInstance(Class<?> serviceType) {
+        return this.dependencyContainer.getNewInstance(serviceType);
     }
 
     @Override

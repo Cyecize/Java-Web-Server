@@ -31,11 +31,10 @@ public class SummerBootApplication {
     public static DependencyContainer dependencyContainer;
 
     public static <T extends DispatcherSolet> void run(T startupSolet) {
-        ActionMethodScanningService methodScanningService = new ActionMethodScanningServiceImpl(new PathFormatter());
+        final ActionMethodScanningService methodScanningService = new ActionMethodScanningServiceImpl(new PathFormatter());
 
-        MagicConfiguration configuration = new MagicConfiguration()
+        final MagicConfiguration configuration = new MagicConfiguration()
                 .scanning()
-                .addCustomBeanAnnotation(Bean.class)
                 .addCustomServiceAnnotations(IocConstants.SERVICE_ANNOTATIONS)
                 .addAdditionalClassesForScanning(new HashMap<>() {{
 

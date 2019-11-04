@@ -1,9 +1,11 @@
 
+
 What is Java Web Server
 -----------------------
 Java Web Server consists of multiple applications and APIs that are all custom implemented.
-* Apache Tomcat -> Javache
-* Catalina  -> Broccolina
+* Apache Tomcat -> Javache Web Server
+* TomEE -> Javache Embedded
+* Catalina -> Broccolina
 * Coyote -> Toyote
 * Spring MVC -> Summer Framework
 * Custom Http API
@@ -12,25 +14,26 @@ Java Web Server consists of multiple applications and APIs that are all custom i
 The goal
 -------
 Create a simplified but still functional web server platform and by doing that also help me and
-visitors better understand how things such as IOC , HTTP and Resource handling work under the hood.
+visitors better understand how things such as IOC, HTTP and Resource handling work under the hood.
 
 Main Functionalities
 -------------------
 Similar to  Tomcat, Javache can
-  * Put websites in the webapps folder, extract them and then run them.
+  * Put websites in a webapps (name of the folder is configurable) folder, extract them and then run them.
 
-  * Have multiple resource handlers (Broccolina and Toyote ) just by implementing ResourceHandler interface
+  * Have multiple resource handlers (Broccolina and Toyote) just by implementing ResourceHandler interface
 
 Broccolina and Toyote jar files are placed in a folder where javache will read and execute them upon running.
 
-Summer MVC is a fully custom MVC framework that has a templating engine, Dependency Container, Path variables, BindingModels, Validation, Security, Interceptors, Custom data adapters
+Summer MVC is a fully custom MVC framework that has a templating engine, Dependency Container, Path variables, Binding Models, Validation, Security, Interceptors, Custom data adapters
 and more.
 
 Multipart encoding is also supported.
 
 Embedded Web Server
 -------------------
-Javache Embedded is an embedded version of Javache web server, which provides better debugging, faster built times.
+Javache Embedded is an embedded version of Javache web server, which provides better debugging and much faster build times 
+while developing. Javache Embedded can also be used in production.
 
 Another benefit of the embedded server is that it can be used to create desktop applications with html, css and javaScript.
 For example we can have an embedded browser (CEF) that will be in the same app and it will browse on localhost and the server
@@ -50,24 +53,18 @@ Technologies used
 	
 	* jTwig (org.jtwig) used as a templating engine in SummerMVC.
 	
+[Magic-IoC-Container](https://github.com/Cyecize/Magic-IoC-Container) - Independent Depenency Container library that is used by javache since version 1.3. I have the code in my profile and a video on my YouTube channel demonstrating how to build one.
+	
 How to run the app?
 ------------------
-Javache Web Server has 3 directories where you can add extension/configurations.
-
-Config folder contains configurations for the server like the request handlers and their priorities.
-
-Lib folder is where you can put any libraries that you might use in your application like hibernate.
-You also need to put broccolina, toyote, soletApi and httpApi there.
-
-Webapps folder is where you put your applications. ROOT.jar is the main app. Any other app
-will be accessed by its name. For example shop.jar will be accessible on localhost:8000/shop/.
+First, extract the files from the file in Examples/00JavacheLatest.zip.
+By default you need to put your app in the 'webapps' directory.
 
 Your app has to be .jar and has to be structured like so:
 * classes - put the compiled output there (classes, resources)
-
 * lib - you can put the .jar libraries here or put them instead in javache's lib folder.
 
-To better understand, you can extract some of the provided example applications or read the documentation inside Documentation folder.
+To better understand, you can extract some of the provided example applications and/or read the documentation inside Documentation folder.
 
 In the exams folder you can find a working javache demo with everything set up.
 You just need to run a command.
@@ -80,8 +77,8 @@ Credits
 -------
 The idea for this project came from a workshop in a software academy that I went to.
 
-The web server that we made there was intended to show really vaguely the idea behind Java EE and Spring and since we 
-had about 5 labs the final app was really buggy and slow, and it lacked many functionalities that are essential, such as asynchronous requests, uploading files and Dependency Injection for the MVC framework. Basically the MVC framework was a bunch of annotations with no real templating engine.
+The web server that we made there was intended to show really vaguely the idea behind web servers and how they operate.
+had about 5 labs the final app was really buggy and slow, and it lacked many functionalities that are essential, such as asynchronous requests, uploading files, dependency injection, template engine, exception handling, security, interceptors and basically the whole app was really primitive.
 
 So I decided to start from the ground up and create somewhat similar application, but more functional which resulted in something that was totally different than the original project except the names of the mini applications such as Summer, Javache and so on.
 

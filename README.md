@@ -42,11 +42,11 @@ Technologies used
 	
 	* Maven
 	
-	* JavaDelight org.javadelight:delight-fileupload used in Broccolina for multipart request parsing.
+	* nio-multipart-parser used in Toyote for parsing multipart requests.
 	
 	* Gson (com.google.code.gson) used in SummerMVC.
 	
-	* Apache Commons (codec) used in SummerMVC for md5 hashing.
+	* Apache Tika used in Toyote for detecting media types.
 	
 	* jTwig (org.jtwig) used as a templating engine in SummerMVC.
 	

@@ -38,15 +38,20 @@ public class ServerInitializerImpl implements ServerInitializer {
 
         final String[] startupArgs = this.configService.getConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, String[].class);
 
-        int port = WebConstants.DEFAULT_SERVER_PORT;
-        if (startupArgs.length > 0) {
-            port = Integer.parseInt(startupArgs[0]);
+        if (this.configService.getConfigParam(JavacheConfigValue.SERVER_PORT, int.class) == WebConstants.JAVACHE_CONFIG_EMPTY_PORT) {
+            int port = WebConstants.DEFAULT_SERVER_PORT;
+            if (startupArgs.length > 0) {
+                port = Integer.parseInt(startupArgs[0]);
+            }
+
+            this.configService.addConfigParam(JavacheConfigValue.SERVER_PORT, port);
         }
 
-        this.configService.addConfigParam(JavacheConfigValue.SERVER_PORT, port);
-        this.configService.addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, startupArgs);
-
-        final Server server = new ServerImpl(port, this.loggingService, this.requestHandlerLoadingService);
+        final Server server = new ServerImpl(
+                this.configService.getConfigParam(JavacheConfigValue.SERVER_PORT, int.class),
+                this.loggingService,
+                this.requestHandlerLoadingService
+        );
 
         try {
             server.run();

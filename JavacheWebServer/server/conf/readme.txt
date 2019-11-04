@@ -1,0 +1,1 @@
+This folder contains config files and scripts used in javache web server that might be used in production.

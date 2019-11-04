@@ -14,6 +14,8 @@ public final class WebConstants {
 
     public static final int DEFAULT_SERVER_PORT = 8000;
 
+    public static final int JAVACHE_CONFIG_EMPTY_PORT = -1;
+
     public static final String WORKING_DIRECTORY = URLDecoder.decode(StartUp.class.getResource("").toString()
             .replace("file:/", "")
             .replace(START_UP_PACKAGE_PATH, ""), StandardCharsets.UTF_8)

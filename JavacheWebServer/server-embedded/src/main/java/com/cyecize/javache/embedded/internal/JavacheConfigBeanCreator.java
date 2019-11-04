@@ -1,5 +1,6 @@
 package com.cyecize.javache.embedded.internal;
 
+import com.cyecize.WebConstants;
 import com.cyecize.broccolina.services.JarFileUnzipService;
 import com.cyecize.broccolina.services.JarFileUnzipServiceImpl;
 import com.cyecize.ioc.annotations.Bean;
@@ -15,7 +16,7 @@ import java.util.Map;
 @JavacheEmbeddedComponent
 public class JavacheConfigBeanCreator {
 
-    public static int port;
+    public static Integer port;
 
     public static Map<String, Object> config;
 
@@ -34,7 +35,15 @@ public class JavacheConfigBeanCreator {
     public JavacheConfigService configService() throws IOException {
         final JavacheConfigService configService = new EmbeddedJavacheConfigService(config);
 
-        configService.addConfigParam(JavacheConfigValue.SERVER_PORT, port);
+        if (configService.getConfigParam(JavacheConfigValue.SERVER_PORT, int.class) == WebConstants.JAVACHE_CONFIG_EMPTY_PORT) {
+            int port = WebConstants.DEFAULT_SERVER_PORT;
+            if (JavacheConfigBeanCreator.port != null) {
+                port = JavacheConfigBeanCreator.port;
+            }
+
+            configService.addConfigParam(JavacheConfigValue.SERVER_PORT, port);
+        }
+
         configService.addConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, this.getWorkingDir());
 
         return configService;

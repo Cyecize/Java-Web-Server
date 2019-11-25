@@ -9,6 +9,7 @@ import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
+import com.cyecize.toyote.exceptions.RequestTooBigException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +22,15 @@ import java.util.Map;
 @Service
 public class HttpRequestParserImpl implements HttpRequestParser {
 
+    private static final String REQUEST_TOO_BIG_MSG = "Request too big.";
+
     private final FormDataParser defaultFormDataParser;
 
     private final FormDataParser multipartFormDataParser;
 
     private final boolean showRequestLog;
+
+    private final int maxRequestSize;
 
     @Autowired
     public HttpRequestParserImpl(FormDataParserDefaultImpl defaultFormDataParser,
@@ -34,6 +39,7 @@ public class HttpRequestParserImpl implements HttpRequestParser {
         this.defaultFormDataParser = defaultFormDataParser;
         this.multipartFormDataParser = multipartFormDataParser;
         this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
+        this.maxRequestSize = configService.getConfigParam(JavacheConfigValue.MAX_REQUEST_SIZE, int.class);
     }
 
     @Override
@@ -48,7 +54,9 @@ public class HttpRequestParserImpl implements HttpRequestParser {
             this.addHeaders(headers, request);
             this.initCookies(request);
             this.setContentLength(inputStream, request);
-            //TODO: add check for content length if exceeds maximum allowed.
+            if (request.getContentLength() > this.maxRequestSize) {
+                throw new RequestTooBigException(REQUEST_TOO_BIG_MSG, request.getContentLength());
+            }
 
             final String contentType = request.getContentType();
             if (contentType != null && contentType.startsWith("multipart/form-data")) {

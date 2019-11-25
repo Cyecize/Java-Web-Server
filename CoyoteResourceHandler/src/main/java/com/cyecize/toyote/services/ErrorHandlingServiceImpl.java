@@ -6,6 +6,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.toyote.exceptions.RequestTooBigException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,6 +24,14 @@ public class ErrorHandlingServiceImpl implements ErrorHandlingService {
     }
 
     @Override
+    public boolean handleRequestTooBig(OutputStream outputStream, RequestTooBigException ex, HttpResponse response) throws IOException {
+        response.setStatusCode(HttpStatus.BAD_REQUEST);
+        this.writeException(outputStream, ex, response);
+
+        return true;
+    }
+
+    @Override
     public boolean handleException(OutputStream outputStream, Throwable throwable, HttpResponse response) throws IOException {
         return this.handleException(outputStream, throwable, response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -33,14 +42,18 @@ public class ErrorHandlingServiceImpl implements ErrorHandlingService {
             return false;
         }
 
+        response.setStatusCode(status);
+        this.writeException(outputStream, throwable, response);
+
+        return true;
+    }
+
+    private void writeException(OutputStream outputStream, Throwable throwable, HttpResponse response) throws IOException {
         final ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
         throwable.printStackTrace(new PrintStream(byteOutputStream));
 
-        response.setStatusCode(status);
         response.setContent(byteOutputStream.toByteArray());
 
         outputStream.write(response.getBytes());
-
-        return true;
     }
 }

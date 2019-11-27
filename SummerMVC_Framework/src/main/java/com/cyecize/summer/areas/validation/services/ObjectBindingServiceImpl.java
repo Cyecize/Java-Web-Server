@@ -117,7 +117,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
      * Calls dataResolver to convert the body parameter that matches the field name.
      */
     private Object handlePrimitiveField(Field field, HttpSoletRequest request) {
-        return this.dataResolver.resolve(field.getType(), request.getBodyParameters().get(field.getName()));
+        return this.dataResolver.resolve(field.getType(), request.get(field.getName()));
     }
 
     /**

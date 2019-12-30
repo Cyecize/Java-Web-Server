@@ -116,7 +116,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
                     this.dataAdapters.put(genericType, new ArrayList<>());
                 }
 
-                this.dataAdapters.get(genericType).add((DataAdapter) serviceDetails.getProxyInstance());
+                this.dataAdapters.get(genericType).add((DataAdapter) serviceDetails.getInstance());
             } catch (Throwable e) {
                 throw new RuntimeException(NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT, e);
             }

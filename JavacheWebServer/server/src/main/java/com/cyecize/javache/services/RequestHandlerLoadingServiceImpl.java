@@ -57,7 +57,7 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         this.requestHandlers.addAll(
                 requestHandlersDependencyContainer.getImplementations(RequestHandler.class)
                         .stream()
-                        .map(sd -> (RequestHandler) sd.getProxyInstance())
+                        .map(sd -> (RequestHandler) sd.getInstance())
                         .sorted(Comparator.comparingInt(RequestHandler::order))
                         .collect(Collectors.toList())
         );
@@ -65,7 +65,7 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         this.destroyHandlers.addAll(
                 requestHandlersDependencyContainer.getImplementations(RequestDestroyHandler.class)
                         .stream()
-                        .map(sd -> (RequestDestroyHandler) sd.getProxyInstance())
+                        .map(sd -> (RequestDestroyHandler) sd.getInstance())
                         .collect(Collectors.toList())
         );
 

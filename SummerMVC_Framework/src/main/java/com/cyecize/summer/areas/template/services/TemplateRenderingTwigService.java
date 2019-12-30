@@ -104,7 +104,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
         this.dependencyContainer.getServicesByAnnotation(TemplateService.class).forEach(sd -> {
             String serviceNameInTemplate = ((TemplateService)sd.getAnnotation()).serviceNameInTemplate();
 
-            this.templateServices.put(serviceNameInTemplate, sd.getProxyInstance());
+            this.templateServices.put(serviceNameInTemplate, sd.getInstance());
         });
     }
 }

@@ -34,8 +34,6 @@ public class LibraryLoadingServiceImpl implements LibraryLoadingService {
         final String apiDir = this.getApiDirectory();
         this.setLibraries(new File(libDir), this.libURLs);
         this.setLibraries(new File(apiDir), this.apiURLs);
-
-        int b = 10;
     }
 
     private void setLibraries(File dir, Map<File, URL> libs) {

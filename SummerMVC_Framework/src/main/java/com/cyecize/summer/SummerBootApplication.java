@@ -9,6 +9,7 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.ActionMethodScanningService;
 import com.cyecize.summer.areas.routing.services.ActionMethodScanningServiceImpl;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
+import com.cyecize.summer.areas.scanning.callbacks.ComponentScopeHandler;
 import com.cyecize.summer.areas.scanning.models.ScannedObjects;
 import com.cyecize.summer.areas.scanning.services.*;
 import com.cyecize.summer.areas.scanning.util.SoletRequestAndResponseBean;
@@ -64,6 +65,7 @@ public class SummerBootApplication {
                     put(SecurityInterceptor.class, Component.class);
                 }})
                 .setClassLoader(startupSolet.getClass().getClassLoader())
+                .addServiceDetailsCreatedCallback(new ComponentScopeHandler())
                 .and()
                 .build();
 

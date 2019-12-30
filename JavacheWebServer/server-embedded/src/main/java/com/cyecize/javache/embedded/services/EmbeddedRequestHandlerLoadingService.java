@@ -29,14 +29,14 @@ public class EmbeddedRequestHandlerLoadingService implements RequestHandlerLoadi
     public void loadRequestHandlers(List<String> requestHandlerPriority, Map<File, URL> libURLs, Map<File, URL> apiURLs) {
         this.requestHandlers.addAll(IoC.getJavacheDependencyContainer().getImplementations(RequestHandler.class)
                 .stream()
-                .map(sd -> (RequestHandler) sd.getProxyInstance())
+                .map(sd -> (RequestHandler) sd.getInstance())
                 .sorted(Comparator.comparingInt(RequestHandler::order))
                 .peek(RequestHandler::init)
                 .collect(Collectors.toList()));
 
         this.destroyHandlers.addAll(IoC.getJavacheDependencyContainer().getImplementations(RequestDestroyHandler.class)
                 .stream()
-                .map(sd -> (RequestDestroyHandler) sd.getProxyInstance())
+                .map(sd -> (RequestDestroyHandler) sd.getInstance())
                 .collect(Collectors.toList())
         );
     }

@@ -127,13 +127,28 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
+    public <T> T getService(Class<?> serviceType, String qualifier) {
+        return this.dependencyContainer.getService(serviceType, qualifier);
+    }
+
+    @Override
     public <T> T getNewInstance(Class<?> serviceType) {
         return this.dependencyContainer.getNewInstance(serviceType);
     }
 
     @Override
+    public <T> T getNewInstance(Class<?> serviceType, String qualifier) {
+        return this.dependencyContainer.getNewInstance(serviceType, qualifier);
+    }
+
+    @Override
     public ServiceDetails getServiceDetails(Class<?> serviceType) {
         return this.dependencyContainer.getServiceDetails(serviceType);
+    }
+
+    @Override
+    public ServiceDetails getServiceDetails(Class<?> serviceType, String qualifier) {
+        return this.dependencyContainer.getServiceDetails(serviceType, qualifier);
     }
 
     @Override

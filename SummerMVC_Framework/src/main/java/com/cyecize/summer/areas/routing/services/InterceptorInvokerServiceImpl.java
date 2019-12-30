@@ -16,7 +16,7 @@ public class InterceptorInvokerServiceImpl implements InterceptorInvokerService 
     public InterceptorInvokerServiceImpl(DependencyContainer dependencyContainer) {
         this.interceptors = dependencyContainer.getImplementations(InterceptorAdapter.class)
                 .stream()
-                .map(sd -> (InterceptorAdapter) sd.getProxyInstance())
+                .map(sd -> (InterceptorAdapter) sd.getInstance())
                 .collect(Collectors.toList());
     }
 

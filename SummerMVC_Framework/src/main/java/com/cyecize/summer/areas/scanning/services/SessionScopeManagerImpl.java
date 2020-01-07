@@ -38,7 +38,7 @@ public class SessionScopeManagerImpl implements SessionScopeManager {
             final ServiceDetails serviceDetails = kvp.getKey();
 
             serviceDetails.setInstance(sessionScopeFactory.getInstance(
-                    serviceDetails.getServiceType(),
+                    serviceDetails,
                     request,
                     this.dependencyContainer
             ));

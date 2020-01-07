@@ -1,9 +1,10 @@
 package com.cyecize.summer.common.extensions;
 
+import com.cyecize.ioc.models.ServiceDetails;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.summer.areas.scanning.services.DependencyContainer;
 
 public interface SessionScopeFactory<T> {
 
-    T getInstance(Class<?> serviceType, HttpSoletRequest request, DependencyContainer dependencyContainer);
+    T getInstance(ServiceDetails serviceDetails, HttpSoletRequest request, DependencyContainer dependencyContainer);
 }

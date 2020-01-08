@@ -1,7 +1,13 @@
 package com.cyecize.summer;
 
+import static com.cyecize.summer.constants.IocConstants.SOLET_CFG_SCANNED_OBJECTS;
+
 import com.cyecize.http.HttpStatus;
-import com.cyecize.solet.*;
+import com.cyecize.solet.BaseHttpSolet;
+import com.cyecize.solet.HttpSoletRequest;
+import com.cyecize.solet.HttpSoletResponse;
+import com.cyecize.solet.SoletConfig;
+import com.cyecize.solet.WebSolet;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.*;
@@ -17,11 +23,11 @@ import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImp
 import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
 import com.cyecize.summer.areas.validation.services.ObjectValidationServiceImpl;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
-import com.cyecize.summer.common.models.*;
+import com.cyecize.summer.common.models.Model;
+import com.cyecize.summer.common.models.RedirectAttributes;
 import com.cyecize.summer.constants.RoutingConstants;
 import com.cyecize.summer.constants.SecurityConstants;
 
-import static com.cyecize.summer.constants.IocConstants.*;
 
 @WebSolet("/*")
 public abstract class DispatcherSolet extends BaseHttpSolet {

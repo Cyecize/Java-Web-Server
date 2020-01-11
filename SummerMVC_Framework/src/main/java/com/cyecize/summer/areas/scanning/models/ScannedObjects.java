@@ -7,16 +7,13 @@ import java.util.Set;
 
 public class ScannedObjects {
 
-    private Map<Class<?>, Object> loadedControllers;
+    private final Map<Class<?>, Object> loadedControllers;
 
-    private Map<String, Set<ActionMethod>> actionsByMethod;
+    private final Map<String, Set<ActionMethod>> actionsByMethod;
 
-    private String workingDir;
-
-    public ScannedObjects(Map<Class<?>, Object> loadedControllers, Map<String, Set<ActionMethod>> actionsByMethod, String workingDir) {
+    public ScannedObjects(Map<Class<?>, Object> loadedControllers, Map<String, Set<ActionMethod>> actionsByMethod) {
         this.loadedControllers = loadedControllers;
         this.actionsByMethod = actionsByMethod;
-        this.workingDir = workingDir;
     }
 
     public Map<Class<?>, Object> getLoadedControllers() {
@@ -25,9 +22,5 @@ public class ScannedObjects {
 
     public Map<String, Set<ActionMethod>> getActionsByMethod() {
         return actionsByMethod;
-    }
-
-    public String getWorkingDir() {
-        return workingDir;
     }
 }

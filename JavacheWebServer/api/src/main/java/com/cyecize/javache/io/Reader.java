@@ -1,6 +1,7 @@
 package com.cyecize.javache.io;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public final class Reader {

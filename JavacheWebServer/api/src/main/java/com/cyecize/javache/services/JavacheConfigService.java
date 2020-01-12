@@ -19,6 +19,8 @@ public interface JavacheConfigService {
 
     String getConfigParamString(String paramName);
 
+    String getConfigParamString(JavacheConfigValue paramName);
+
     Map<String, Object> getConfigParams();
 
     List<String> getRequestHandlerPriority();

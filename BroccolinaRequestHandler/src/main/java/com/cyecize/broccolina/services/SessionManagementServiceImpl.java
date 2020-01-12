@@ -69,7 +69,10 @@ public class SessionManagementServiceImpl implements SessionManagementService {
         if (request.getSession().isValid()) {
             final HttpCookie cookie = new HttpCookieImpl(this.getSessionCookieName(request), request.getSession().getId());
 
-            final String expires = DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().plusDays(BroccolinaConstants.SESSION_EXPIRE_DAYS));
+            final String expires = DateTimeFormatter.RFC_1123_DATE_TIME.format(
+                    ZonedDateTime.now().plusDays(BroccolinaConstants.SESSION_EXPIRE_DAYS)
+            );
+
             cookie.setPath("/; expires=" + expires);
 
             response.addCookie(cookie);

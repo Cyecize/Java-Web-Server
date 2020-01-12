@@ -47,7 +47,8 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
     private final boolean skipExtractingAppsWithExistingFolder;
 
     @Autowired
-    public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService, LibraryLoadingService libraryLoadingService) {
+    public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService,
+                                          LibraryLoadingService libraryLoadingService) {
         this.jarFileUnzipService = jarFileUnzipService;
         this.configService = configService;
         this.libraryLoadingService = libraryLoadingService;
@@ -59,9 +60,15 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         this.applicationsFolderPath = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class)
                 + this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class);
 
-        this.applicationLibFolderName = this.configService.getConfigParam(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class);
+        this.applicationLibFolderName = this.configService.getConfigParam(
+                JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME,
+                String.class
+        );
 
-        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS, Boolean.class);
+        this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(
+                JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS,
+                Boolean.class
+        );
     }
 
     @Override
@@ -149,7 +156,8 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * If the file is file and the file name ends with .class, load it and check if the class
      * is assignable from BaseHttpSolet. If it is, add it to the map of solet classes.
      */
-    private void loadClass(File currentFile, String packageName, String applicationName, URLClassLoader classLoader) throws ClassNotFoundException {
+    private void loadClass(File currentFile, String packageName, String applicationName, URLClassLoader classLoader)
+            throws ClassNotFoundException {
         if (currentFile.isDirectory()) {
             for (File childFile : currentFile.listFiles()) {
                 this.loadClass(childFile, (packageName + currentFile.getName() + "."), applicationName, classLoader);

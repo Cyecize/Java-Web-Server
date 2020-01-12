@@ -70,8 +70,9 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                 }
             }
 
-        } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException |
+                InstantiationException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
 
         return this.solets;
@@ -82,7 +83,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
      * If the application name is different than the javache specified main jar name (ROOT.jar by default), add the appName to the route.
      * Put the solet in a solet map with a key being the soletRoute.
      */
-    private void loadSolet(Class<HttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private void loadSolet(Class<HttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, InstantiationException {
         final HttpSolet soletInstance = soletClass.getDeclaredConstructor().newInstance();
 
         final WebSolet soletAnnotation = this.getSoletAnnotation(soletInstance.getClass());

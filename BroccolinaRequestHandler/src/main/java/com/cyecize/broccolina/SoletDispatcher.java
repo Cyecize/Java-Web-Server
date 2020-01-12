@@ -39,7 +39,8 @@ public class SoletDispatcher implements RequestHandler {
     private final boolean trackResources;
 
     @Autowired
-    public SoletDispatcher(ApplicationLoadingService applicationLoadingService, JavacheConfigService configService, SessionManagementService sessionManagementService, SoletCandidateFinder soletCandidateFinder) {
+    public SoletDispatcher(ApplicationLoadingService applicationLoadingService, JavacheConfigService configService,
+                           SessionManagementService sessionManagementService, SoletCandidateFinder soletCandidateFinder) {
         this.configService = configService;
         this.applicationLoadingService = applicationLoadingService;
         this.sessionManagementService = sessionManagementService;
@@ -62,7 +63,8 @@ public class SoletDispatcher implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData) throws IOException {
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData)
+            throws IOException {
         final HttpSoletRequest request = new HttpSoletRequestImpl(
                 sharedData.getObject(BroccolinaConstants.SHARED_DATA_HTTP_REQUEST_KEY, HttpRequest.class)
         );
@@ -115,10 +117,22 @@ public class SoletDispatcher implements RequestHandler {
      * This Solet Config will be used for initializing every solet.
      */
     private SoletConfig createSoletConfig() {
-        SoletConfig soletConfig = new SoletConfigImpl();
-        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY, this.sessionManagementService.getSessionStorage());
-        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY, this.configService);
-        soletConfig.setAttribute(BroccolinaConstants.SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY, IoC.getRequestHandlersDependencyContainer());
+        final SoletConfig soletConfig = new SoletConfigImpl();
+        soletConfig.setAttribute(
+                BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY,
+                this.sessionManagementService.getSessionStorage()
+        );
+
+        soletConfig.setAttribute(
+                BroccolinaConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY,
+                this.configService
+        );
+
+        soletConfig.setAttribute(
+                BroccolinaConstants.SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY,
+                IoC.getRequestHandlersDependencyContainer()
+        );
+
         //TODO add more items here
         return soletConfig;
     }

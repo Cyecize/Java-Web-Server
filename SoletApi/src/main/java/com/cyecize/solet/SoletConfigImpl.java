@@ -40,5 +40,4 @@ public class SoletConfigImpl implements SoletConfig {
     public Map<String, Object> getAllAttributes() {
         return Collections.unmodifiableMap(this.attributes);
     }
-
 }

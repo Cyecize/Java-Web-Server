@@ -17,7 +17,8 @@ public class MultipartFileImpl implements MultipartFile {
 
     private final InputStream inputStream;
 
-    public MultipartFileImpl(int fileLength, String contentType, String fileName, String fieldName, InputStream inputStream) {
+    public MultipartFileImpl(int fileLength, String contentType, String fileName,
+                             String fieldName, InputStream inputStream) {
         this.fileLength = fileLength;
         this.contentType = contentType;
         this.fileName = fileName;

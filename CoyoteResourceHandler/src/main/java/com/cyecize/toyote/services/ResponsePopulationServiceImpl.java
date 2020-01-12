@@ -21,7 +21,8 @@ public class ResponsePopulationServiceImpl implements ResponsePopulationService 
     }
 
     @Override
-    public void handleResourceFoundResponse(HttpRequest request, HttpResponse response, File resourceFile, long fileSize) throws IOException {
+    public void handleResourceFoundResponse(HttpRequest request, HttpResponse response, File resourceFile, long fileSize)
+            throws IOException {
         response.setStatusCode(HttpStatus.OK);
 
         response.addHeader("Content-Type", this.tika.detect(resourceFile));

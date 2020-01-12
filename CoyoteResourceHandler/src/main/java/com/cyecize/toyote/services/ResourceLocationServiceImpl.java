@@ -67,7 +67,7 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
             }
         }
 
-        return this.configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
+        return this.configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME);
     }
 
     private String createWebappsResourceDir(String requestURL, String appName) {
@@ -79,9 +79,9 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
     }
 
     private void initDirectories() {
-        final String workingDir = this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class);
+        final String workingDir = this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY);
 
-        this.pathToAssets = workingDir + this.configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class);
+        this.pathToAssets = workingDir + this.configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME);
 
         this.pathToWebappsFormat = workingDir +
                 this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME) +

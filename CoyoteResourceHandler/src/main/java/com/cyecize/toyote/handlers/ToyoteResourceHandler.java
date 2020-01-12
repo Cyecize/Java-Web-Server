@@ -1,4 +1,4 @@
-package com.cyecize.toyote;
+package com.cyecize.toyote.handlers;
 
 import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpResponse;
@@ -9,11 +9,16 @@ import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
 import com.cyecize.toyote.services.ResourceLocationService;
 import com.cyecize.toyote.services.ResponsePopulationService;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 @Service
 public class ToyoteResourceHandler implements RequestHandler {
@@ -40,9 +45,10 @@ public class ToyoteResourceHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData requestHandlerSharedData) throws IOException {
-        final HttpRequest request = (HttpRequest) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME);
-        final HttpResponse response = (HttpResponse) requestHandlerSharedData.getObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME);
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData)
+            throws IOException {
+        final HttpRequest request = (HttpRequest) sharedData.getObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME);
+        final HttpResponse response = (HttpResponse) sharedData.getObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME);
 
         try {
             final File resource = this.resourceLocationService.locateResource(request.getRequestURL());

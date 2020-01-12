@@ -25,8 +25,9 @@ public class AppNameCollectServiceImpl implements AppNameCollectService {
 
     @Override
     public List<String> getApplicationNames() {
-        final String webappsDir = this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class)
-                + this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class);
+        final String webappsDir =
+                this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
+                + this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME);
 
         final File webappsFolder = new File(webappsDir);
         if (!webappsFolder.exists() || !webappsFolder.isDirectory()) {

@@ -71,7 +71,8 @@ public class HttpRequestParserImpl implements HttpRequestParser {
         }
     }
 
-    private List<String> parseMetadataLines(InputStream inputStream, boolean allowNewLineWithoutReturn) throws CannotParseRequestException {
+    private List<String> parseMetadataLines(InputStream inputStream, boolean allowNewLineWithoutReturn)
+            throws CannotParseRequestException {
         try {
             final List<String> metadataLines = new ArrayList<>();
 
@@ -95,11 +96,15 @@ public class HttpRequestParserImpl implements HttpRequestParser {
                         wasNewLine = true;
                     } else {
                         inputStream.close();
-                        throw new CannotParseRequestException(String.format("Illegal character after return on line %d.", lineNumber));
+                        throw new CannotParseRequestException(
+                                String.format("Illegal character after return on line %d.", lineNumber)
+                        );
                     }
                 } else if (b == '\n') {
                     if (!allowNewLineWithoutReturn) {
-                        throw new CannotParseRequestException(String.format("Illegal new-line character without preceding return on line %d.", lineNumber));
+                        throw new CannotParseRequestException(
+                                String.format("Illegal new-line character without preceding return on line %d.", lineNumber)
+                        );
                     }
 
                     // unexpected, but let's accept new-line without returns

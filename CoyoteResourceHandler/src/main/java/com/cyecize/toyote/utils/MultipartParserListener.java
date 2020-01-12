@@ -16,7 +16,8 @@ public class MultipartParserListener implements NioMultipartParserListener {
 
     private final MultipartParserFieldParsedCallback fieldParsedCallback;
 
-    public MultipartParserListener(MultipartParserErrorCallback errorCallback, MultipartParserFieldParsedCallback fieldParsedCallback) {
+    public MultipartParserListener(MultipartParserErrorCallback errorCallback,
+                                   MultipartParserFieldParsedCallback fieldParsedCallback) {
         this.errorCallback = errorCallback;
         this.fieldParsedCallback = fieldParsedCallback;
     }
@@ -29,7 +30,9 @@ public class MultipartParserListener implements NioMultipartParserListener {
         }
 
         final MultipartEntry multipartMetadata = new MultipartEntry(
-                MultipartUtils.parseContentDispositionString(headersFromPart.get(MultipartConstants.NIO_CONTENT_DISPOSITION_PARAM_NAME).get(0)),
+                MultipartUtils.parseContentDispositionString(
+                        headersFromPart.get(MultipartConstants.NIO_CONTENT_DISPOSITION_PARAM_NAME).get(0)
+                ),
                 contentType,
                 partBodyStreamStorage.getInputStream()
         );

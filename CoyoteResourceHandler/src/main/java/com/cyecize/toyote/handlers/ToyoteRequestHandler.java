@@ -1,4 +1,4 @@
-package com.cyecize.toyote;
+package com.cyecize.toyote.handlers;
 
 import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpResponse;
@@ -8,11 +8,14 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.RequestTooBigException;
 import com.cyecize.toyote.services.ErrorHandlingService;
 import com.cyecize.toyote.services.HttpRequestParser;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 @Service
 public class ToyoteRequestHandler implements RequestHandler {
@@ -33,7 +36,8 @@ public class ToyoteRequestHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData) throws IOException {
+    public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData)
+            throws IOException {
         try {
             final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream);
             final HttpResponse response = new HttpResponseImpl();

@@ -24,7 +24,8 @@ public class ErrorHandlingServiceImpl implements ErrorHandlingService {
     }
 
     @Override
-    public boolean handleRequestTooBig(OutputStream outputStream, RequestTooBigException ex, HttpResponse response) throws IOException {
+    public boolean handleRequestTooBig(OutputStream outputStream, RequestTooBigException ex, HttpResponse response)
+            throws IOException {
         response.setStatusCode(HttpStatus.BAD_REQUEST);
         this.writeException(outputStream, ex, response);
 
@@ -32,12 +33,14 @@ public class ErrorHandlingServiceImpl implements ErrorHandlingService {
     }
 
     @Override
-    public boolean handleException(OutputStream outputStream, Throwable throwable, HttpResponse response) throws IOException {
+    public boolean handleException(OutputStream outputStream, Throwable throwable, HttpResponse response)
+            throws IOException {
         return this.handleException(outputStream, throwable, response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public boolean handleException(OutputStream outputStream, Throwable throwable, HttpResponse response, HttpStatus status) throws IOException {
+    public boolean handleException(OutputStream outputStream, Throwable throwable,
+                                   HttpResponse response, HttpStatus status) throws IOException {
         if (!this.printStackTrace) {
             return false;
         }
@@ -48,7 +51,8 @@ public class ErrorHandlingServiceImpl implements ErrorHandlingService {
         return true;
     }
 
-    private void writeException(OutputStream outputStream, Throwable throwable, HttpResponse response) throws IOException {
+    private void writeException(OutputStream outputStream,
+                                Throwable throwable, HttpResponse response) throws IOException {
         final ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
         throwable.printStackTrace(new PrintStream(byteOutputStream));
 

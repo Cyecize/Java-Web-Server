@@ -1,5 +1,7 @@
 package com.cyecize.javache.utils;
 
+import java.util.function.Supplier;
+
 public class PrimitiveTypeDataResolver {
 
     private static final String CANNOT_CONVERT_PARAMETER_FORMAT = "Cannot convert \"%s\" into %s type.";
@@ -7,10 +9,6 @@ public class PrimitiveTypeDataResolver {
     private Class<?> currentType;
 
     private String currentData;
-
-    private interface TryParse {
-        Object parse();
-    }
 
     public Object resolve(Class<?> primitiveType, String data) {
         this.currentType = primitiveType;
@@ -47,11 +45,13 @@ public class PrimitiveTypeDataResolver {
         return null;
     }
 
-    private Object tryParse(TryParse function) {
+    private Object tryParse(Supplier<Object> function) {
         try {
-            return function.parse();
+            return function.get();
         } catch (Exception ex) {
-            throw new IllegalArgumentException(String.format(CANNOT_CONVERT_PARAMETER_FORMAT, this.currentData, this.currentType.getName()));
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_CONVERT_PARAMETER_FORMAT, this.currentData, this.currentType.getName()
+            ));
         }
     }
 }

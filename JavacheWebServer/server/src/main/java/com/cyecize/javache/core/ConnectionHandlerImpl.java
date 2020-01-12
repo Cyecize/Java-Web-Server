@@ -4,7 +4,7 @@ import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
@@ -16,7 +16,8 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 
     private final List<RequestDestroyHandler> requestDestroyHandlers;
 
-    public ConnectionHandlerImpl(Socket clientSocket, List<RequestHandler> requestHandlers, List<RequestDestroyHandler> requestDestroyHandlers) {
+    public ConnectionHandlerImpl(Socket clientSocket, List<RequestHandler> requestHandlers,
+                                 List<RequestDestroyHandler> requestDestroyHandlers) {
         this.clientSocket = clientSocket;
         this.requestHandlers = requestHandlers;
         this.requestDestroyHandlers = requestDestroyHandlers;
@@ -41,7 +42,13 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
         final RequestHandlerSharedData sharedData = new RequestHandlerSharedData();
 
         for (RequestHandler requestHandler : this.requestHandlers) {
-            if (requestHandler.handleRequest(this.clientSocket.getInputStream(), this.clientSocket.getOutputStream(), sharedData)) {
+            boolean requestHandled = requestHandler.handleRequest(
+                    this.clientSocket.getInputStream(),
+                    this.clientSocket.getOutputStream(),
+                    sharedData
+            );
+
+            if (requestHandled) {
                 break;
             }
         }

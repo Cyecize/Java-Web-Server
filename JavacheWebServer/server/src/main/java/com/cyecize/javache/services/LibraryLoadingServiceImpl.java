@@ -63,13 +63,13 @@ public class LibraryLoadingServiceImpl implements LibraryLoadingService {
     }
 
     private String getLibraryDirectory() {
-        return this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
-                this.configService.getConfigParam(JavacheConfigValue.LIB_DIR_NAME, String.class);
+        return this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY) +
+                this.configService.getConfigParamString(JavacheConfigValue.LIB_DIR_NAME);
     }
 
     private String getApiDirectory() {
-        return this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
-                this.configService.getConfigParam(JavacheConfigValue.API_DIR_NAME, String.class);
+        return this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY) +
+                this.configService.getConfigParamString(JavacheConfigValue.API_DIR_NAME);
     }
 
     /**

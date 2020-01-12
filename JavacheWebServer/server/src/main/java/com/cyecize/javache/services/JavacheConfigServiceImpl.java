@@ -6,8 +6,16 @@ import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.io.Reader;
 import com.cyecize.javache.utils.PrimitiveTypeDataResolver;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @JavacheComponent
@@ -19,7 +27,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
     private static final String CONFIG_FILE_PATH = CONFIG_FOLDER_PATH + "config.ini";
 
-    private static final String REQUEST_HANDLER_PRIORITY_FILE_NOT_FOUND_FORMAT = "Request Handler priority configuration file does not exist for \"%s\".";
+    private static final String REQUEST_HANDLER_PRIORITY_FILE_NOT_FOUND_FORMAT =
+            "Request Handler priority configuration file does not exist for \"%s\".";
 
     private final PrimitiveTypeDataResolver dataResolver;
 
@@ -59,6 +68,21 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
     }
 
     @Override
+    public String getConfigParamString(String paramName) {
+        final Object configParam = this.getConfigParam(paramName, Object.class);
+        if (configParam != null) {
+            return configParam.toString();
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getConfigParamString(JavacheConfigValue paramName) {
+        return this.getConfigParamString(paramName.name());
+    }
+
+    @Override
     public List<String> getRequestHandlerPriority() {
         return this.requestHandlers;
     }
@@ -74,7 +98,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
             this.initDefaultConfigParams();
             this.initConfigParams();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

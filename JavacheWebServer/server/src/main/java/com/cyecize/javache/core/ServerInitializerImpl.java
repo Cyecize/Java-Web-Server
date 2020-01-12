@@ -4,7 +4,10 @@ import com.cyecize.WebConstants;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
-import com.cyecize.javache.services.*;
+import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LibraryLoadingService;
+import com.cyecize.javache.services.LoggingService;
+import com.cyecize.javache.services.RequestHandlerLoadingService;
 
 import java.io.IOException;
 
@@ -20,7 +23,9 @@ public class ServerInitializerImpl implements ServerInitializer {
     private final RequestHandlerLoadingService requestHandlerLoadingService;
 
     @Autowired
-    public ServerInitializerImpl(LoggingService loggingService, JavacheConfigService configService, LibraryLoadingService libraryLoadingService, RequestHandlerLoadingService requestHandlerLoadingService) {
+    public ServerInitializerImpl(LoggingService loggingService, JavacheConfigService configService,
+                                 LibraryLoadingService libraryLoadingService,
+                                 RequestHandlerLoadingService requestHandlerLoadingService) {
         this.loggingService = loggingService;
         this.configService = configService;
         this.libraryLoadingService = libraryLoadingService;
@@ -56,8 +61,8 @@ public class ServerInitializerImpl implements ServerInitializer {
         try {
             server.run();
         } catch (IOException ex) {
-            loggingService.error(ex.getMessage());
-            loggingService.printStackTrace(ex.getStackTrace());
+            this.loggingService.error(ex.getMessage());
+            this.loggingService.printStackTrace(ex.getStackTrace());
         }
     }
 }

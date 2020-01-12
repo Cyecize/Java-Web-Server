@@ -10,10 +10,15 @@ import com.cyecize.javache.services.JavacheConfigService;
 public class StartUp {
 
     public static void main(String[] args) {
-        final DependencyContainer dependencyContainer = MagicInjector.run(StartUp.class, WebConstants.JAVACHE_IOC_CONFIGURATION);
+        final DependencyContainer dependencyContainer = MagicInjector.run(
+                StartUp.class,
+                WebConstants.JAVACHE_IOC_CONFIGURATION
+        );
+
         IoC.setJavacheDependencyContainer(dependencyContainer);
 
-        dependencyContainer.getService(JavacheConfigService.class).addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, args);
+        dependencyContainer.getService(JavacheConfigService.class)
+                .addConfigParam(JavacheConfigValue.SERVER_STARTUP_ARGS, args);
 
         dependencyContainer.getService(ServerInitializer.class).initializeServer();
     }

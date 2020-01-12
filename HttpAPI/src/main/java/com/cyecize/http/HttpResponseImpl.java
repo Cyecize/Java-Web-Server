@@ -85,7 +85,7 @@ public class HttpResponseImpl implements HttpResponse {
 
     private String getHeaderString() {
         final StringBuilder result = new StringBuilder()
-                .append(ResponseLines.getResponseLine(this.getStatusCode().getStatusCode()))
+                .append(HttpStatus.getResponseLine(this.getStatusCode().getStatusCode()))
                 .append(System.lineSeparator());
 
         this.headers.put(CONTENT_TYPE, this.resolveCharset(this.headers.getOrDefault(CONTENT_TYPE, "text/html")));

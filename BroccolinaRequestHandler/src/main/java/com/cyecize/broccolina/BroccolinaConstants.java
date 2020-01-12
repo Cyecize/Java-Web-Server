@@ -8,11 +8,11 @@ public class BroccolinaConstants {
 
     public static final String SOLET_CONFIG_APP_NAME_PREFIX = SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX;
 
-    public static final String SOLET_CONFIG_SESSION_STORAGE_KEY = "SESSION_STORAGE";
+    public static final String SOLET_CONFIG_SESSION_STORAGE_KEY = "solet.cfg.session.storage";
 
-    public static final String SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY = "SERVER_CONFIG";
+    public static final String SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY = "solet.cfg.javache.config";
 
-    public static final String SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY = "JAVACHE_COMPONENTS_DEPENDENCY_CONTAINER";
+    public static final String SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY = "solet.cfg.javache.dependency.container";
 
     public static final String SHARED_DATA_HTTP_REQUEST_KEY = "HTTP_REQUEST";
 

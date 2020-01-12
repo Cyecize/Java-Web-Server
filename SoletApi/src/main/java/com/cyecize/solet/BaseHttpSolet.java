@@ -83,8 +83,12 @@ public abstract class BaseHttpSolet implements HttpSolet {
     }
 
     private void functionalityNotFound(HttpSoletRequest request, HttpSoletResponse response) {
-        response.setStatusCode(HttpStatus.NOT_FOUND);
+        response.setStatusCode(HttpStatus.NOT_IMPLEMENTED);
         response.addHeader("Content-Type", "text/html");
-        response.setContent((String.format(SoletConstants.FUNCTIONALITY_NOT_FOUND_FORMAT, request.getMethod(), request.getRequestURL())));
+        response.setContent((String.format(
+            "<h1>[ERROR] %s %s </h1><br/><h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>",
+            request.getMethod(),
+            request.getRequestURL()))
+        );
     }
 }

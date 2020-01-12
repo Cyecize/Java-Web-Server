@@ -5,7 +5,6 @@ import java.util.Map;
 
 import static com.cyecize.http.Constants.SERVER_HTTP_VERSION;
 
-
 public interface HttpResponse {
 
     enum ResponseLines {

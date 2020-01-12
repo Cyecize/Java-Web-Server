@@ -8,7 +8,7 @@ public class HttpCookieImpl implements HttpCookie {
 
     private String path;
 
-    public HttpCookieImpl(String name, String value){
+    public HttpCookieImpl(String name, String value) {
         this.setName(name);
         this.setValue(value);
     }
@@ -45,11 +45,12 @@ public class HttpCookieImpl implements HttpCookie {
 
     @Override
     public String toRFCString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(this.getName()).append("=").append(this.getValue());
-        if(this.getPath() != null) {
+        if (this.getPath() != null) {
             sb.append("; path=").append(this.getPath());
         }
+
         return sb.toString();
     }
 

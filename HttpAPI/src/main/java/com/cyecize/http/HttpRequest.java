@@ -56,5 +56,4 @@ public interface HttpRequest {
     Map<String, List<String>> getBodyParametersAsList();
 
     Map<String, HttpCookie> getCookies();
-
 }

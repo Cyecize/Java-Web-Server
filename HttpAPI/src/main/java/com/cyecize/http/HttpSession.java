@@ -15,5 +15,4 @@ public interface HttpSession {
     Object getAttribute(String key);
 
     Map<String, Object> getAttributes();
-
 }

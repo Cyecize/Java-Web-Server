@@ -56,14 +56,13 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         this.applicationNames = new ArrayList<>();
         this.soletClasses = new HashMap<>();
 
-        this.compileOutputFolderName = this.configService.getConfigParam(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME, String.class);
-        this.applicationsFolderPath = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class)
-                + this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME, String.class);
+        this.compileOutputFolderName = this.configService.getConfigParamString(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME);
+        this.applicationsFolderPath =
+                configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
+                        +  this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME);
 
-        this.applicationLibFolderName = this.configService.getConfigParam(
-                JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME,
-                String.class
-        );
+        this.applicationLibFolderName = this.configService
+                .getConfigParamString(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME);
 
         this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(
                 JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS,

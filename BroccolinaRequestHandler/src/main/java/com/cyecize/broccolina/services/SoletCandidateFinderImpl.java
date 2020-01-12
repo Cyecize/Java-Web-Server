@@ -23,7 +23,7 @@ public class SoletCandidateFinderImpl implements SoletCandidateFinder {
 
     @Autowired
     public SoletCandidateFinderImpl(JavacheConfigService configService) {
-        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
+        this.rootAppName = configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME);
     }
 
     @Override
@@ -37,7 +37,9 @@ public class SoletCandidateFinderImpl implements SoletCandidateFinder {
         request.setContextPath(this.resolveCurrentRequestAppName(request));
 
         final String requestUrl = request.getRequestURL();
-        final Pattern applicationRouteMatchPattern = Pattern.compile(Pattern.quote(request.getContextPath() + "\\/[a-zA-Z0-9]+\\/"));
+        final Pattern applicationRouteMatchPattern = Pattern
+                .compile(Pattern.quote(request.getContextPath() + "\\/[a-zA-Z0-9]+\\/"));
+
         final Matcher applicationRouteMatcher = applicationRouteMatchPattern.matcher(requestUrl);
 
         if (this.soletMap.containsKey(requestUrl)) {

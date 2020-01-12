@@ -35,10 +35,11 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     @Autowired
     public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService) {
         this.scanningService = scanningService;
-        this.assetsDir = configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class) +
-                configService.getConfigParam(JavacheConfigValue.ASSETS_DIR_NAME, String.class);
+        this.assetsDir =
+                configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
+                        + configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME);
 
-        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
+        this.rootAppName = configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME);
         this.solets = new HashMap<>();
         this.makeAppAssetDir(this.assetsDir);
     }
@@ -80,11 +81,12 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     /**
      * Creates an instance of the solet.
-     * If the application name is different than the javache specified main jar name (ROOT.jar by default), add the appName to the route.
+     * If the application name is different than the javache specified main jar name (ROOT.jar by default),
+     * add the appName to the route.
      * Put the solet in a solet map with a key being the soletRoute.
      */
-    private void loadSolet(Class<HttpSolet> soletClass, String applicationName) throws NoSuchMethodException, IllegalAccessException,
-            InvocationTargetException, InstantiationException {
+    private void loadSolet(Class<HttpSolet> soletClass, String applicationName)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         final HttpSolet soletInstance = soletClass.getDeclaredConstructor().newInstance();
 
         final WebSolet soletAnnotation = this.getSoletAnnotation(soletInstance.getClass());

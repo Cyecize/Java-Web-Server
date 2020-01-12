@@ -3,15 +3,17 @@ package com.cyecize.javache.embedded.services;
 import com.cyecize.broccolina.services.ApplicationScanningService;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
-import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.embedded.internal.JavacheEmbeddedComponent;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @JavacheEmbeddedComponent
 public class EmbeddedApplicationScanningService implements ApplicationScanningService {
@@ -28,7 +30,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
     public EmbeddedApplicationScanningService(JavacheConfigService configService) {
         this.soletClasses = new HashMap<>();
         this.configService = configService;
-        this.rootAppName = configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class);
+        this.rootAppName = configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME);
         this.soletClasses.put(this.rootAppName, new ArrayList<>());
         this.isRootDir = true;
 
@@ -45,7 +47,11 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
 
     @Override
     public Map<String, List<Class<HttpSolet>>> findSoletClasses() throws ClassNotFoundException {
-        this.loadClass(new File(this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class)), "");
+        this.loadClass(
+                new File(this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)),
+                ""
+        );
+
         return this.soletClasses;
     }
 
@@ -84,7 +90,8 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
                     .replace("/", ".");
 
 
-            final Class currentClassFile = Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            final Class currentClassFile = Class
+                    .forName(className, true, Thread.currentThread().getContextClassLoader());
 
             if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
                 this.soletClasses.get(this.rootAppName).add(currentClassFile);
@@ -97,12 +104,13 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
      * Iterates all elements and adds the .jar files to the system's classpath.
      */
     private void loadLibraries() {
-        String workingDir = this.configService.getConfigParam(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY, String.class);
+        String workingDir = this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY);
         if (!workingDir.endsWith("/") && !workingDir.endsWith("\\")) {
             workingDir += "/";
         }
 
-        final File libFolder = new File(workingDir + this.configService.getConfigParam(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME, String.class));
+        final File libFolder = new File(workingDir + this.configService
+                .getConfigParamString(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME));
 
         if (!libFolder.exists()) {
             return;

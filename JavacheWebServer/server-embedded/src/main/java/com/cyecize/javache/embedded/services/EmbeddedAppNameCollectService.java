@@ -20,6 +20,6 @@ public class EmbeddedAppNameCollectService implements AppNameCollectService {
 
     @Override
     public List<String> getApplicationNames() {
-        return List.of(this.configService.getConfigParam(JavacheConfigValue.MAIN_APP_JAR_NAME, String.class));
+        return List.of(this.configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME));
     }
 }

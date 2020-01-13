@@ -114,7 +114,8 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
             final DataAdapter adapter = (DataAdapter) serviceDetails.getActualInstance();
 
             try {
-                final String genericType = ((ParameterizedType) adapter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
+                final String genericType = ((ParameterizedType) adapter.getClass()
+                        .getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
 
                 if (!this.dataAdapters.containsKey(genericType)) {
                     this.dataAdapters.put(genericType, new ArrayList<>());

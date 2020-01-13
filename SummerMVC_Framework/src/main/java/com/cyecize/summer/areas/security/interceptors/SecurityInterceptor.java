@@ -96,7 +96,8 @@ public class SecurityInterceptor implements InterceptorAdapter {
      * If User is logged in, but Anonymous is required, consider it as HTTP 401.
      * If User is logged, and role is required, check if the user has that role and Handle HTTP 401 if role is absent.
      */
-    private boolean handleAnnotation(PreAuthorize annotation, HttpSoletRequest request, HttpSoletResponse response) throws Exception {
+    private boolean handleAnnotation(PreAuthorize annotation, HttpSoletRequest request, HttpSoletResponse response)
+            throws Exception {
         if (this.securityConfig == null) throw new NoSecurityConfigurationException(NO_SECURITY_CONFIG_MSG);
 
         if (annotation.value() == AuthorizationType.LOGGED_IN && !this.principal.isUserPresent()) {
@@ -124,7 +125,10 @@ public class SecurityInterceptor implements InterceptorAdapter {
     }
 
     private void handleNotLoggedIn(HttpSoletRequest request, HttpSoletResponse response) {
-        response.sendRedirect(request.getContextPath() + this.securityConfig.getLoginURL() + "?callback=" + request.getRelativeRequestURL());
+        response.sendRedirect(
+                request.getContextPath() + this.securityConfig.getLoginURL() +
+                        "?callback=" + request.getRelativeRequestURL()
+        );
     }
 
     private void handleNotPrivileged(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {

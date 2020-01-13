@@ -37,7 +37,9 @@ public class RedirectedBindingResult {
     }
 
     public List<FieldError> getFieldErrors(String field) {
-        return this.errors.stream().filter(fe -> fe.getFieldName().equals(field)).collect(Collectors.toList());
+        return this.errors.stream()
+                .filter(fe -> fe.getFieldName().equals(field))
+                .collect(Collectors.toList());
     }
 
     public List<FieldError> getErrors() {

@@ -33,7 +33,8 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
             return bindingResult.getErrors();
         }
 
-        if (functionRequest.getNumberOfArguments() > 1 || functionRequest.getArguments().get(0) == null || !(functionRequest.getArguments().get(0) instanceof String)) {
+        if (functionRequest.getNumberOfArguments() > 1 || functionRequest.getArguments().get(0) == null ||
+                !(functionRequest.getArguments().get(0) instanceof String)) {
             throw new JtwigException(INVALID_PARAMETER_MESSAGE);
         }
 

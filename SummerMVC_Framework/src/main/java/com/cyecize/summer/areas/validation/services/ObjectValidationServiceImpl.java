@@ -72,7 +72,12 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                     continue;
                 }
 
-                bindingResult.addNewError(new FieldError(bindingModel.getClass().getName(), field.getName(), this.getAnnotationMessage(currentAnnotation), fieldVal));
+                bindingResult.addNewError(new FieldError(
+                        bindingModel.getClass().getName(),
+                        field.getName(),
+                        this.getAnnotationMessage(currentAnnotation),
+                        fieldVal
+                ));
             }
 
         } catch (IllegalAccessException e) {

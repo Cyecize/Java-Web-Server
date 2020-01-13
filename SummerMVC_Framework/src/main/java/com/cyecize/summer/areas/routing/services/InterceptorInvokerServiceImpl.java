@@ -33,7 +33,8 @@ public class InterceptorInvokerServiceImpl implements InterceptorInvokerService 
     }
 
     @Override
-    public void postHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler, Model model) throws Exception {
+    public void postHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler, Model model)
+            throws Exception {
         for (InterceptorAdapter interceptor : this.interceptors) {
             interceptor.postHandle(request, response, handler, model);
         }

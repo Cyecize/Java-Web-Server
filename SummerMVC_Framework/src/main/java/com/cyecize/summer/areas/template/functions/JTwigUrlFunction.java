@@ -36,7 +36,8 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
      */
     private String getURI() {
         final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
-        String URI = request.getHost() + "/" + request.getRequestURL().replace(request.getRelativeRequestURL(), "");
+        String URI = request.getHost() + "/" + request.getRequestURL()
+                .replace(request.getRelativeRequestURL(), "");
 
         if (URI.endsWith("/")) {
             URI = URI.substring(0, URI.length() - 1);

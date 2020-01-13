@@ -25,7 +25,8 @@ public class SessionScopeManagerImpl implements SessionScopeManager {
     @Override
     public void initialize(DependencyContainer dependencyContainer) {
         this.dependencyContainer = dependencyContainer;
-        final Collection<ServiceDetails> sessionScopedServices = this.dependencyContainer.getServicesByLifeSpan(ServiceLifeSpan.SESSION);
+        final Collection<ServiceDetails> sessionScopedServices = this.dependencyContainer
+                .getServicesByLifeSpan(ServiceLifeSpan.SESSION);
 
         for (ServiceDetails serviceDetails : sessionScopedServices) {
             this.scopeFactoryByServiceDetails.put(serviceDetails, this.getSessionFactory(serviceDetails));

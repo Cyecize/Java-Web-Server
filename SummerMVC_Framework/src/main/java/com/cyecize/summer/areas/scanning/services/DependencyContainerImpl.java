@@ -85,7 +85,8 @@ public class DependencyContainerImpl implements DependencyContainer {
 
     private boolean filterServiceDetails(ServiceDetails sd, ServiceLifeSpan serviceLifeSpan) {
         try {
-            final Method method = sd.getAnnotation().annotationType().getDeclaredMethod(IocConstants.SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME);
+            final Method method = sd.getAnnotation().annotationType()
+                    .getDeclaredMethod(IocConstants.SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME);
             method.setAccessible(true);
 
             final ServiceLifeSpan lifeSpan = (ServiceLifeSpan) method.invoke(sd.getAnnotation());
@@ -97,7 +98,8 @@ public class DependencyContainerImpl implements DependencyContainer {
     }
 
     @Override
-    public void init(Collection<Class<?>> collection, Collection<ServiceDetails> collection1, ObjectInstantiationService objectInstantiationService) throws AlreadyInitializedException {
+    public void init(Collection<Class<?>> collection, Collection<ServiceDetails> collection1,
+                     ObjectInstantiationService objectInstantiationService) throws AlreadyInitializedException {
 
     }
 

@@ -52,7 +52,10 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
 
         this.addGlobalVars(model);
         try {
-            JtwigTemplate template = JtwigTemplate.fileTemplate(this.templatesDir + view, this.twigEnvironmentConfig);
+            final JtwigTemplate template = JtwigTemplate.fileTemplate(
+                    this.templatesDir + view,
+                    this.twigEnvironmentConfig
+            );
             return template.render(model);
         } catch (JtwigException ex) {
             throw new ViewNotFoundException(String.format(TEMPLATE_NOT_FOUND_FORMAT, view, view), ex);
@@ -64,7 +67,6 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
      * Add Template services, specified by the user (annotated with @TemplateService).
      */
     private void addGlobalVars(Model model) {
-
         model.addAttribute(GLOBAL_VAR_USER, this.dependencyContainer.getService(Principal.class).getUser());
         model.addAttribute(GLOBAL_VAR_REQUEST, this.dependencyContainer.getService(HttpSoletRequest.class));
 
@@ -102,7 +104,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
     private void initTemplateServices() {
         this.templateServices = new HashMap<>();
         this.dependencyContainer.getServicesByAnnotation(TemplateService.class).forEach(sd -> {
-            String serviceNameInTemplate = ((TemplateService)sd.getAnnotation()).serviceNameInTemplate();
+            final String serviceNameInTemplate = ((TemplateService)sd.getAnnotation()).serviceNameInTemplate();
 
             this.templateServices.put(serviceNameInTemplate, sd.getInstance());
         });

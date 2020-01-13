@@ -19,7 +19,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import static com.cyecize.summer.constants.RoutingConstants.*;
+import static com.cyecize.summer.constants.RoutingConstants.ACTION_REDIRECT_ABSOLUTE_ROUTE_STARTING_CHAR;
+import static com.cyecize.summer.constants.RoutingConstants.ACTION_RETURN_DELIMITER;
+import static com.cyecize.summer.constants.RoutingConstants.ACTION_RETURN_REDIRECT;
+import static com.cyecize.summer.constants.RoutingConstants.ACTION_RETURN_TEMPLATE;
+import static com.cyecize.summer.constants.RoutingConstants.MODEL_VIEW_NAME_KEY;
 
 public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler {
 

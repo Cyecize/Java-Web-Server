@@ -3,9 +3,7 @@ package com.cyecize.summer.areas.scanning.services;
 import com.cyecize.ioc.models.ServiceDetails;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Set;
 
 public interface DependencyContainer extends com.cyecize.ioc.services.DependencyContainer {
 

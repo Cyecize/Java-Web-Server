@@ -16,7 +16,8 @@ public class DefaultSessionFactory implements SessionScopeFactory<Object> {
     }
 
     @Override
-    public Object getInstance(ServiceDetails serviceDetails, HttpSoletRequest request, DependencyContainer dependencyContainer) {
+    public Object getInstance(ServiceDetails serviceDetails, HttpSoletRequest request,
+                              DependencyContainer dependencyContainer) {
         final HttpSession session = request.getSession();
 
         if (this.instancesBySession.containsKey(session.getId())) {

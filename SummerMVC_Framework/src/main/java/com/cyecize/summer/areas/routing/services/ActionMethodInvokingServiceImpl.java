@@ -172,7 +172,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 final Object instanceOfBindingModel = parameter.getType().getConstructor().newInstance();
                 this.bindingService.populateBindingModel(instanceOfBindingModel);
                 if (parameter.isAnnotationPresent(Valid.class)) {
-                    this.validationService.validateBindingModel(instanceOfBindingModel, this.dependencyContainer.getService(BindingResult.class));
+                    this.validationService.validateBindingModel(
+                            instanceOfBindingModel,
+                            this.dependencyContainer.getService(BindingResult.class)
+                    );
                 }
 
                 parameterInstances[i] = instanceOfBindingModel;

@@ -10,7 +10,7 @@ public class FieldError {
 
     private Object rejectedValue;
 
-    public FieldError(String objectName, String fieldName, String errorMessage,  Object rejectedValue) {
+    public FieldError(String objectName, String fieldName, String errorMessage, Object rejectedValue) {
         this.object = objectName;
         this.fieldName = fieldName;
         this.message = errorMessage;
@@ -35,6 +35,11 @@ public class FieldError {
 
     @Override
     public String toString() {
-        return "Field error in object '" + this.object + "' on field '" + this.fieldName + "': rejected value [" + this.rejectedValue + "]; ";
+        return String.format(
+                "Field error in object '%s' on field '%s': rejected value [%s]; ",
+                this.object,
+                this.fieldName,
+                this.rejectedValue
+        );
     }
 }

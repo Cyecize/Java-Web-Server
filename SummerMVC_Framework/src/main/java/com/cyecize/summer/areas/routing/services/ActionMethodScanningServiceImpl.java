@@ -97,7 +97,8 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
 
             if (annotationExtractedValue != null) {
                 final String pattern = this.pathFormatter.formatPath(baseRoute + annotationExtractedValue.getPattern());
-                String contentType = ContentTypes.NONE.equals(annotationExtractedValue.getContentType()) ? baseContentType : annotationExtractedValue.getContentType();
+                String contentType = ContentTypes.NONE.equals(annotationExtractedValue.getContentType()) ?
+                        baseContentType : annotationExtractedValue.getContentType();
 
                 if (ContentTypes.NONE.equals(contentType)) {
                     contentType = ContentTypes.TEXT_HTML;
@@ -136,8 +137,13 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      * which will prevent ExceptionListeners from overriding each other.
      */
     private void orderExceptionsByHierarchy() {
-        this.actionsByHttpMethod.put(EXCEPTION, this.actionsByHttpMethod.get(EXCEPTION).stream().sorted(ActionMethod::compareTo)
-                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        this.actionsByHttpMethod.put(
+                EXCEPTION,
+                this.actionsByHttpMethod.get(EXCEPTION)
+                        .stream()
+                        .sorted(ActionMethod::compareTo)
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+        );
     }
 
     /**

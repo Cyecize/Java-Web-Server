@@ -1,6 +1,6 @@
 package com.cyecize.summer.areas.validation.services;
 
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.Constraint;
 import com.cyecize.summer.areas.validation.exceptions.ValidationException;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;

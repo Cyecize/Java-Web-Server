@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.scanning.services;
+package com.cyecize.summer.areas.startup.services;
 
 import com.cyecize.http.HttpSession;
 import com.cyecize.ioc.models.ServiceDetails;

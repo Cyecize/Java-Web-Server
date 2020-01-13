@@ -8,7 +8,7 @@ import com.cyecize.summer.areas.routing.exceptions.UnsatisfiedRequestParamExcept
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
 import com.cyecize.summer.areas.validation.annotations.Valid;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;

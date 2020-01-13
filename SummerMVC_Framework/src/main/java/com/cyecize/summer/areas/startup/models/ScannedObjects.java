@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.scanning.models;
+package com.cyecize.summer.areas.startup.models;
 
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 

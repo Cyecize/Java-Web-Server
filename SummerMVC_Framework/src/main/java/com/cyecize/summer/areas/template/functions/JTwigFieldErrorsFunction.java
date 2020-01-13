@@ -1,6 +1,6 @@
 package com.cyecize.summer.areas.template.functions;
 
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
 import org.jtwig.exceptions.JtwigException;
 import org.jtwig.functions.FunctionRequest;

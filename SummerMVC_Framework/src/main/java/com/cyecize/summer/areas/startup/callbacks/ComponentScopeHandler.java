@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.scanning.callbacks;
+package com.cyecize.summer.areas.startup.callbacks;
 
 import com.cyecize.ioc.enums.ScopeType;
 import com.cyecize.ioc.events.ServiceDetailsCreated;

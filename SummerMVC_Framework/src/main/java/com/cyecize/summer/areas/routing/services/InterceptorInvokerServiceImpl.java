@@ -2,7 +2,7 @@ package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.common.extensions.InterceptorAdapter;
 import com.cyecize.summer.common.models.Model;
 

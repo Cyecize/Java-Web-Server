@@ -7,7 +7,7 @@ import com.cyecize.summer.areas.template.annotations.TemplateService;
 import com.cyecize.summer.areas.template.functions.JTwigFieldErrorsFunction;
 import com.cyecize.summer.areas.template.functions.JTwigHasRoleFunction;
 import com.cyecize.summer.areas.template.functions.JTwigPathFunction;
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.template.functions.JTwigUrlFunction;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.constants.RoutingConstants;

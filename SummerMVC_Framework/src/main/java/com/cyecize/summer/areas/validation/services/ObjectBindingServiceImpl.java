@@ -7,7 +7,7 @@ import com.cyecize.solet.SoletConstants;
 import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
 import com.cyecize.summer.areas.routing.models.UploadedFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
 import com.cyecize.summer.utils.ReflectionUtils;

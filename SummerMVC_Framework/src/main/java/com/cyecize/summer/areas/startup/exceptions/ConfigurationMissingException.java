@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.scanning.exceptions;
+package com.cyecize.summer.areas.startup.exceptions;
 
 public class ConfigurationMissingException extends RuntimeException {
 

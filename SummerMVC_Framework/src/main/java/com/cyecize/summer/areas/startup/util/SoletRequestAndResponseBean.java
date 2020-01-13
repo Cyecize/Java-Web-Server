@@ -1,4 +1,4 @@
-package com.cyecize.summer.areas.scanning.util;
+package com.cyecize.summer.areas.startup.util;
 
 import com.cyecize.http.HttpRequestImpl;
 import com.cyecize.http.HttpResponseImpl;

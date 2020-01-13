@@ -7,7 +7,7 @@ import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
 import com.cyecize.summer.areas.template.exceptions.EmptyViewException;
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.template.services.TemplateRenderingService;
 import com.cyecize.summer.common.models.JsonResponse;
 import com.cyecize.summer.common.models.Model;

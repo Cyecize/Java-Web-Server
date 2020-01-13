@@ -1,6 +1,6 @@
-package com.cyecize.summer.areas.scanning.models;
+package com.cyecize.summer.areas.startup.models;
 
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 
 public class SummerAppContext {
 

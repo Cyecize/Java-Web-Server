@@ -1,7 +1,7 @@
 package com.cyecize.summer.areas.validation.services;
 
 import com.cyecize.ioc.models.ServiceDetails;
-import com.cyecize.summer.areas.scanning.services.DependencyContainer;
+import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
 
 import java.lang.reflect.ParameterizedType;

@@ -1,6 +1,5 @@
 package com.cyecize.broccolina.services;
 
-import com.cyecize.broccolina.BroccolinaConstants;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
@@ -8,6 +7,7 @@ import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConfigImpl;
+import com.cyecize.solet.SoletConstants;
 import com.cyecize.solet.WebSolet;
 
 import java.io.File;
@@ -100,9 +100,14 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
 
         final SoletConfig soletConfigCopy = this.copySoletConfig();
-        soletConfigCopy.setAttribute(BroccolinaConstants.SOLET_CONFIG_ASSETS_DIR, this.assetsDir + applicationName);
+        soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_ASSETS_DIR, this.assetsDir + applicationName);
+        soletConfigCopy.setAttribute(
+                SoletConstants.SOLET_CFG_WORKING_DIR,
+                soletClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)
+        );
+
         if (!applicationName.equals("") && !applicationName.equals(this.rootAppName)) {
-            soletConfigCopy.setAttribute(BroccolinaConstants.SOLET_CONFIG_APP_NAME_PREFIX, "/" + applicationName);
+            soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX, "/" + applicationName);
         }
 
         if (!soletInstance.isInitialized()) {

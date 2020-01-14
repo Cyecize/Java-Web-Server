@@ -20,6 +20,7 @@ import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.solet.HttpSoletResponseImpl;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConfigImpl;
+import com.cyecize.solet.SoletConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,17 +120,17 @@ public class SoletDispatcher implements RequestHandler {
     private SoletConfig createSoletConfig() {
         final SoletConfig soletConfig = new SoletConfigImpl();
         soletConfig.setAttribute(
-                BroccolinaConstants.SOLET_CONFIG_SESSION_STORAGE_KEY,
+                SoletConstants.SOLET_CONFIG_SESSION_STORAGE_KEY,
                 this.sessionManagementService.getSessionStorage()
         );
 
         soletConfig.setAttribute(
-                BroccolinaConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY,
+                SoletConstants.SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY,
                 this.configService
         );
 
         soletConfig.setAttribute(
-                BroccolinaConstants.SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY,
+                SoletConstants.SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY,
                 IoC.getRequestHandlersDependencyContainer()
         );
 

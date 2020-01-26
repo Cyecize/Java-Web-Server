@@ -1,5 +1,6 @@
 package com.cyecize.summer.areas.routing.services;
 
+import com.cyecize.ioc.models.ServiceDetails;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.models.annotationModels.ActionAnnotationHandlerContainer;
 import com.cyecize.summer.areas.routing.models.annotationModels.AnnotationExtractedValue;
@@ -15,6 +16,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -61,9 +63,9 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
     }
 
     @Override
-    public Map<String, Set<ActionMethod>> findActionMethods(Map<Class<?>, Object> controllers) {
-        for (Class<?> controllerType : controllers.keySet()) {
-            this.loadActionMethodsFromController(controllerType);
+    public Map<String, Set<ActionMethod>> findActionMethods(Collection<ServiceDetails> controllers) {
+        for (ServiceDetails controller : controllers) {
+            this.loadActionMethodsFromController(controller);
         }
 
         this.orderExceptionsByHierarchy();
@@ -79,7 +81,9 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      * <p>
      * Applies base route and base content type if @RequestParam annotation is present.
      */
-    private void loadActionMethodsFromController(Class<?> controllerClass) {
+    private void loadActionMethodsFromController(ServiceDetails controller) {
+        final Class<?> controllerClass = controller.getServiceType();
+
         String baseRoute = "";
         String baseContentType = ContentTypes.NONE;
 
@@ -104,7 +108,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
                     contentType = ContentTypes.TEXT_HTML;
                 }
 
-                final ActionMethod actionMethod = new ActionMethod(pattern, baseRoute, method, contentType, controllerClass);
+                final ActionMethod actionMethod = new ActionMethod(pattern, baseRoute, method, contentType, controller);
 
                 for (String httpMethod : annotationExtractedValue.getHttpMethods()) {
                     this.actionsByHttpMethod.get(httpMethod).add(actionMethod);

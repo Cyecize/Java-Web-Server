@@ -47,22 +47,19 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     private Map<String, Set<ActionMethod>> actionMethods;
 
-    private Map<Class<?>, Object> controllers;
-
     private PrimitiveTypeDataResolver dataResolver;
 
     private HttpSoletRequest currentRequest;
 
     public ActionMethodInvokingServiceImpl(DependencyContainer dependencyContainer, ObjectBindingService bindingService,
                                            ObjectValidationService validationService, DataAdapterStorageService dataAdapters,
-                                           Map<String, Set<ActionMethod>> actionMethods, Map<Class<?>, Object> controllers) {
+                                           Map<String, Set<ActionMethod>> actionMethods) {
 
         this.dependencyContainer = dependencyContainer;
         this.bindingService = bindingService;
         this.validationService = validationService;
         this.dataAdapters = dataAdapters;
         this.actionMethods = actionMethods;
-        this.controllers = controllers;
         this.dataResolver = new PrimitiveTypeDataResolver();
     }
 
@@ -125,15 +122,13 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
      * errors occur.
      */
     private Object invokeAction(ActionMethod actionMethod, Map<String, Object> pathVariables) {
-        Object controller = this.controllers.entrySet().stream()
-                .filter((kvp) -> actionMethod.getControllerClass().isAssignableFrom(kvp.getKey()))
-                .findFirst().orElse(null).getValue(); //never null
+        final Object controllerInstance = actionMethod.getController().getInstance();
 
         final Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);
 
         try {
             actionMethod.getMethod().setAccessible(true);
-            return actionMethod.getMethod().invoke(controller, methodParams);
+            return actionMethod.getMethod().invoke(controllerInstance, methodParams);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ActionInvocationException(e.getMessage(), e.getCause());
         }

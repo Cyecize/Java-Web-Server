@@ -1,5 +1,6 @@
 package com.cyecize.summer.areas.routing.models;
 
+import com.cyecize.ioc.models.ServiceDetails;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 
 import java.lang.reflect.Method;
@@ -14,14 +15,14 @@ public class ActionMethod implements Comparable<ActionMethod> {
 
     private final String contentType;
 
-    private final Class<?> controllerClass;
+    private final ServiceDetails controller;
 
-    public ActionMethod(String pattern, String baseRoute, Method method, String contentType, Class<?> controllerClass) {
+    public ActionMethod(String pattern, String baseRoute, Method method, String contentType, ServiceDetails controller) {
         this.pattern = pattern;
         this.baseRoute = baseRoute;
         this.method = method;
         this.contentType = contentType;
-        this.controllerClass = controllerClass;
+        this.controller = controller;
     }
 
     public String getPattern() {
@@ -40,8 +41,8 @@ public class ActionMethod implements Comparable<ActionMethod> {
         return this.method;
     }
 
-    public Class<?> getControllerClass() {
-        return this.controllerClass;
+    public ServiceDetails getController() {
+        return this.controller;
     }
 
     @Override

@@ -57,7 +57,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
             return this.handleAnnotation(preAuthorize, request, response);
         }
 
-        preAuthorize = actionMethod.getControllerClass().getAnnotation(PreAuthorize.class);
+        preAuthorize = actionMethod.getController().getServiceType().getAnnotation(PreAuthorize.class);
         if (preAuthorize != null) {
             return this.handleAnnotation(preAuthorize, request, response);
         }

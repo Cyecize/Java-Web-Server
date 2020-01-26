@@ -6,12 +6,12 @@ import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConstants;
 import com.cyecize.solet.WebSolet;
+import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.ActionMethodInvokingServiceImpl;
 import com.cyecize.summer.areas.routing.services.ActionMethodResultHandlerImpl;
 import com.cyecize.summer.areas.routing.services.InterceptorInvokerServiceImpl;
 import com.cyecize.summer.areas.routing.services.RequestProcessor;
 import com.cyecize.summer.areas.routing.services.RequestProcessorImpl;
-import com.cyecize.summer.areas.startup.models.ScannedObjects;
 import com.cyecize.summer.areas.startup.models.SummerAppContext;
 import com.cyecize.summer.areas.startup.resolvers.ConfigurationDependencyResolver;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
@@ -23,6 +23,7 @@ import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
 import com.cyecize.summer.areas.validation.services.ObjectValidationServiceImpl;
 
 import java.util.Map;
+import java.util.Set;
 
 @WebSolet("/*")
 public abstract class DispatcherSolet extends BaseHttpSolet {
@@ -52,27 +53,22 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public final void init(SoletConfig soletConfig) {
         super.init(soletConfig);
-        final Map<String, Object> javahceConfig = JavacheConfigServiceExtractor.getConfigParams(soletConfig);
+        final Map<String, Object> javacheConfig = JavacheConfigServiceExtractor.getConfigParams(soletConfig);
 
         final SummerAppContext summerAppContext = SummerAppRunner.run(
                 this.getClass(),
-                new ConfigurationDependencyResolver(soletConfig, javahceConfig)
+                new ConfigurationDependencyResolver(soletConfig, javacheConfig)
         );
 
         this.dependencyContainer = summerAppContext.getDependencyContainer();
         this.dependencyContainer.update(soletConfig);
 
-        this.initSummerBoot(summerAppContext.getScannedObjects());
+        this.initRequestProcessor(summerAppContext.getActionsByMethod());
 
         this.onApplicationLoaded();
     }
 
-    /**
-     * Creates main services for the framework to function.
-     *
-     * @param scannedObjects objects received from the scanning process
-     */
-    private void initSummerBoot(ScannedObjects scannedObjects) {
+    private void initRequestProcessor(Map<String, Set<ActionMethod>> actionMethods) {
         final DataAdapterStorageService dataAdapterStorageService =
                 new DataAdapterStorageServiceImpl(this.dependencyContainer);
 
@@ -85,8 +81,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                         ),
                         new ObjectValidationServiceImpl(this.dependencyContainer),
                         dataAdapterStorageService,
-                        scannedObjects.getActionsByMethod(),
-                        scannedObjects.getLoadedControllers()
+                        actionMethods
                 ),
                 new ActionMethodResultHandlerImpl(
                         this.dependencyContainer,

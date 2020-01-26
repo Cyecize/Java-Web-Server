@@ -1,7 +1,5 @@
 package com.cyecize.summer;
 
-import static com.cyecize.summer.constants.IocConstants.SOLET_CFG_SCANNED_OBJECTS;
-
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
@@ -75,8 +73,6 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      * @param scannedObjects objects received from the scanning process
      */
     private void initSummerBoot(ScannedObjects scannedObjects) {
-        this.getSoletConfig().setAttribute(SOLET_CFG_SCANNED_OBJECTS, scannedObjects);
-
         final DataAdapterStorageService dataAdapterStorageService =
                 new DataAdapterStorageServiceImpl(this.dependencyContainer);
 

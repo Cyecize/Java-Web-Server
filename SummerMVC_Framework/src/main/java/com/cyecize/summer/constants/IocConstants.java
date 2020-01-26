@@ -21,8 +21,4 @@ public class IocConstants {
     );
 
     public static final String SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME = "lifespan";
-
-    public static final String SOLET_CFG_SCANNED_OBJECTS = "solet.cfg.scanned.objects";
-
-
 }

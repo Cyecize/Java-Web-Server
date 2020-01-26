@@ -1,5 +1,8 @@
 package com.cyecize.summer.areas.routing.services;
 
+import com.cyecize.ioc.annotations.Qualifier;
+import com.cyecize.ioc.utils.AliasFinder;
+import com.cyecize.ioc.utils.AnnotationUtils;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
 import com.cyecize.summer.areas.routing.exceptions.HttpNotFoundException;
@@ -152,12 +155,21 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 continue;
             }
 
-            if (parameter.isAnnotationPresent(PathVariable.class)) {
+            if (parameter.isAnnotationPresent(PathVariable.class)) { //TODO: use pathVariable's val
                 parameterInstances[i] = pathVariables.get(parameter.getName());
                 continue;
             }
 
-            parameterInstances[i] = this.dependencyContainer.getService(parameter.getType());
+            if (AliasFinder.isAnnotationPresent(parameter.getAnnotations(), Qualifier.class)) {
+                final String qualifier = AnnotationUtils.getAnnotationValue(
+                        AliasFinder.getAnnotation(parameter.getAnnotations(), Qualifier.class)
+                ).toString();
+
+                parameterInstances[i] = this.dependencyContainer.getService(parameter.getType(), qualifier);
+            } else {
+                parameterInstances[i] = this.dependencyContainer.getService(parameter.getType());
+            }
+
             if (parameterInstances[i] != null) continue;
 
             parameterInstances[i] = this.dependencyContainer.getFlashService(parameter.getType());

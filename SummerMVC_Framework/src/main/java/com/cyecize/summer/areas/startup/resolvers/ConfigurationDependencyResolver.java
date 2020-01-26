@@ -5,6 +5,7 @@ import com.cyecize.ioc.models.DependencyParam;
 import com.cyecize.ioc.utils.AliasFinder;
 import com.cyecize.ioc.utils.AnnotationUtils;
 import com.cyecize.solet.SoletConfig;
+import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.startup.exceptions.ConfigurationMissingException;
 import com.cyecize.summer.common.annotations.Configuration;
 
@@ -16,9 +17,16 @@ public class ConfigurationDependencyResolver implements DependencyResolver {
 
     private final Map<String, Object> javacheConfig;
 
-    public ConfigurationDependencyResolver(SoletConfig soletConfig, Map<String, Object> javacheConfig) {
+    private final Map<String, String> userConfig;
+
+    private final PrimitiveTypeDataResolver dataResolver;
+
+    public ConfigurationDependencyResolver(SoletConfig soletConfig, Map<String, Object> javacheConfig,
+                                           Map<String, String> userConfig) {
         this.soletConfig = soletConfig;
         this.javacheConfig = javacheConfig;
+        this.userConfig = userConfig;
+        this.dataResolver = new PrimitiveTypeDataResolver();
     }
 
     @Override
@@ -38,6 +46,13 @@ public class ConfigurationDependencyResolver implements DependencyResolver {
 
         if (this.javacheConfig.containsKey(configurationName)) {
             return this.javacheConfig.get(configurationName);
+        }
+
+        if (this.userConfig.containsKey(configurationName)) {
+            return this.dataResolver.resolve(
+                    dependencyParam.getDependencyType(),
+                    this.userConfig.get(configurationName)
+            );
         }
 
         throw new ConfigurationMissingException(String.format(

@@ -15,7 +15,9 @@ import com.cyecize.summer.areas.routing.services.RequestProcessorImpl;
 import com.cyecize.summer.areas.startup.models.SummerAppContext;
 import com.cyecize.summer.areas.startup.resolvers.ConfigurationDependencyResolver;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
-import com.cyecize.summer.areas.startup.util.JavacheConfigServiceExtractor;
+import com.cyecize.summer.areas.startup.services.UserConfigService;
+import com.cyecize.summer.areas.startup.services.UserConfigServiceImpl;
+import com.cyecize.summer.areas.startup.util.JavacheConfigServiceUtils;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageService;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImpl;
@@ -53,11 +55,13 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
     @Override
     public final void init(SoletConfig soletConfig) {
         super.init(soletConfig);
-        final Map<String, Object> javacheConfig = JavacheConfigServiceExtractor.getConfigParams(soletConfig);
+
+        final Map<String, Object> javacheConfig = JavacheConfigServiceUtils.getConfigParams(soletConfig);
+        final UserConfigService userConfigService = new UserConfigServiceImpl(soletConfig, javacheConfig);
 
         final SummerAppContext summerAppContext = SummerAppRunner.run(
                 this.getClass(),
-                new ConfigurationDependencyResolver(soletConfig, javacheConfig)
+                new ConfigurationDependencyResolver(soletConfig, javacheConfig, userConfigService.getUserProvidedConfig())
         );
 
         this.dependencyContainer = summerAppContext.getDependencyContainer();

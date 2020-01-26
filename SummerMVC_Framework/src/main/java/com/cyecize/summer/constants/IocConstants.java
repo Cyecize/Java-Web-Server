@@ -21,4 +21,6 @@ public class IocConstants {
     );
 
     public static final String SERVICE_ANNOTATION_LIFESPAN_METHOD_NAME = "lifespan";
+
+    public static final String PROPERTIES_FILE_NAME = "application.properties";
 }

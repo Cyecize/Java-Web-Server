@@ -1,5 +1,7 @@
 package com.cyecize.summer.areas.security.models;
 
+import com.cyecize.summer.constants.IocConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -72,5 +74,6 @@ public class SecurityConfig {
     private void initSecuredAreas() {
         this.securedAreas = new ArrayList<>();
         this.securedAreas.add(new SecuredArea("/META-INF", UUID.randomUUID().toString()));
+        this.securedAreas.add(new SecuredArea("/" + IocConstants.PROPERTIES_FILE_NAME, UUID.randomUUID().toString()));
     }
 }

@@ -8,15 +8,18 @@ import com.cyecize.solet.SoletConfig;
 import com.cyecize.summer.areas.startup.exceptions.ConfigurationMissingException;
 import com.cyecize.summer.common.annotations.Configuration;
 
+import java.util.Map;
+
 public class ConfigurationDependencyResolver implements DependencyResolver {
 
     private final SoletConfig soletConfig;
 
-    public ConfigurationDependencyResolver(SoletConfig soletConfig) {
-        this.soletConfig = soletConfig;
-    }
+    private final Map<String, Object> javacheConfig;
 
-    //TODO: require user properties.
+    public ConfigurationDependencyResolver(SoletConfig soletConfig, Map<String, Object> javacheConfig) {
+        this.soletConfig = soletConfig;
+        this.javacheConfig = javacheConfig;
+    }
 
     @Override
     public boolean canResolve(DependencyParam dependencyParam) {
@@ -31,6 +34,10 @@ public class ConfigurationDependencyResolver implements DependencyResolver {
 
         if (this.soletConfig.hasAttribute(configurationName)) {
             return this.soletConfig.getAttribute(configurationName);
+        }
+
+        if (this.javacheConfig.containsKey(configurationName)) {
+            return this.javacheConfig.get(configurationName);
         }
 
         throw new ConfigurationMissingException(String.format(

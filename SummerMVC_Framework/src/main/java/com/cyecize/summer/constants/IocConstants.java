@@ -24,5 +24,5 @@ public class IocConstants {
 
     public static final String SOLET_CFG_SCANNED_OBJECTS = "solet.cfg.scanned.objects";
 
-    public static final String SOLET_CFG_WORKING_DIR = "solet.cfg.working.dir";
+
 }

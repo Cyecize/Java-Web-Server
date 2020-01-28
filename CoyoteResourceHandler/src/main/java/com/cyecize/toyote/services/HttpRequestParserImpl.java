@@ -7,6 +7,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LoggingService;
 import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
 import com.cyecize.toyote.exceptions.RequestTooBigException;
@@ -28,6 +29,8 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
     private final FormDataParser multipartFormDataParser;
 
+    private final LoggingService loggingService;
+
     private final boolean showRequestLog;
 
     private final int maxRequestSize;
@@ -35,9 +38,10 @@ public class HttpRequestParserImpl implements HttpRequestParser {
     @Autowired
     public HttpRequestParserImpl(FormDataParserDefaultImpl defaultFormDataParser,
                                  FormDataParserMultipartImpl multipartFormDataParser,
-                                 JavacheConfigService configService) {
+                                 LoggingService loggingService, JavacheConfigService configService) {
         this.defaultFormDataParser = defaultFormDataParser;
         this.multipartFormDataParser = multipartFormDataParser;
+        this.loggingService = loggingService;
         this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
         this.maxRequestSize = configService.getConfigParam(JavacheConfigValue.MAX_REQUEST_SIZE, int.class);
     }
@@ -128,7 +132,7 @@ public class HttpRequestParserImpl implements HttpRequestParser {
             }
 
             if (this.showRequestLog) {
-                System.out.println(String.join("\n", metadataLines));
+                this.loggingService.info(String.join("\n", metadataLines));
             }
 
             return metadataLines;

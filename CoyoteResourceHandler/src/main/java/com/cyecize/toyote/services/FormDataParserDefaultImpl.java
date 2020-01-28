@@ -5,6 +5,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LoggingService;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
 
 import java.io.IOException;
@@ -15,10 +16,14 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class FormDataParserDefaultImpl implements FormDataParser {
 
+    private final LoggingService loggingService;
+
     private final boolean showRequestLog;
 
     @Autowired
-    public FormDataParserDefaultImpl(JavacheConfigService configService) {
+    public FormDataParserDefaultImpl(LoggingService loggingService,
+        JavacheConfigService configService) {
+        this.loggingService = loggingService;
         this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
     }
 
@@ -54,8 +59,7 @@ public class FormDataParserDefaultImpl implements FormDataParser {
 
         final String body = new String(bytes, StandardCharsets.UTF_8);
         if (this.showRequestLog) {
-            //TODO javache log service
-            System.out.println(body);
+            this.loggingService.info(body);
         }
 
         return body;

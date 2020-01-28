@@ -5,6 +5,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LoggingService;
 import com.cyecize.toyote.MultipartConstants;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
 import com.cyecize.toyote.models.MultipartEntry;
@@ -22,10 +23,14 @@ import java.util.Map;
 @Service
 public class FormDataParserMultipartImpl implements FormDataParser {
 
+    private final LoggingService loggingService;
+
     private final boolean showRequestLog;
 
     @Autowired
-    public FormDataParserMultipartImpl(JavacheConfigService configService) {
+    public FormDataParserMultipartImpl(LoggingService loggingService,
+        JavacheConfigService configService) {
+        this.loggingService = loggingService;
         this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
     }
 
@@ -63,8 +68,7 @@ public class FormDataParserMultipartImpl implements FormDataParser {
         }
 
         if (this.showRequestLog) {
-            //TODO javache log service
-            System.out.println(new String(buffer, StandardCharsets.UTF_8));
+            this.loggingService.info(new String(buffer, StandardCharsets.UTF_8));
         }
     }
 

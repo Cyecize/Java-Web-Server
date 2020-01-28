@@ -7,6 +7,7 @@ import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LibraryLoadingService;
+import com.cyecize.javache.services.LoggingService;
 import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
@@ -32,6 +33,8 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private final JavacheConfigService configService;
 
+    private final LoggingService loggingService;
+
     private final LibraryLoadingService libraryLoadingService;
 
     private final List<String> applicationNames;
@@ -48,9 +51,10 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     @Autowired
     public ApplicationScanningServiceImpl(JarFileUnzipService jarFileUnzipService, JavacheConfigService configService,
-                                          LibraryLoadingService libraryLoadingService) {
+                                          LoggingService loggingService, LibraryLoadingService libraryLoadingService) {
         this.jarFileUnzipService = jarFileUnzipService;
         this.configService = configService;
+        this.loggingService = loggingService;
         this.libraryLoadingService = libraryLoadingService;
 
         this.applicationNames = new ArrayList<>();
@@ -59,7 +63,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         this.compileOutputFolderName = this.configService.getConfigParamString(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME);
         this.applicationsFolderPath =
                 configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
-                        +  this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME);
+                        + this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME);
 
         this.applicationLibFolderName = this.configService
                 .getConfigParamString(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME);
@@ -142,7 +146,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         try {
             appThread.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            this.loggingService.printStackTrace(e);
         }
     }
 

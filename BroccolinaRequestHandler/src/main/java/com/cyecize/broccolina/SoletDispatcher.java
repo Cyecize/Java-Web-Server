@@ -13,6 +13,7 @@ import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LoggingService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletRequestImpl;
@@ -37,16 +38,20 @@ public class SoletDispatcher implements RequestHandler {
 
     private final SoletCandidateFinder soletCandidateFinder;
 
+    private final LoggingService loggingService;
+
     private final boolean trackResources;
 
     @Autowired
     public SoletDispatcher(ApplicationLoadingService applicationLoadingService, JavacheConfigService configService,
-                           SessionManagementService sessionManagementService, SoletCandidateFinder soletCandidateFinder) {
+                           SessionManagementService sessionManagementService, SoletCandidateFinder soletCandidateFinder,
+                           LoggingService loggingService) {
         this.configService = configService;
         this.applicationLoadingService = applicationLoadingService;
         this.sessionManagementService = sessionManagementService;
         this.soletCandidateFinder = soletCandidateFinder;
         this.trackResources = configService.getConfigParam(JavacheConfigValue.BROCCOLINA_TRACK_RESOURCES, boolean.class);
+        this.loggingService = loggingService;
     }
 
     @Override
@@ -57,7 +62,9 @@ public class SoletDispatcher implements RequestHandler {
                     this.applicationLoadingService.getApplicationNames()
             );
 
-            System.out.println("Loaded Applications: " + String.join(", ", this.applicationLoadingService.getApplicationNames()));
+            this.loggingService.info("Loaded Applications: " +
+                    String.join(", ", this.applicationLoadingService.getApplicationNames())
+            );
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -107,7 +114,7 @@ public class SoletDispatcher implements RequestHandler {
             solet.service(request, response);
             return solet.hasIntercepted();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            this.loggingService.printStackTrace(ex);
         }
 
         return true;
@@ -134,7 +141,6 @@ public class SoletDispatcher implements RequestHandler {
                 IoC.getRequestHandlersDependencyContainer()
         );
 
-        //TODO add more items here
         return soletConfig;
     }
 }

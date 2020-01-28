@@ -3,6 +3,7 @@ package com.cyecize.javache.core;
 import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.javache.services.LoggingService;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -16,11 +17,15 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
 
     private final List<RequestDestroyHandler> requestDestroyHandlers;
 
+    private final LoggingService loggingService;
+
     public ConnectionHandlerImpl(Socket clientSocket, List<RequestHandler> requestHandlers,
-                                 List<RequestDestroyHandler> requestDestroyHandlers) {
+                                 List<RequestDestroyHandler> requestDestroyHandlers,
+                                 LoggingService loggingService) {
         this.clientSocket = clientSocket;
         this.requestHandlers = requestHandlers;
         this.requestDestroyHandlers = requestDestroyHandlers;
+        this.loggingService = loggingService;
     }
 
     @Override
@@ -29,8 +34,7 @@ public class ConnectionHandlerImpl implements ConnectionHandler {
             this.processClientConnection();
             this.clientSocket.close();
         } catch (Throwable e) {
-            //TODO: log
-            e.printStackTrace();
+            this.loggingService.printStackTrace(e);
         }
     }
 

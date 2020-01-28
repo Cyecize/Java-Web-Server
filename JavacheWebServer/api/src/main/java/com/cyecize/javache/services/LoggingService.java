@@ -8,5 +8,5 @@ public interface LoggingService {
 
     void error(Object msg, Object... params);
 
-    void printStackTrace(StackTraceElement[] stackTraces);
+    void printStackTrace(Throwable throwable);
 }

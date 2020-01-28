@@ -28,6 +28,8 @@ public class JavacheEmbedded {
     }
 
     public static void startServer(Integer port, Map<String, Object> config, Class<?> mainClass, Runnable onServerLoadedEvent) {
+        LoggingService loggingService = null;
+
         try {
 
             final MagicConfiguration magicConfiguration = new MagicConfiguration()
@@ -42,6 +44,8 @@ public class JavacheEmbedded {
             final DependencyContainer dependencyContainer = MagicInjector.run(JavacheEmbedded.class, magicConfiguration);
             IoC.setJavacheDependencyContainer(dependencyContainer);
             IoC.setRequestHandlersDependencyContainer(dependencyContainer);
+
+            loggingService = dependencyContainer.getService(LoggingService.class);
 
             dependencyContainer.getService(RequestHandlerLoadingService.class).loadRequestHandlers(
                     new ArrayList<>(), null, null
@@ -59,7 +63,12 @@ public class JavacheEmbedded {
 
             server.run();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            if (loggingService != null) {
+                loggingService.printStackTrace(ex);
+            } else {
+                ex.printStackTrace();
+            }
+
             System.exit(1);
         }
     }

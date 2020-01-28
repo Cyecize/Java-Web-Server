@@ -41,7 +41,8 @@ public class ServerImpl implements Server {
                 final Thread thread = new Thread(new ConnectionHandlerImpl(
                         clientSocket,
                         this.requestHandlerLoadingService.getRequestHandlers(),
-                        this.requestHandlerLoadingService.getRequestDestroyHandlers()
+                        this.requestHandlerLoadingService.getRequestDestroyHandlers(),
+                        this.loggingService
                 ));
 
                 thread.start();

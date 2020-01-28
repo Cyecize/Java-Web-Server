@@ -61,8 +61,7 @@ public class ServerInitializerImpl implements ServerInitializer {
         try {
             server.run();
         } catch (IOException ex) {
-            this.loggingService.error(ex.getMessage());
-            this.loggingService.printStackTrace(ex.getStackTrace());
+            this.loggingService.printStackTrace(ex);
         }
     }
 }

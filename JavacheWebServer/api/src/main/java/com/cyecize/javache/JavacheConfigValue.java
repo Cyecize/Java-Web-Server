@@ -14,6 +14,8 @@ public enum JavacheConfigValue {
 
     API_DIR_NAME,
 
+    LOGS_DIR_NAME,
+
     APP_COMPILE_OUTPUT_DIR_NAME,
 
     MAIN_APP_JAR_NAME,

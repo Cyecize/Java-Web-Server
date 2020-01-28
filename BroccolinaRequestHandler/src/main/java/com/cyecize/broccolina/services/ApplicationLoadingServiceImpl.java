@@ -4,6 +4,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.javache.services.LoggingService;
 import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConfigImpl;
@@ -24,6 +25,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private final ApplicationScanningService scanningService;
 
+    private final LoggingService loggingService;
+
     private final String assetsDir;
 
     private final String rootAppName;
@@ -33,8 +36,10 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     private SoletConfig soletConfig;
 
     @Autowired
-    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, JavacheConfigService configService) {
+    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, LoggingService loggingService,
+                                         JavacheConfigService configService) {
         this.scanningService = scanningService;
+        this.loggingService = loggingService;
         this.assetsDir =
                 configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
                         + configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME);
@@ -105,6 +110,10 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                 SoletConstants.SOLET_CFG_WORKING_DIR,
                 soletClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)
         );
+        soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_LOGGER, new SoletLoggerImpl(
+                this.loggingService,
+                applicationName
+        ));
 
         if (!applicationName.equals("") && !applicationName.equals(this.rootAppName)) {
             soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX, "/" + applicationName);

@@ -16,4 +16,6 @@ public class SoletConstants {
     public static final String SOLET_CONFIG_SERVER_CONFIG_SERVICE_KEY = "solet.cfg.javache.config";
 
     public static final String SOLET_CONFIG_DEPENDENCY_CONTAINER_KEY = "solet.cfg.javache.dependency.container";
+
+    public static final String SOLET_CONFIG_LOGGER = "solet.cfg.logger";
 }

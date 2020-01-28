@@ -53,6 +53,7 @@
             <groupId>com.cyecize</groupId>
             <artifactId>solet</artifactId>
             <version>${version.solet}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

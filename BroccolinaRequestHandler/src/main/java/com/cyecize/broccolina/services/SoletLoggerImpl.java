@@ -30,7 +30,7 @@ public class SoletLoggerImpl implements SoletLogger {
     }
 
     private String getFormattedMsg(Object msg, Object... params) {
-        return String.format("[%s]", appName) +
+        return String.format("[%s] ", appName) +
                 String.format(msg + "", params);
     }
 

@@ -5,6 +5,7 @@ import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConstants;
+import com.cyecize.solet.SoletLogger;
 import com.cyecize.solet.WebSolet;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.services.ActionMethodInvokingServiceImpl;
@@ -14,6 +15,7 @@ import com.cyecize.summer.areas.routing.services.RequestProcessor;
 import com.cyecize.summer.areas.routing.services.RequestProcessorImpl;
 import com.cyecize.summer.areas.startup.models.SummerAppContext;
 import com.cyecize.summer.areas.startup.resolvers.ConfigurationDependencyResolver;
+import com.cyecize.summer.areas.startup.resolvers.SoletLoggerDependencyResolver;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.startup.services.UserConfigService;
 import com.cyecize.summer.areas.startup.services.UserConfigServiceImpl;
@@ -61,7 +63,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
 
         final SummerAppContext summerAppContext = SummerAppRunner.run(
                 this.getClass(),
-                new ConfigurationDependencyResolver(soletConfig, javacheConfig, userConfigService.getUserProvidedConfig())
+                new ConfigurationDependencyResolver(soletConfig, javacheConfig, userConfigService.getUserProvidedConfig()),
+                new SoletLoggerDependencyResolver(soletConfig)
         );
 
         this.dependencyContainer = summerAppContext.getDependencyContainer();
@@ -77,6 +80,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                 new DataAdapterStorageServiceImpl(this.dependencyContainer);
 
         this.requestProcessor = new RequestProcessorImpl(
+                (SoletLogger) this.getSoletConfig().getAttribute(SoletConstants.SOLET_CONFIG_LOGGER),
                 new ActionMethodInvokingServiceImpl(
                         this.dependencyContainer,
                         new ObjectBindingServiceImpl(

@@ -4,6 +4,8 @@ import com.cyecize.http.HttpRequest;
 import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
+import com.cyecize.solet.SoletLogger;
+import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.security.models.Principal;
@@ -17,7 +19,13 @@ import com.cyecize.summer.common.models.RedirectAttributes;
 import com.cyecize.summer.constants.RoutingConstants;
 import com.cyecize.summer.constants.SecurityConstants;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.util.regex.Pattern;
+
 public class RequestProcessorImpl implements RequestProcessor {
+
+    private final SoletLogger soletLogger;
 
     private final SessionScopeManager sessionScopeManager;
 
@@ -29,10 +37,11 @@ public class RequestProcessorImpl implements RequestProcessor {
 
     private final DependencyContainer dependencyContainer;
 
-    public RequestProcessorImpl(ActionMethodInvokingService methodInvokingService,
+    public RequestProcessorImpl(SoletLogger soletLogger, ActionMethodInvokingService methodInvokingService,
                                 ActionMethodResultHandler methodResultHandler,
                                 InterceptorInvokerService interceptorService,
                                 DependencyContainer dependencyContainer) {
+        this.soletLogger = soletLogger;
         this.sessionScopeManager = new SessionScopeManagerImpl();
         this.sessionScopeManager.initialize(dependencyContainer);
 
@@ -52,7 +61,7 @@ public class RequestProcessorImpl implements RequestProcessor {
 
         try {
             if (this.interceptorService.preHandle(request, response, dependencyContainer)) {
-                if(!this.executeActionMethod(request, response)) {
+                if (!this.executeActionMethod(request, response)) {
                     return false;
                 }
             }
@@ -120,9 +129,26 @@ public class RequestProcessorImpl implements RequestProcessor {
      * Called when no exceptionListener has been found for a given exception.
      */
     private void whitePageException(HttpSoletResponse response, Throwable ex) {
+        if (ex instanceof ActionInvocationException) {
+            ex = ex.getCause();
+        }
+
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
-        response.setContent(String.format("Uncaught exception \"%s\". Check the console.", ex.getMessage()));
-        ex.printStackTrace();
+
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final PrintWriter printWriter = new PrintWriter(outputStream);
+        ex.printStackTrace(printWriter);
+        printWriter.flush();
+        printWriter.close();
+
+        response.setContent(String.format(
+                "<h1>Uncaught exception \"%s\".</h1> <br> %s",
+                ex.getMessage(),
+                new String(outputStream.toByteArray())
+                        .replaceAll(Pattern.quote(System.lineSeparator()), "<br>")
+        ));
+
+        this.soletLogger.printStackTrace(ex);
     }
 
     private void setSessionAttributes(HttpRequest request) {

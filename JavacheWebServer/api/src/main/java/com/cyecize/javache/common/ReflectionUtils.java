@@ -6,7 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-public class ReflectionUtils {
+public final class ReflectionUtils {
 
     public static void addJarFileToClassLoader(String canonicalPath, URLClassLoader classLoader) throws MalformedURLException {
         addUrlToClassLoader(createJarURL(canonicalPath), classLoader);

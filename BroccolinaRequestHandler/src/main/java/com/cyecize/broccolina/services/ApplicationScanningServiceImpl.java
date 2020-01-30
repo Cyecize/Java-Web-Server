@@ -4,6 +4,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.JavacheComponent;
+import com.cyecize.javache.common.PathUtils;
 import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LibraryLoadingService;
@@ -45,7 +46,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     private final String compileOutputFolderName;
 
-    private final String applicationLibFolderName;
+    private final String appLibFolderName;
 
     private final boolean skipExtractingAppsWithExistingFolder;
 
@@ -60,12 +61,12 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
         this.applicationNames = new ArrayList<>();
         this.soletClasses = new HashMap<>();
 
-        this.compileOutputFolderName = this.configService.getConfigParamString(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME);
-        this.applicationsFolderPath =
-                configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
-                        + this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME);
+        this.compileOutputFolderName = this.configService
+                .getConfigParamString(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME);
 
-        this.applicationLibFolderName = this.configService
+        this.applicationsFolderPath = this.getApplicationsFolderPath();
+
+        this.appLibFolderName = this.configService
                 .getConfigParamString(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME);
 
         this.skipExtractingAppsWithExistingFolder = this.configService.getConfigParam(
@@ -119,9 +120,10 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * Loads application classes.
      * Adds the application name to the applicationNames list.
      */
-    private void loadApplicationFromFolder(String applicationRootFolderPath, String applicationName) throws IOException {
-        final String classesRootFolderPath = applicationRootFolderPath + this.compileOutputFolderName + File.separator;
-        final String librariesRootFolderPath = applicationRootFolderPath + this.applicationLibFolderName + File.separator;
+    private void loadApplicationFromFolder(String appRootFolderPath, String applicationName) throws IOException {
+        final String classesRootFolderPath = PathUtils.appendPath(appRootFolderPath, this.compileOutputFolderName);
+        final String librariesRootFolderPath = PathUtils.appendPath(appRootFolderPath, this.appLibFolderName);
+
         final File classesRootDirectory = new File(classesRootFolderPath);
 
         if (!classesRootDirectory.exists() || !classesRootDirectory.isDirectory()) {
@@ -228,5 +230,12 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      */
     private boolean isJarFile(File file) {
         return file.isFile() && file.getName().endsWith(".jar");
+    }
+
+    private String getApplicationsFolderPath() {
+        return PathUtils.appendPath(
+                this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
+                this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME)
+        );
     }
 }

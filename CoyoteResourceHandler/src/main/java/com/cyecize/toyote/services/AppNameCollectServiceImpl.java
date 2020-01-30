@@ -4,7 +4,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.services.JavacheConfigService;
-import com.cyecize.toyote.utils.PathUtils;
+import com.cyecize.javache.common.PathUtils;
 
 import java.io.File;
 import java.util.ArrayList;

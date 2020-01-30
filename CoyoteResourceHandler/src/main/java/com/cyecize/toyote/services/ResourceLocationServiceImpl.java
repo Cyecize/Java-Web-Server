@@ -4,9 +4,9 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.PostConstruct;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.common.PathUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
-import com.cyecize.toyote.utils.PathUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;

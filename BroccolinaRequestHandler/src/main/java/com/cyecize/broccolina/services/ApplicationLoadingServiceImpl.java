@@ -3,6 +3,7 @@ package com.cyecize.broccolina.services;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.common.PathUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.solet.HttpSolet;
@@ -27,6 +28,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private final LoggingService loggingService;
 
+    private final JavacheConfigService configService;
+
     private final String assetsDir;
 
     private final String rootAppName;
@@ -36,16 +39,16 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     private SoletConfig soletConfig;
 
     @Autowired
-    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService, LoggingService loggingService,
+    public ApplicationLoadingServiceImpl(ApplicationScanningService scanningService,
+                                         LoggingService loggingService,
                                          JavacheConfigService configService) {
         this.scanningService = scanningService;
         this.loggingService = loggingService;
-        this.assetsDir =
-                configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
-                        + configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME);
-
+        this.configService = configService;
+        this.assetsDir = this.getAssetsDir();
         this.rootAppName = configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME);
         this.solets = new HashMap<>();
+
         this.makeAppAssetDir(this.assetsDir);
     }
 
@@ -69,7 +72,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
             final Map<String, List<Class<HttpSolet>>> soletClasses = this.scanningService.findSoletClasses();
             for (Map.Entry<String, List<Class<HttpSolet>>> entry : soletClasses.entrySet()) {
                 final String applicationName = entry.getKey();
-                this.makeAppAssetDir(this.assetsDir + applicationName + File.separator);
+                this.makeAppAssetDir(PathUtils.appendPath(this.assetsDir, applicationName));
 
                 for (Class<HttpSolet> soletClass : entry.getValue()) {
                     this.loadSolet(soletClass, applicationName);
@@ -105,11 +108,16 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         }
 
         final SoletConfig soletConfigCopy = this.copySoletConfig();
-        soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_ASSETS_DIR, this.assetsDir + applicationName);
+        soletConfigCopy.setAttribute(
+                SoletConstants.SOLET_CONFIG_ASSETS_DIR,
+                PathUtils.appendPath(this.assetsDir, applicationName)
+        );
+
         soletConfigCopy.setAttribute(
                 SoletConstants.SOLET_CFG_WORKING_DIR,
                 soletClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)
         );
+
         soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_LOGGER, new SoletLoggerImpl(
                 this.loggingService,
                 applicationName
@@ -135,7 +143,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         final WebSolet solet = soletClass.getAnnotation(WebSolet.class);
 
         if (solet == null && soletClass.getSuperclass() != null) {
-            return getSoletAnnotation(soletClass.getSuperclass());
+            return this.getSoletAnnotation(soletClass.getSuperclass());
         }
 
         return solet;
@@ -158,5 +166,12 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         this.soletConfig.getAllAttributes().forEach(soletConfig::setAttribute);
 
         return soletConfig;
+    }
+
+    private String getAssetsDir() {
+        return PathUtils.appendPath(
+                this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
+                this.configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME)
+        );
     }
 }

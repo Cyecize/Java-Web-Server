@@ -6,11 +6,10 @@ import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
+import com.cyecize.toyote.utils.PathUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -26,7 +25,7 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
 
     private final List<String> appNames;
 
-    private String pathToAssets;
+    private String pathToAssetsFormat;
 
     private String pathToWebappsFormat;
 
@@ -71,22 +70,59 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
     }
 
     private String createWebappsResourceDir(String requestURL, String appName) {
-        return String.format(this.pathToWebappsFormat, appName, requestURL);
+        return String.format(
+                this.pathToWebappsFormat,
+                PathUtils.trimAllSlashes(appName),
+                PathUtils.trimAllSlashes(requestURL)
+        );
     }
 
     private String createAssetsResourceDir(String requestURL, String appName) {
-        return this.pathToAssets + appName + requestURL;
+        return String.format(
+                this.pathToAssetsFormat,
+                PathUtils.trimAllSlashes(appName),
+                PathUtils.trimAllSlashes(requestURL)
+        );
     }
 
     private void initDirectories() {
         final String workingDir = this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY);
 
-        this.pathToAssets = workingDir + this.configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME);
+        String pathToAssets = PathUtils.appendPath(
+                workingDir,
+                this.configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME)
+        );
 
-        this.pathToWebappsFormat = workingDir +
-                this.configService.getConfigParam(JavacheConfigValue.WEB_APPS_DIR_NAME) +
-                "%s" + File.separator +
-                this.configService.getConfigParam(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME) +
-                "%s";
+        pathToAssets = PathUtils.appendPath(pathToAssets, "%s");
+        pathToAssets = PathUtils.appendPath(pathToAssets, "%s");
+
+        this.pathToAssetsFormat = pathToAssets;
+
+        String pathToWebApps = PathUtils.appendPath(
+                workingDir,
+                this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME)
+        );
+
+        pathToWebApps = PathUtils.appendPath(
+                pathToWebApps,
+                "%s"
+        );
+
+        pathToWebApps = PathUtils.appendPath(
+                pathToWebApps,
+                this.configService.getConfigParamString(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME)
+        );
+
+        pathToWebApps = PathUtils.appendPath(
+                pathToWebApps,
+                this.configService.getConfigParamString(JavacheConfigValue.APP_RESOURCES_DIR_NAME)
+        );
+
+        pathToWebApps = PathUtils.appendPath(
+                pathToWebApps,
+                "%s"
+        );
+
+        this.pathToWebappsFormat = pathToWebApps;
     }
 }

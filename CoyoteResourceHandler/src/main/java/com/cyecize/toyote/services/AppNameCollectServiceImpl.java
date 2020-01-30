@@ -4,6 +4,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.JavacheComponent;
 import com.cyecize.javache.services.JavacheConfigService;
+import com.cyecize.toyote.utils.PathUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,9 +26,10 @@ public class AppNameCollectServiceImpl implements AppNameCollectService {
 
     @Override
     public List<String> getApplicationNames() {
-        final String webappsDir =
-                this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY)
-                + this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME);
+        final String webappsDir = PathUtils.appendPath(
+                this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
+                this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME)
+        );
 
         final File webappsFolder = new File(webappsDir);
         if (!webappsFolder.exists() || !webappsFolder.isDirectory()) {

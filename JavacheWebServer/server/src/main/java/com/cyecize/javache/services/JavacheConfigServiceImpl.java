@@ -128,6 +128,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.ASSETS_DIR_NAME.name(), "assets/");
         this.configParameters.put(JavacheConfigValue.WEB_APPS_DIR_NAME.name(), "webapps/");
         this.configParameters.put(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME.name(), "classes");
+        this.configParameters.put(JavacheConfigValue.APP_RESOURCES_DIR_NAME.name(), "webapp");
         this.configParameters.put(JavacheConfigValue.MAIN_APP_JAR_NAME.name(), "ROOT");
         this.configParameters.put(JavacheConfigValue.APPLICATION_DEPENDENCIES_FOLDER_NAME.name(), "lib");
         this.configParameters.put(JavacheConfigValue.BROCOLLINA_SKIP_EXTRACTING_IF_FOLDER_EXISTS.name(), false);

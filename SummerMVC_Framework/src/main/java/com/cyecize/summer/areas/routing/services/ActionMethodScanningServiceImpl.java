@@ -38,17 +38,35 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      */
     static {
         METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(GetMapping.class,
-                (annotation -> new AnnotationExtractedValue(List.of(HttpMethod.GET.name()), annotation.produces(), annotation.value()))));
+                annotation -> new AnnotationExtractedValue(
+                        List.of(HttpMethod.GET.name()),
+                        annotation.produces(),
+                        annotation.value()
+                )
+        ));
 
         METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(PostMapping.class,
-                (annotation -> new AnnotationExtractedValue(List.of(HttpMethod.POST.name()), annotation.produces(), annotation.value()))));
+                annotation -> new AnnotationExtractedValue(
+                        List.of(HttpMethod.POST.name()),
+                        annotation.produces(), annotation.value()
+                )
+        ));
 
         METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
-                (annotation -> new AnnotationExtractedValue(List.of(EXCEPTION), annotation.produces(), UUID.randomUUID().toString()))));
+                annotation -> new AnnotationExtractedValue(
+                        List.of(EXCEPTION),
+                        annotation.produces(),
+                        UUID.randomUUID().toString()
+                )
+        ));
 
         METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(RequestMapping.class,
-                annotation -> new AnnotationExtractedValue(Arrays.stream(annotation.methods()).map(Enum::name).collect(Collectors.toList()), annotation.produces(), annotation.value())));
-
+                annotation -> new AnnotationExtractedValue(
+                        Arrays.stream(annotation.methods()).map(Enum::name).collect(Collectors.toList()),
+                        annotation.produces(),
+                        annotation.value()
+                )
+        ));
     }
 
     private final PathFormatter pathFormatter;

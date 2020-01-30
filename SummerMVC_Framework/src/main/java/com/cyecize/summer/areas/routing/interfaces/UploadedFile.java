@@ -10,5 +10,7 @@ public interface UploadedFile {
 
     String save(String relativePath, String fileName) throws IOException;
 
+    String save(String relativePath, String fileName, boolean overWrite) throws IOException;
+
     MultipartFile getUploadedFile();
 }

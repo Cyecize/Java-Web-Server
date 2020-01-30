@@ -2,8 +2,10 @@ package com.cyecize.summer.areas.startup.services;
 
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConstants;
+import com.cyecize.solet.SoletLogger;
 import com.cyecize.summer.areas.startup.util.JavacheConfigServiceUtils;
 import com.cyecize.summer.constants.IocConstants;
+import com.cyecize.summer.utils.PathUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,11 +21,15 @@ public class UserConfigServiceImpl implements UserConfigService {
 
     private final Map<String, Object> javacheConfig;
 
+    private final SoletLogger soletLogger;
+
     private Map<String, String> config;
 
     public UserConfigServiceImpl(SoletConfig soletConfig, Map<String, Object> javacheConfig) {
         this.soletConfig = soletConfig;
         this.javacheConfig = javacheConfig;
+        this.soletLogger = (SoletLogger) soletConfig.getAttribute(SoletConstants.SOLET_CONFIG_LOGGER);
+
         this.readConfig();
     }
 
@@ -35,12 +41,15 @@ public class UserConfigServiceImpl implements UserConfigService {
     private void readConfig() {
         this.config = new HashMap<>();
 
-        final String configFilePath = this.soletConfig.getAttribute(SoletConstants.SOLET_CFG_WORKING_DIR).toString()
-                + IocConstants.PROPERTIES_FILE_NAME;
+        final String configFilePath = PathUtils.appendPath(
+                this.soletConfig.getAttribute(SoletConstants.SOLET_CFG_WORKING_DIR).toString(),
+                IocConstants.PROPERTIES_FILE_NAME
+        );
 
         final File configFile = new File(configFilePath);
         if (!configFile.exists()) {
-            return; //TODO: log warning
+            this.soletLogger.warning("Missing config file '%s'.", configFilePath);
+            return;
         }
 
         this.readFile(configFile);

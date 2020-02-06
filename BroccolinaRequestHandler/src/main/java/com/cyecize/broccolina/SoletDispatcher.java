@@ -12,6 +12,7 @@ import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.IoC;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.javache.api.SharedDataPropertyNames;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.solet.HttpSolet;
@@ -74,11 +75,11 @@ public class SoletDispatcher implements RequestHandler {
     public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData)
             throws IOException {
         final HttpSoletRequest request = new HttpSoletRequestImpl(
-                sharedData.getObject(BroccolinaConstants.SHARED_DATA_HTTP_REQUEST_KEY, HttpRequest.class)
+                sharedData.getObject(SharedDataPropertyNames.HTTP_REQUEST, HttpRequest.class)
         );
 
         final HttpSoletResponse response = new HttpSoletResponseImpl(
-                sharedData.getObject(BroccolinaConstants.SHARED_DATA_HTTP_RESPONSE_KEY, HttpResponse.class)
+                sharedData.getObject(SharedDataPropertyNames.HTTP_RESPONSE, HttpResponse.class)
         );
 
         final HttpSolet solet = this.soletCandidateFinder.findSoletCandidate(request);

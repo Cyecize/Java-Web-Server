@@ -8,6 +8,7 @@ import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 
+import com.cyecize.javache.api.SharedDataPropertyNames;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
@@ -47,8 +48,8 @@ public class ToyoteResourceHandler implements RequestHandler {
     @Override
     public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData)
             throws IOException {
-        final HttpRequest request = (HttpRequest) sharedData.getObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME);
-        final HttpResponse response = (HttpResponse) sharedData.getObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME);
+        final HttpRequest request = sharedData.getObject(SharedDataPropertyNames.HTTP_REQUEST, HttpRequest.class);
+        final HttpResponse response = sharedData.getObject(SharedDataPropertyNames.HTTP_RESPONSE, HttpResponse.class);
 
         try {
             final File resource = this.resourceLocationService.locateResource(request.getRequestURL());

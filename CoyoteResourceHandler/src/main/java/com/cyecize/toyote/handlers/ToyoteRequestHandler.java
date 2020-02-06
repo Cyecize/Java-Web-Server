@@ -8,6 +8,7 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.javache.api.SharedDataPropertyNames;
 import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.RequestTooBigException;
 import com.cyecize.toyote.services.ErrorHandlingService;
@@ -42,8 +43,8 @@ public class ToyoteRequestHandler implements RequestHandler {
             final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream);
             final HttpResponse response = new HttpResponseImpl();
 
-            sharedData.addObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME, request);
-            sharedData.addObject(ToyoteConstants.HTTP_RESPONSE_SHARED_NAME, response);
+            sharedData.addObject(SharedDataPropertyNames.HTTP_REQUEST, request);
+            sharedData.addObject(SharedDataPropertyNames.HTTP_RESPONSE, response);
         } catch (RequestTooBigException ex) {
             this.disposeInputStream(ex.getContentLength(), inputStream);
             return this.errorHandlingService.handleRequestTooBig(outputStream, ex, new HttpResponseImpl());

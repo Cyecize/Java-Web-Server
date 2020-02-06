@@ -5,7 +5,7 @@ import com.cyecize.http.MultipartFile;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
-import com.cyecize.toyote.ToyoteConstants;
+import com.cyecize.javache.api.SharedDataPropertyNames;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class ToyoteRequestDestroyHandler implements RequestDestroyHandler {
 
     @Override
     public void destroy(RequestHandlerSharedData sharedData) {
-        final HttpRequest request = (HttpRequest) sharedData.getObject(ToyoteConstants.HTTP_REQUEST_SHARED_NAME);
+        final HttpRequest request = sharedData.getObject(SharedDataPropertyNames.HTTP_REQUEST, HttpRequest.class);
         if (request == null || request.getMultipartFiles() == null) {
             return;
         }

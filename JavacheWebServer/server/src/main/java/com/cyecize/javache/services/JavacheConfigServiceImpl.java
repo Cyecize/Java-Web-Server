@@ -109,7 +109,9 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         final File priorityConfigFile = new File(REQUEST_HANDLER_PRIORITY_FILE);
 
         if (!priorityConfigFile.exists() || !priorityConfigFile.isFile()) {
-            throw new IllegalArgumentException(String.format(REQUEST_HANDLER_PRIORITY_FILE_NOT_FOUND_FORMAT, CONFIG_FOLDER_PATH));
+            throw new IllegalArgumentException(
+                    String.format(REQUEST_HANDLER_PRIORITY_FILE_NOT_FOUND_FORMAT, CONFIG_FOLDER_PATH)
+            );
         }
 
         final String configFileContent = new Reader().readAllLines(new FileInputStream(priorityConfigFile));
@@ -143,6 +145,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.JAVACHE_PRINT_EXCEPTIONS.name(), true);
         this.configParameters.put(JavacheConfigValue.TOYOTE_RESOURCE_HANDLER_ORDER.name(), 1);
         this.configParameters.put(JavacheConfigValue.BROCCOLINA_SOLET_DISPATCHER_ORDER.name(), 2);
+        this.configParameters.put(JavacheConfigValue.ENABLE_RESOURCE_CACHING.name(), true);
     }
 
     /**
@@ -156,7 +159,8 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
             return;
         }
 
-        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(CONFIG_FILE_PATH)));
+        final BufferedReader bufferedReader =
+                new BufferedReader(new InputStreamReader(new FileInputStream(CONFIG_FILE_PATH)));
         while (bufferedReader.ready()) {
             final String line = bufferedReader.readLine();
             final String[] keyValuePair = line.trim().split(":\\s+");
@@ -170,7 +174,9 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
                 continue;
             }
 
-            this.configParameters.put(keyValuePair[0], this.dataResolver.resolve(this.configParameters.get(keyValuePair[0]).getClass(), keyValuePair[1]));
+            this.configParameters.put(keyValuePair[0], this.dataResolver.resolve(
+                    this.configParameters.get(keyValuePair[0]).getClass(), keyValuePair[1]
+            ));
         }
     }
 }

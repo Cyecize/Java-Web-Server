@@ -146,6 +146,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
         this.configParameters.put(JavacheConfigValue.TOYOTE_RESOURCE_HANDLER_ORDER.name(), 1);
         this.configParameters.put(JavacheConfigValue.BROCCOLINA_SOLET_DISPATCHER_ORDER.name(), 2);
         this.configParameters.put(JavacheConfigValue.ENABLE_RESOURCE_CACHING.name(), true);
+        this.configParameters.put(JavacheConfigValue.RESOURCE_CACHING_EXPRESSION.name(), WebConstants.DEFAULT_CACHING_EXPRESSION);
     }
 
     /**

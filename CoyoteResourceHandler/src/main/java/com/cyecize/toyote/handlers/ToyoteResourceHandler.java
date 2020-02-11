@@ -10,7 +10,6 @@ import com.cyecize.javache.api.RequestHandlerSharedData;
 
 import com.cyecize.javache.api.SharedDataPropertyNames;
 import com.cyecize.javache.services.JavacheConfigService;
-import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
 import com.cyecize.toyote.services.ResourceLocationService;
 import com.cyecize.toyote.services.ResponsePopulationService;
@@ -42,7 +41,7 @@ public class ToyoteResourceHandler implements RequestHandler {
 
     @Override
     public void init() {
-
+       this.responsePopulationService.init();
     }
 
     @Override

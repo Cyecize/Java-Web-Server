@@ -63,12 +63,17 @@ public class UserConfigServiceImpl implements UserConfigService {
 
             while (reader.ready()) {
                 final String line = reader.readLine();
-                final String[] keyValuePair = line.split("\\s*=\\s*");
-                if (keyValuePair.length < 2) {
+
+                final int delimiterIndex = line.indexOf('=');
+                //If there is no '=' sign or there is no value after it.
+                if (delimiterIndex == -1 || delimiterIndex == line.length() - 1) {
                     continue;
                 }
 
-                this.config.put(keyValuePair[0], keyValuePair[1]);
+                final String key = line.substring(0, delimiterIndex).trim();
+                final String value = line.substring(delimiterIndex + 1).trim();
+
+                this.config.put(key, value);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

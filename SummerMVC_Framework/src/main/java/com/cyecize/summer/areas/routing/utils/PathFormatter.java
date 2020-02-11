@@ -29,6 +29,7 @@ public class PathFormatter {
 
             formatterPath = formatterPath.replaceFirst(PATH_PARAMETER_PATTERN, formattedParameterPattern);
         }
+
         if (formatterPath.endsWith("/")) {
             formatterPath += "?";
         } else {

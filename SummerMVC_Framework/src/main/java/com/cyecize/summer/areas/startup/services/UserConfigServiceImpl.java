@@ -3,6 +3,7 @@ package com.cyecize.summer.areas.startup.services;
 import com.cyecize.solet.SoletConfig;
 import com.cyecize.solet.SoletConstants;
 import com.cyecize.solet.SoletLogger;
+import com.cyecize.summer.areas.startup.exceptions.ConfigurationMissingException;
 import com.cyecize.summer.areas.startup.util.JavacheConfigServiceUtils;
 import com.cyecize.summer.constants.IocConstants;
 import com.cyecize.summer.utils.PathUtils;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserConfigServiceImpl implements UserConfigService {
 
@@ -73,10 +76,48 @@ public class UserConfigServiceImpl implements UserConfigService {
                 final String key = line.substring(0, delimiterIndex).trim();
                 final String value = line.substring(delimiterIndex + 1).trim();
 
-                this.config.put(key, value);
+                this.config.put(key, this.parseValue(value));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Check the value for any placeholders and if there are, parse them.
+     * //TODO extract into it's own service if the logic gets too complex.
+     *
+     * @param value - the value provided by the user.
+     * @return parsed string.
+     */
+    private String parseValue(String value) {
+        final String placeholdersRegex = "\\$\\{(?<source>\\w+)\\.(?<key>\\w+)\\}";
+        final Pattern placeholdersPattern = Pattern.compile(placeholdersRegex);
+
+        final Matcher matcher = placeholdersPattern.matcher(value);
+
+        String formattedValue = value;
+        while (matcher.find()) {
+            final String source = matcher.group("source");
+            final String key = matcher.group("key");
+
+            if (source.equalsIgnoreCase("env")) {
+                final String envValue = System.getenv(key);
+                if (envValue == null) {
+                    throw new ConfigurationMissingException(String.format(
+                            "Could not find environment variable with name '%s'.", key
+                    ));
+                }
+
+                formattedValue = formattedValue.replaceFirst(placeholdersRegex, envValue);
+
+            } else {
+                throw new ConfigurationMissingException(String.format(
+                        "Unable to parse value '%s'! Source '%s' is incorrect!", value, source
+                ));
+            }
+        }
+
+        return formattedValue;
     }
 }

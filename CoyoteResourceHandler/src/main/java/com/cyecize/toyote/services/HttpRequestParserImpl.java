@@ -69,6 +69,7 @@ public class HttpRequestParserImpl implements HttpRequestParser {
                 this.defaultFormDataParser.parseBodyParams(inputStream, request);
             }
 
+            this.trimRequestPath(request);
             return request;
         } catch (IOException ex) {
             throw new CannotParseRequestException(ex.getMessage(), ex);
@@ -202,5 +203,11 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
     private static String decode(String str) {
         return URLDecoder.decode(str, StandardCharsets.UTF_8);
+    }
+
+    private void trimRequestPath(HttpRequest request) {
+        request.setRequestURL(
+                request.getRequestURL().replaceAll("\\.{2,}\\/?", "")
+        );
     }
 }

@@ -9,10 +9,6 @@ if you are running a Summer MVC app, then your whole startup class should be lik
 
 public class StartUp extends DispatcherSolet {
 
-    public StartUp() {
-        SummerBootApplication.run(this);
-    }
-
     public static void main(String[] args) throws Exception {
         JavacheEmbedded.startServer(8000, StartUp.class);
     }

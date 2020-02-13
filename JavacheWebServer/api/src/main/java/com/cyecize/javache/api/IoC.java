@@ -5,6 +5,9 @@ import com.cyecize.ioc.services.DependencyContainer;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+/**
+ * Shared static class that keeps hold of commonly used items for Dependency injection and class loading.
+ */
 public class IoC {
     private static DependencyContainer javacheDependencyContainer;
 

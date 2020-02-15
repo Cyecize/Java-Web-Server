@@ -34,8 +34,16 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
         this.destroyHandlers = new ArrayList<>();
     }
 
+    /**
+     * Scans the lib files to find JARs with the names like the request handlers.
+     * Runs them with {@link MagicInjector}.
+     *
+     * @param requestHandlerFileNames - list of request handler JAR files.
+     * @param libURLs                 - user provided global scoped libraries.
+     * @param apiURLs                 - API libraries.
+     */
     @Override
-    public void loadRequestHandlers(List<String> requestHandlerPriority, Map<File, URL> libURLs, Map<File, URL> apiURLs) {
+    public void loadRequestHandlers(List<String> requestHandlerFileNames, Map<File, URL> libURLs, Map<File, URL> apiURLs) {
 
         IoC.setApiClassLoader(new URLClassLoader(apiURLs.values().toArray(URL[]::new)));
         IoC.setRequestHandlersClassLoader(new URLClassLoader(libURLs.values().toArray(URL[]::new), IoC.getApiClassLoader()));
@@ -52,13 +60,23 @@ public class RequestHandlerLoadingServiceImpl implements RequestHandlerLoadingSe
 
         final DependencyContainer requestHandlersDependencyContainer = MagicInjector.run(
                 libURLs.keySet().stream()
-                        .filter(jarFile -> requestHandlerPriority.stream().anyMatch(rh -> jarFile.getName().endsWith(rh + ".jar")))
+                        .filter(jarFile -> requestHandlerFileNames.stream().anyMatch(rh -> jarFile.getName().endsWith(rh + ".jar")))
                         .toArray(File[]::new),
                 magicConfiguration
         );
 
         IoC.setRequestHandlersDependencyContainer(requestHandlersDependencyContainer);
 
+        this.initRequestHandlers(requestHandlersDependencyContainer);
+    }
+
+    /**
+     * Filters out {@link RequestHandler} implementations from the provided dependency container, sorts them
+     * by their order config and then initializes them.
+     *
+     * @param requestHandlersDependencyContainer -
+     */
+    private void initRequestHandlers(DependencyContainer requestHandlersDependencyContainer) {
         this.requestHandlers.addAll(
                 requestHandlersDependencyContainer.getImplementations(RequestHandler.class)
                         .stream()

@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface RequestHandlerLoadingService {
 
-    void loadRequestHandlers(List<String> requestHandlerPriority, Map<File, URL> libURLs, Map<File, URL> apiURLs);
+    void loadRequestHandlers(List<String> requestHandlerFileNames, Map<File, URL> libURLs, Map<File, URL> apiURLs);
 
     List<RequestHandler> getRequestHandlers();
 

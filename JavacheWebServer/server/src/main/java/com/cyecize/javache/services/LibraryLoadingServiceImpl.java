@@ -36,6 +36,12 @@ public class LibraryLoadingServiceImpl implements LibraryLoadingService {
         this.setLibraries(new File(apiDir), this.apiURLs);
     }
 
+    /**
+     * Iterates all files inside the given directory, filters the JAR files and stores them as a {@link URL}
+     *
+     * @param dir  - given directory.
+     * @param libs - given map for storing library URLs.
+     */
     private void setLibraries(File dir, Map<File, URL> libs) {
         if (!dir.exists() || !dir.isDirectory()) {
             throw new IllegalArgumentException(String.format(INVALID_FOLDER_MESSAGE_FORMAT, dir));

@@ -162,6 +162,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
 
         final BufferedReader bufferedReader =
                 new BufferedReader(new InputStreamReader(new FileInputStream(CONFIG_FILE_PATH)));
+        //TODO: refactor the parsing -> case when user has ':' in his value.
         while (bufferedReader.ready()) {
             final String line = bufferedReader.readLine();
             final String[] keyValuePair = line.trim().split(":\\s+");

@@ -14,6 +14,7 @@ import java.util.Date;
 @Service
 public class LoggingServiceImpl implements LoggingService {
 
+    //TODO: make this configurable.
     private static final String LOGS_FILE_NAME = "javache.log";
 
     private final JavacheConfigService configService;
@@ -63,6 +64,12 @@ public class LoggingServiceImpl implements LoggingService {
         return new Date().toInstant().toString();
     }
 
+    /**
+     * Appends a given text to the log file.
+     * Creates the log file if it doesn't exist.
+     *
+     * @param msg - given text.
+     */
     private void writeToFile(String msg) {
         try {
             final File file = new File(this.filePath);
@@ -79,6 +86,9 @@ public class LoggingServiceImpl implements LoggingService {
         }
     }
 
+    /**
+     * Creates the log dir if it doesn't exist, sets up the path to the logs file.
+     */
     private void initLogsFile() {
         final String logsDir = this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY) +
                 this.configService.getConfigParamString(JavacheConfigValue.LOGS_DIR_NAME);

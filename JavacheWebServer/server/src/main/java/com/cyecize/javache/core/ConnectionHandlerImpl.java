@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
-public class ConnectionHandlerImpl implements ConnectionHandler {
+public class ConnectionHandlerImpl implements Runnable {
 
     private final Socket clientSocket;
 

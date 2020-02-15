@@ -32,6 +32,9 @@ public class ServerInitializerImpl implements ServerInitializer {
         this.requestHandlerLoadingService = requestHandlerLoadingService;
     }
 
+    /**
+     * Loads libraries, configs and starts the connection listening process.
+     */
     @Override
     public void initializeServer() {
         this.libraryLoadingService.loadLibraries();

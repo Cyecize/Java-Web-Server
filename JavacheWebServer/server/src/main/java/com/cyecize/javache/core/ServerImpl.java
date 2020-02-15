@@ -26,6 +26,9 @@ public class ServerImpl implements Server {
         this.requestHandlerLoadingService = requestHandlerLoadingService;
     }
 
+    /**
+     * Listens for connections and passes them to a new thread where the connection is handled.
+     */
     @Override
     public void run() throws IOException {
         final ServerSocket serverSocket = new ServerSocket(this.port);

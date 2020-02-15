@@ -13,6 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Utility class that creates {@link Bean} for {@link JavacheConfigService}.
+ * The reason this is required is because {@link JavacheConfigService} has two implementations - one
+ * for the standalone server and another for the embedded server.
+ */
 @JavacheEmbeddedComponent
 public class JavacheConfigBeanCreator {
 
@@ -60,6 +65,12 @@ public class JavacheConfigBeanCreator {
         config.put(JavacheConfigValue.WEB_APPS_DIR_NAME.name(), "./");
     }
 
+    /**
+     * Gets the server's working directory.
+     * If the app is in a jar file, it will extract it and return the directory to that folder.
+     *
+     * @return working directory.
+     */
     private String getWorkingDir() throws IOException {
         String workingDir = mainClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1);
 

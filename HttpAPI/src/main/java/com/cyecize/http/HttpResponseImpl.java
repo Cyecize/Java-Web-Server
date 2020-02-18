@@ -83,6 +83,11 @@ public class HttpResponseImpl implements HttpResponse {
         return this.headers;
     }
 
+    /**
+     * Appends all headers to form a valid HTTP header section.
+     *
+     * @return headers.
+     */
     private String getHeaderString() {
         final StringBuilder result = new StringBuilder()
                 .append(HttpStatus.getResponseLine(this.getStatusCode().getStatusCode()))

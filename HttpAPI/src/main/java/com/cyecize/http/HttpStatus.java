@@ -2,8 +2,6 @@ package com.cyecize.http;
 
 import java.util.Arrays;
 
-import static com.cyecize.http.Constants.SERVER_HTTP_VERSION;
-
 public enum HttpStatus {
     OK(200, "OK"),
 
@@ -54,12 +52,15 @@ public enum HttpStatus {
         return this.statusPhrase;
     }
 
+    /**
+     * @return Http status in Http format.
+     */
     public static String getResponseLine(int statusCode) {
         final HttpStatus httpStatus = Arrays.stream(values())
                 .filter(sc -> sc.statusCode == statusCode)
                 .findFirst().orElse(INTERNAL_SERVER_ERROR);
 
-        return SERVER_HTTP_VERSION
+        return Constants.SERVER_HTTP_VERSION
                 + " "
                 + httpStatus.getStatusCode()
                 + " "

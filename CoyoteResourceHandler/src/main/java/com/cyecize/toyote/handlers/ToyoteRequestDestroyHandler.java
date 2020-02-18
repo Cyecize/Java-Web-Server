@@ -9,6 +9,10 @@ import com.cyecize.javache.api.SharedDataPropertyNames;
 
 import java.io.IOException;
 
+/**
+ * Request handler called always after every request.
+ * The purpose is to clear or dispose any left out resource to avoid memory leaks.
+ */
 @Service
 public class ToyoteRequestDestroyHandler implements RequestDestroyHandler {
 

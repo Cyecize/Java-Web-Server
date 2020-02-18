@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+/**
+ * Service for displaying exception messages to the browser.
+ */
 @Service
 public class ErrorHandlingServiceImpl implements ErrorHandlingService {
 

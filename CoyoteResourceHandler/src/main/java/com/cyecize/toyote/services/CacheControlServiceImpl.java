@@ -30,18 +30,33 @@ public class CacheControlServiceImpl implements CacheControlService {
         ));
     }
 
+    /**
+     * Adds caching header to the given response.
+     * <p>
+     * If caching is not enabled or the caching header is already present, do nothing.
+     * <p>
+     * Uses Cache-Control header to set up caching options.
+     * Cache-Control header value from the request is prioritized if present,
+     * otherwise value from the config for that specific media type will be used (if present)
+     *
+     * @param request       - current request.
+     * @param response      - current response.
+     * @param fileMediaType - current file media type.
+     */
     @Override
     public void addCachingHeader(HttpRequest request, HttpResponse response, String fileMediaType) {
-        if (!this.isCachingEnabled() || this.hasCacheHeader(response) || !this.mediaTypeCacheMap.containsKey(fileMediaType)) {
+        if (!this.isCachingEnabled() || this.hasCacheHeader(response)) {
             return;
         }
 
         String responseCacheControl = request.getHeader(ToyoteConstants.CACHE_CONTROL_HEADER_NAME);
-        if (responseCacheControl == null) {
+        if (responseCacheControl == null && this.mediaTypeCacheMap.containsKey(fileMediaType)) {
             responseCacheControl = this.mediaTypeCacheMap.get(fileMediaType);
         }
 
-        response.addHeader(ToyoteConstants.CACHE_CONTROL_HEADER_NAME, responseCacheControl);
+        if (responseCacheControl != null) {
+            response.addHeader(ToyoteConstants.CACHE_CONTROL_HEADER_NAME, responseCacheControl);
+        }
     }
 
     private boolean isCachingEnabled() {

@@ -9,7 +9,6 @@ import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
 import com.cyecize.javache.api.SharedDataPropertyNames;
-import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.RequestTooBigException;
 import com.cyecize.toyote.services.ErrorHandlingService;
 import com.cyecize.toyote.services.HttpRequestParser;
@@ -18,6 +17,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Request handler responsible for reading and parsing the request input stream.
+ * This request is always first to be executed.
+ */
 @Service
 public class ToyoteRequestHandler implements RequestHandler {
 
@@ -60,6 +63,10 @@ public class ToyoteRequestHandler implements RequestHandler {
         return Integer.MIN_VALUE;
     }
 
+    /**
+     * The purpose of this method is to read the input stream before closing it
+     * otherwise the TCP connection will not be closed properly.
+     */
     private void disposeInputStream(int length, InputStream inputStream) throws IOException {
         byte[] buffer = new byte[0];
         int leftToRead = length;

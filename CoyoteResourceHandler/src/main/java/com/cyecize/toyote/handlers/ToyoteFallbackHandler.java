@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * This request handler is last to be called in case of any previous request handler does not intercept.
+ */
 @Service
 public class ToyoteFallbackHandler implements RequestHandler {
 

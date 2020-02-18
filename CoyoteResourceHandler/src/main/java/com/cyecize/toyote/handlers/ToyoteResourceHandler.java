@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Request handler responsible for serving static resources such as images, html files, css, js and so on.
+ */
 @Service
 public class ToyoteResourceHandler implements RequestHandler {
 
@@ -41,7 +44,7 @@ public class ToyoteResourceHandler implements RequestHandler {
 
     @Override
     public void init() {
-       this.responsePopulationService.init();
+        this.responsePopulationService.init();
     }
 
     @Override
@@ -67,6 +70,11 @@ public class ToyoteResourceHandler implements RequestHandler {
         return false;
     }
 
+    /**
+     * The order of this request handler is configurable by the user.
+     *
+     * @return order of the request handler.
+     */
     @Override
     public int order() {
         return this.configService.getConfigParam(JavacheConfigValue.TOYOTE_RESOURCE_HANDLER_ORDER, int.class);

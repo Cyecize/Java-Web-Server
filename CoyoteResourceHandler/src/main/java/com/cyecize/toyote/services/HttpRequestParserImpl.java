@@ -46,6 +46,12 @@ public class HttpRequestParserImpl implements HttpRequestParser {
         this.maxRequestSize = configService.getConfigParam(JavacheConfigValue.MAX_REQUEST_SIZE, int.class);
     }
 
+    /**
+     * Reads the provided input stream and parses it using the HTTP protocol.
+     *
+     * @param inputStream - current request input stream.
+     * @return populated {@link HttpRequest}
+     */
     @Override
     public HttpRequest parseHttpRequest(InputStream inputStream) throws CannotParseRequestException {
         try {

@@ -27,6 +27,10 @@ public class ResponsePopulationServiceImpl implements ResponsePopulationService 
         this.cacheControlService.init();
     }
 
+    /**
+     * Populates {@link HttpResponse} with found resource.
+     * Adds necessary headers that are required in order to transfer a resource using the HTTP protocol.
+     */
     @Override
     public void handleResourceFoundResponse(HttpRequest request, HttpResponse response, File resourceFile, long fileSize)
             throws IOException {

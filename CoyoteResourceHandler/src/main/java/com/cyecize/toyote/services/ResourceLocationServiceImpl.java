@@ -9,7 +9,6 @@ import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.toyote.exceptions.ResourceNotFoundException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -42,8 +41,15 @@ public class ResourceLocationServiceImpl implements ResourceLocationService {
         this.initDirectories();
     }
 
+    /**
+     * Looks for a resource in the webapps or in the assets directory.
+     *
+     * @param requestURL - path to resource.
+     * @return file which name matches the request url.
+     * @throws ResourceNotFoundException if the resource file cannot be found.
+     */
     @Override
-    public File locateResource(String requestURL) throws ResourceNotFoundException, FileNotFoundException {
+    public File locateResource(String requestURL) throws ResourceNotFoundException {
         final String currentRequestAppName = this.getAppNameForRequest(requestURL);
         requestURL = requestURL.replaceFirst(Pattern.quote("/" + currentRequestAppName), "");
 

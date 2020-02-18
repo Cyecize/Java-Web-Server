@@ -24,6 +24,10 @@ public class AppNameCollectServiceImpl implements AppNameCollectService {
         this.configService = configService;
     }
 
+    /**
+     * Iterates the webapps dir and collects the name of all JAR files.
+     * @return list containing all loaded web apps.
+     */
     @Override
     public List<String> getApplicationNames() {
         final String webappsDir = PathUtils.appendPath(

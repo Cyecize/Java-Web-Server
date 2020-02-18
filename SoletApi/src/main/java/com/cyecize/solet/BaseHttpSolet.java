@@ -15,6 +15,12 @@ public abstract class BaseHttpSolet implements HttpSolet {
         this.setHasIntercepted(true);
     }
 
+    /**
+     * Create proper route having the app name in mind.
+     *
+     * @param route - required route.
+     * @return formatted route.
+     */
     protected String createRoute(String route) {
         return this.soletConfig.getAttribute(SoletConstants.SOLET_CONFIG_APP_NAME_PREFIX) + route;
     }
@@ -86,9 +92,9 @@ public abstract class BaseHttpSolet implements HttpSolet {
         response.setStatusCode(HttpStatus.NOT_IMPLEMENTED);
         response.addHeader("Content-Type", "text/html");
         response.setContent((String.format(
-            "<h1>[ERROR] %s %s </h1><br/><h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>",
-            request.getMethod(),
-            request.getRequestURL()))
+                "<h1>[ERROR] %s %s </h1><br/><h3>[MESSAGE] The page or functionality you are looking for is not found.</h3>",
+                request.getMethod(),
+                request.getRequestURL()))
         );
     }
 }

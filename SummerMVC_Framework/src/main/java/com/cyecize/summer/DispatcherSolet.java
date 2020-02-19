@@ -54,17 +54,17 @@ public abstract class DispatcherSolet implements HttpSolet {
     }
 
     @Override
-    public boolean isInitialized() {
+    public final boolean isInitialized() {
         return this.hasInitialized;
     }
 
     @Override
-    public boolean hasIntercepted() {
+    public final boolean hasIntercepted() {
         return this.hasIntercepted;
     }
 
     @Override
-    public SoletConfig getSoletConfig() {
+    public final SoletConfig getSoletConfig() {
         return this.soletConfig;
     }
 

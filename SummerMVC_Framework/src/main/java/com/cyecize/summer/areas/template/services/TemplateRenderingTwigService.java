@@ -64,7 +64,7 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
 
     /**
      * Add global variables that will be accessible across all views.
-     * Add Template services, specified by the user (annotated with @TemplateService).
+     * Add Template services, specified by the user (annotated with {@link TemplateService}).
      */
     private void addGlobalVars(Model model) {
         model.addAttribute(GLOBAL_VAR_USER, this.dependencyContainer.getService(Principal.class).getUser());
@@ -97,9 +97,8 @@ public class TemplateRenderingTwigService implements TemplateRenderingService {
     }
 
     /**
-     * Get all services that are @TwigTemplate annotated.
+     * Get all services that are {@link TemplateService} annotated.
      * Iterate and add them to a map of String and Object where the string is the service name in twig.
-     * If the service is with REQUEST life span, add it to a list of services to be reloaded.
      */
     private void initTemplateServices() {
         this.templateServices = new HashMap<>();

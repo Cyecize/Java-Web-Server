@@ -46,7 +46,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
             return;
         }
 
-        ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass()).forEach(field -> {
+        for (Field field : ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass())) {
             field.setAccessible(true);
 
             Object parsedVal;
@@ -68,11 +68,11 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-        });
+        }
     }
 
     /**
-     * Gets the data adapter from @ConvertedBy annotation if present.
+     * Gets the data adapter from {@link ConvertedBy} annotation if present.
      * Else gets the data adapter from the dataAdapters map by the field's generic type.
      * Reloads the data resolver if needed.
      * Returns null if no converter is found.
@@ -83,7 +83,6 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
         if (field.isAnnotationPresent(ConvertedBy.class)) {
             final Class<? extends DataAdapter> convertedClass = field.getAnnotation(ConvertedBy.class).value();
-
             dataAdapter = this.dataAdapters.getDataAdapter(fieldGenericType, convertedClass);
         } else {
             dataAdapter = this.dataAdapters.getDataAdapter(fieldGenericType);
@@ -98,7 +97,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
     /**
      * Checks if the request contains a memory file with the same name as the field name.
-     * Returns a MultipartFileImpl if present or otherwise returns null.
+     * Returns a {@link UploadedFile} if present or otherwise returns null.
      */
     private UploadedFile handleMultipartField(Field field, HttpSoletRequest request) {
         final MultipartFile multipartFile = request.getMultipartFiles().stream()

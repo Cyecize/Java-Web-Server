@@ -8,6 +8,7 @@ import com.cyecize.summer.areas.routing.utils.PathFormatter;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.GetMapping;
 import com.cyecize.summer.common.annotations.routing.HttpMethod;
+import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.annotations.routing.PostMapping;
 import com.cyecize.summer.common.annotations.routing.RequestMapping;
 import com.cyecize.summer.constants.ContentTypes;
@@ -97,7 +98,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
      * If a proper annotation is present, adds the method to a map of action methods
      * where the key is the http method.
      * <p>
-     * Applies base route and base content type if @RequestParam annotation is present.
+     * Applies base route and base content type if {@link RequestMapping} annotation is present.
      */
     private void loadActionMethodsFromController(ServiceDetails controller) {
         final Class<?> controllerClass = controller.getServiceType();
@@ -106,11 +107,10 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
         String baseContentType = ContentTypes.NONE;
 
         if (controllerClass.isAnnotationPresent(RequestMapping.class)) {
-            RequestMapping annotation = controllerClass.getAnnotation(RequestMapping.class);
+            final RequestMapping annotation = controllerClass.getAnnotation(RequestMapping.class);
             baseRoute = annotation.value();
             baseContentType = annotation.produces();
         }
-
 
         for (Method method : controllerClass.getDeclaredMethods()) {
             method.setAccessible(true);
@@ -169,8 +169,8 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
     }
 
     /**
-     * Orders action methods by absence of @PathVariable in asc, then by alphabetic order
-     * which will prevent @PathVariable methods from matching constant routes.
+     * Orders action methods by absence of {@link PathVariable} in ASC, then by alphabetic order
+     * which will prevent {@link PathVariable} methods from matching constant routes.
      */
     private void orderActionMethods(String method) {
         final Pattern pathVarPattern = Pattern.compile("\\(\\?<.*?>\\[a-zA-Z0-9_-\\]\\+\\)");

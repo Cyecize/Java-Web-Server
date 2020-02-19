@@ -22,7 +22,7 @@ public class JTwigHasRoleFunction extends SimpleJtwigFunction {
     }
 
     /**
-     * If the there is more or less than 1 parameter of the parameters is not String, throw JtwigException
+     * If the there is more or less than 1 parameter of the parameters is not String, throw {@link JtwigException}
      * Else get the principal from the dependency container and check if a user is present
      * and if the user has the given role.
      */

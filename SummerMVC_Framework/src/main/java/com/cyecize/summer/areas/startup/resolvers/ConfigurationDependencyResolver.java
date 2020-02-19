@@ -11,6 +11,9 @@ import com.cyecize.summer.common.annotations.Configuration;
 
 import java.util.Map;
 
+/**
+ * Plugin for MagicInjector which helps resolve dependencies with {@link Configuration} annotation.
+ */
 public class ConfigurationDependencyResolver implements DependencyResolver {
 
     private final SoletConfig soletConfig;
@@ -34,6 +37,14 @@ public class ConfigurationDependencyResolver implements DependencyResolver {
         return AliasFinder.isAnnotationPresent(dependencyParam.getAnnotations(), Configuration.class);
     }
 
+    /**
+     * Gets the name of the requested parameter from the {@link Configuration} annotation.
+     * Looks for a configuration with that name in {@link SoletConfig}, Javache config, config, specified by the user
+     * in the properties file.
+     *
+     * @return resolved dependency value.
+     * @throws ConfigurationMissingException if a config with that name could not be found.
+     */
     @Override
     public Object resolve(DependencyParam dependencyParam) {
         final String configurationName = AnnotationUtils.getAnnotationValue(

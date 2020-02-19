@@ -18,7 +18,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
 
     private static final String NO_MESSAGE_PRESENT_FORMAT = "No message method present in annotation \"%s\".";
 
-    private static final String ADD_ANNOTATION_TO_CLASS_FORMAT = "Validator \"%s\" not annotated with @Component";
+    private static final String ADD_ANNOTATION_TO_CLASS_FORMAT = "Validator \"%s\" not annotated with \"%s\"";
 
     private final DependencyContainer dependencyContainer;
 
@@ -42,11 +42,11 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
 
     /**
      * Iterates all annotations for the given field.
-     * If an annotation is annotated with @Constraint, get the constraint validator.
-     * If the constraintValidator is null, throw ValidationException.
+     * If an annotation is annotated with {@link Constraint}, get the constraint validator.
+     * If the constraintValidator is null, throw {@link ValidationException}.
      * Reload the validator if lifeSpan == REQUEST
      * <p>
-     * If the validator returns false, add new FieldError to the bindingResult.
+     * If the validator returns false, add new {@link FieldError} to the {@link BindingResult}.
      */
     @SuppressWarnings("unchecked")
     private void validateField(Field field, Object bindingModel, BindingResult bindingResult) {
@@ -59,11 +59,15 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                     continue;
                 }
 
-                Constraint constraint = currentAnnotation.annotationType().getAnnotation(Constraint.class);
-                ConstraintValidator validator = this.dependencyContainer.getService(constraint.validatedBy());
+                final Constraint constraint = currentAnnotation.annotationType().getAnnotation(Constraint.class);
+                final ConstraintValidator validator = this.dependencyContainer.getService(constraint.validatedBy());
 
-                if (validator == null || constraint.validatedBy().getAnnotation(Component.class) == null) {
-                    throw new ValidationException(String.format(ADD_ANNOTATION_TO_CLASS_FORMAT, constraint.validatedBy().getName()));
+                if (validator == null) {
+                    throw new ValidationException(String.format(
+                            ADD_ANNOTATION_TO_CLASS_FORMAT,
+                            constraint.validatedBy().getName(),
+                            Component.class.getName()
+                    ));
                 }
 
                 validator.initialize(currentAnnotation);

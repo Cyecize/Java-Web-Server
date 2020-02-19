@@ -106,7 +106,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     }
 
     /**
-     * In case of JsonResponse, Stringify the result and set the Content-Type to application/json
+     * In case of {@link JsonResponse}, Stringify the result and set the Content-Type to application/json
      */
     private void handleJsonResponse(JsonResponse result) {
         if (result.getStatusCode() != null) {
@@ -118,7 +118,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     }
 
     /**
-     * In case of ModelAndView, Transfer all added parameters to the model,
+     * In case of {@link ModelAndView}, Transfer all added parameters to the model,
      * set the status code from the modelAndView if response is missing one,
      * adds the view parameter to the model and proceeds to call
      * handleModelResponse.
@@ -135,7 +135,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     }
 
     /**
-     * In case of Model response, check if the view is empty and throw an exception if it is.
+     * In case of {@link Model} response, check if the view is empty and throw an exception if it is.
      * If the view contains the redirect value, proceed to handle redirect response
      * otherwise proceed to handle view response.
      */

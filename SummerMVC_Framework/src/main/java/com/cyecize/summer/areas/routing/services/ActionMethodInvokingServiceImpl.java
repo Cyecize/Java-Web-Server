@@ -68,7 +68,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     /**
      * Searches and returns action method that matches the request route.
-     * If not matching method is not found and request is not resource, throw HttpNotFoundException
+     * If no matching method is found and request is not a resource, throw {@link HttpNotFoundException}
      */
     @Override
     public ActionMethod findAction(HttpSoletRequest request) throws HttpNotFoundException {
@@ -86,7 +86,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     /**
      * Extracts path variable from actionMethod, invokes action method
-     * and returns new ActionInvokeResult.
+     * and returns new {@link ActionInvokeResult}.
      */
     @Override
     public ActionInvokeResult invokeMethod(ActionMethod actionMethod) {
@@ -119,7 +119,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     }
 
     /**
-     * Get the controller for the actionMethod, reload if lifeSpan is REQUEST.
+     * Get the controller for the actionMethod.
      * Collect method parameters.
      * Invoke method and return result, or throw ActionInvocationException if
      * errors occur.
@@ -139,10 +139,10 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     /**
      * Finds action method requested params by looking in the platform beans.
-     * If @RequestParam is present, it looks for query/body parameter.
-     * If @PathVariable is present, it looks in the pathVariables.
-     * If the object is not found, then it is considered to be a bindingModel.
-     * If the object is bindingModel, it is populated and validated if needed.
+     * If {@link RequestParam} is present, it looks for query/body parameter.
+     * If {@link PathVariable} is present, it looks in the pathVariables.
+     * If the object is not found, then it is considered to be a service.
+     * If the object is not a service, it is considered a binding model and it is populated and validated if needed.
      */
     private Object[] getMethodParameters(ActionMethod actionMethod, Map<String, Object> pathVariables) {
         final Parameter[] parameters = actionMethod.getMethod().getParameters();
@@ -241,12 +241,12 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
     /**
      * Get matcher for the given action method.
-     * Find all parameters with @PathVariable annotation and get the value from
+     * Find all parameters with {@link PathVariable} annotation and get the value from
      * the matcher where the group name is the PathVariable.value()
      * Then resolve that value with dataResolver to any primitive type
-     * or use a custom data adapter if @ConvertedBy annotation is present.
+     * or use a custom data adapter if {@link ConvertedBy} annotation is present.
      *
-     * @throws UnsatisfiedPathVariableParamException if the there is no value for a given @PathVariable
+     * @throws UnsatisfiedPathVariableParamException if the there is no value for a given {@link PathVariable}
      *                                               and that value is required.
      */
     private Map<String, Object> getPathVariables(ActionMethod actionMethod) {
@@ -255,34 +255,36 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         final Matcher routeMatcher = routePattern.matcher(this.currentRequest.getRelativeRequestURL());
         routeMatcher.find(); //always true
 
-        Arrays.stream(actionMethod.getMethod().getParameters()).forEach(p -> {
-            if (p.isAnnotationPresent(PathVariable.class)) {
-                PathVariable pathVariable = p.getAnnotation(PathVariable.class);
+        for (Parameter param : actionMethod.getMethod().getParameters()) {
+            if (param.isAnnotationPresent(PathVariable.class)) {
+                final PathVariable pathVariable = param.getAnnotation(PathVariable.class);
 
-                final String paramName = pathVariable.value();
-                final String paramValue = routeMatcher.group(paramName);
+                final String pathParamName = pathVariable.value();
+                final String paramValue = routeMatcher.group(pathParamName);
 
                 Object pathVariableValue = null;
-                if (p.isAnnotationPresent(ConvertedBy.class)) {
-                    DataAdapter dataAdapter = this.dataAdapters.getDataAdapter(p.getAnnotation(ConvertedBy.class).value());
+                if (param.isAnnotationPresent(ConvertedBy.class)) {
+                    final DataAdapter dataAdapter = this.dataAdapters.getDataAdapter(
+                            param.getAnnotation(ConvertedBy.class).value()
+                    );
 
                     if (dataAdapter != null) {
                         //add to request so that custom data adapter can pick it up.
-                        this.currentRequest.addBodyParameter(paramName, paramValue);
-                        pathVariableValue = dataAdapter.resolve(paramName, this.currentRequest);
+                        this.currentRequest.addBodyParameter(pathParamName, paramValue);
+                        pathVariableValue = dataAdapter.resolve(pathParamName, this.currentRequest);
                     }
 
                 } else {
-                    pathVariableValue = this.dataResolver.resolve(p.getType(), paramValue);
+                    pathVariableValue = this.dataResolver.resolve(param.getType(), paramValue);
                 }
 
                 if (pathVariableValue == null && pathVariable.required()) {
                     throw new UnsatisfiedPathVariableParamException(actionMethod, pathVariable);
                 }
 
-                pathVariables.put(p.getName(), pathVariableValue);
+                pathVariables.put(param.getName(), pathVariableValue);
             }
-        });
+        }
 
         return pathVariables;
     }

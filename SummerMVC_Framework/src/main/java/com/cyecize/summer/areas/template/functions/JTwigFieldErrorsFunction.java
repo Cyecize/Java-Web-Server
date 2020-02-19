@@ -24,7 +24,7 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
     /**
      * If there are no parameters, return all errors.
      * If there is one parameter of type String, return errors for a given field.
-     * Else throw JtwigException
+     * Else throw {@link JtwigException}
      */
     @Override
     public Object execute(FunctionRequest functionRequest) {

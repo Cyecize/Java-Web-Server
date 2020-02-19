@@ -5,7 +5,6 @@ import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.embedded.internal.JavacheEmbeddedComponent;
 import com.cyecize.javache.services.JavacheConfigService;
-import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
@@ -61,7 +60,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
      * appended to the packageName.
      * <p>
      * If the file is file and the file name ends with .class, load it and check if the class
-     * is assignable from BaseHttpSolet. If it is, add it to the map of solet classes.
+     * is assignable from {@link HttpSolet}. If it is, add it to the map of solet classes.
      */
     private void loadClass(File currentFile, String packageName) throws ClassNotFoundException {
         if (currentFile.isDirectory()) {
@@ -93,7 +92,7 @@ public class EmbeddedApplicationScanningService implements ApplicationScanningSe
             final Class currentClassFile = Class
                     .forName(className, true, Thread.currentThread().getContextClassLoader());
 
-            if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
+            if (HttpSolet.class.isAssignableFrom(currentClassFile)) {
                 this.soletClasses.get(this.rootAppName).add(currentClassFile);
             }
         }

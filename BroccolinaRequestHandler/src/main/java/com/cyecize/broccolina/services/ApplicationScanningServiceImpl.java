@@ -9,7 +9,6 @@ import com.cyecize.javache.common.ReflectionUtils;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LibraryLoadingService;
 import com.cyecize.javache.services.LoggingService;
-import com.cyecize.solet.BaseHttpSolet;
 import com.cyecize.solet.HttpSolet;
 
 import java.io.File;
@@ -159,7 +158,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
      * appended to the packageName.
      * <p>
      * If the file is file and the file name ends with .class, load it and check if the class
-     * is assignable from BaseHttpSolet. If it is, add it to the map of solet classes.
+     * is assignable from {@link HttpSolet}. If it is, add it to the map of solet classes.
      */
     private void loadClass(File currentFile, String packageName, String applicationName, URLClassLoader classLoader)
             throws ClassNotFoundException {
@@ -179,7 +178,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
             final Class currentClassFile = Class.forName(className, true, classLoader);
 
-            if (BaseHttpSolet.class.isAssignableFrom(currentClassFile)) {
+            if (HttpSolet.class.isAssignableFrom(currentClassFile)) {
                 if (!this.soletClasses.containsKey(applicationName)) {
                     this.soletClasses.put(applicationName, new ArrayList<>());
                 }

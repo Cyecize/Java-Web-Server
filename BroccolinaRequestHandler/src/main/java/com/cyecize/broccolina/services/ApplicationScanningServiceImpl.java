@@ -190,7 +190,7 @@ public class ApplicationScanningServiceImpl implements ApplicationScanningServic
 
     /**
      * Iterates the given directory's files and filters jar files
-     * then returns a collection of URLS for each library.
+     * then returns a collection of URLs for each library.
      */
     private List<URL> collectApplicationLibraries(String librariesRootFolderPath) {
         final File libraryFolder = new File(librariesRootFolderPath);

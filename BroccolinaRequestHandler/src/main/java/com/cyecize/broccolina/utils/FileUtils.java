@@ -6,6 +6,10 @@ import java.util.Arrays;
 
 public class FileUtils {
 
+    /**
+     * Checks if two input stream have the same content.
+     * Compares their available length first so if they are not the same it would save some time.
+     */
     public static boolean filesMatch(InputStream firstFile, InputStream secondFile) throws IOException {
         final byte[] buffer1 = new byte[4096];
         final byte[] buffer2 = new byte[4096];

@@ -3,6 +3,10 @@ package com.cyecize.broccolina.services;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.solet.SoletLogger;
 
+/**
+ * Adapter service transferring {@link LoggingService} into a service
+ * that is visible from solets.
+ */
 public class SoletLoggerImpl implements SoletLogger {
 
     private final LoggingService loggingService;

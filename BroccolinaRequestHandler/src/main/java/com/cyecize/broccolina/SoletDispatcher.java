@@ -28,6 +28,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Request handler responsible for processing dynamic HTTP requests.
+ * It will look for a solet with mapping that matches the request URL and will forward the request
+ * content to the given solet.
+ */
 @Service
 public class SoletDispatcher implements RequestHandler {
 
@@ -105,6 +110,11 @@ public class SoletDispatcher implements RequestHandler {
         return true;
     }
 
+    /**
+     * Order if this request handler is configurable.
+     *
+     * @return the order of the request handler.
+     */
     @Override
     public int order() {
         return this.configService.getConfigParam(JavacheConfigValue.BROCCOLINA_SOLET_DISPATCHER_ORDER, int.class);

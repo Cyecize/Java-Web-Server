@@ -58,7 +58,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     }
 
     /**
-     * Gets all available HttpSolet implementations.
+     * Gets all available {@link HttpSolet} implementations.
      * Iterates them, creates application assets folder for each app and
      * loads solet into the solet map.
      * <p>
@@ -135,8 +135,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
     }
 
     /**
-     * Recursive method for getting @WebSolet annotation from a given class.
-     * Recursion is required since only parent class could have @WebSolet annotation
+     * Recursive method for getting {@link WebSolet} annotation from a given class.
+     * Recursion is required since only parent class could have {@link WebSolet} annotation
      * and not the child.
      */
     private WebSolet getSoletAnnotation(Class<?> soletClass) {

@@ -1,6 +1,6 @@
 package com.cyecize.summer;
 
-import com.cyecize.solet.BaseHttpSolet;
+import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.solet.SoletConfig;
@@ -30,14 +30,19 @@ import java.util.Map;
 import java.util.Set;
 
 @WebSolet("/*")
-public abstract class DispatcherSolet extends BaseHttpSolet {
+public abstract class DispatcherSolet implements HttpSolet {
 
     private RequestProcessor requestProcessor;
+
+    private boolean hasIntercepted;
+
+    private boolean hasInitialized;
+
+    protected SoletConfig soletConfig;
 
     protected DependencyContainer dependencyContainer;
 
     protected DispatcherSolet() {
-        super();
     }
 
     /**
@@ -45,7 +50,22 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      */
     @Override
     public synchronized final void service(HttpSoletRequest request, HttpSoletResponse response) {
-        super.setHasIntercepted(this.requestProcessor.processRequest(request, response));
+        this.hasIntercepted = this.requestProcessor.processRequest(request, response);
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return this.hasInitialized;
+    }
+
+    @Override
+    public boolean hasIntercepted() {
+        return this.hasIntercepted;
+    }
+
+    @Override
+    public SoletConfig getSoletConfig() {
+        return this.soletConfig;
     }
 
     /**
@@ -56,7 +76,8 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
      */
     @Override
     public final void init(SoletConfig soletConfig) {
-        super.init(soletConfig);
+        this.soletConfig = soletConfig;
+        this.hasInitialized = true;
 
         final Map<String, Object> javacheConfig = JavacheConfigServiceUtils.getConfigParams(soletConfig);
         final UserConfigService userConfigService = new UserConfigServiceImpl(soletConfig, javacheConfig);
@@ -104,6 +125,7 @@ public abstract class DispatcherSolet extends BaseHttpSolet {
                 this.dependencyContainer
         );
     }
+
 
     /**
      * This method will be called once the application has fully been loaded.

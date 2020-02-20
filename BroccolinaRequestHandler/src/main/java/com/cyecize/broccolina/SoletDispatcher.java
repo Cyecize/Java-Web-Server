@@ -87,14 +87,14 @@ public class SoletDispatcher implements RequestHandler {
                 sharedData.getObject(SharedDataPropertyNames.HTTP_RESPONSE, HttpResponse.class)
         );
 
-        final HttpSolet solet = this.soletCandidateFinder.findSoletCandidate(request);
-        this.sessionManagementService.initSessionIfExistent(request);
-
-        if (solet == null || (request.isResource() && !this.trackResources)) {
+        if (request.isResource() && !this.trackResources) {
             return false;
         }
 
-        if (!this.runSolet(solet, request, response)) {
+        this.sessionManagementService.initSessionIfExistent(request);
+        final HttpSolet solet = this.soletCandidateFinder.findSoletCandidate(request);
+
+        if (solet == null || !this.runSolet(solet, request, response)) {
             return false;
         }
 

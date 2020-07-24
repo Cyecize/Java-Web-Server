@@ -27,7 +27,7 @@
         <repository>
             <id>project.local</id>
             <name>project-repository</name>
-            <url>file:${pom.basedir}/${pom.parent.relativePath}/LocalRepository</url>
+            <url>file:${pom.basedir}/${pom.parent.relativePath}/../local-repository</url>
         </repository>
     </repositories>
 

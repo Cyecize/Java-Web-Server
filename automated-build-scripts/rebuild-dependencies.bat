@@ -1,3 +1,4 @@
+echo Start Process of rebuilding dependencies
 
 call %~dp0subtasks/clear-maven-dependencies.bat
 

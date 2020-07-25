@@ -1,3 +1,5 @@
+echo Clearing local dependencies from '.m2' directory
+
 cd %~dp0../../
 rmdir /Q /S local-repository
 

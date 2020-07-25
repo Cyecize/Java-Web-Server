@@ -33,7 +33,4 @@
             <version>${version.magic-injector}</version>
         </dependency>
     </dependencies>
-
-    <!-- cd target: -->
-    <!--  mvn deploy:deploy-file -Durl=file:../../../local-repository -Dfile=target/javache-api-1.3.jar -DgroupId=com.cyecize  -DartifactId=javache-api -Dpackaging=jar -Dversion=1.3 -DpomFile=javache-api-1.3.pom.txt  -->
 </project>

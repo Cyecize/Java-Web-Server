@@ -28,6 +28,11 @@
             <id>project.local</id>
             <name>project-repository</name>
             <url>file:${pom.basedir}/${pom.parent.relativePath}/../local-repository</url>
+        </repository>  
+		<repository>
+            <id>third.party</id>
+            <name>third-party-repository</name>
+            <url>file:${pom.basedir}/${pom.parent.relativePath}/../third-party-repository</url>
         </repository>
     </repositories>
 

@@ -8,3 +8,5 @@ call %~dp0subtasks/deploy-javache-standard.bat
 call %~dp0subtasks/deploy-javache-embedded.bat
 
 cd %~dp0
+
+echo Finished deployment!

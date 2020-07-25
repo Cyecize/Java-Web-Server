@@ -57,17 +57,18 @@ Technologies used
 	
 How to run the app?
 ------------------
-First, extract the files from the file in Examples/00JavacheLatest.zip.
+First, run **build-and-deploy.bat**, which is located in automated-build-scripts folder. This will create a folder named build-output. There you can find two folders (for javache standard and javache embedded). Go inside javache-standard.
 By default you need to put your app in the 'webapps' directory.
 
-Your app has to be .jar and has to be structured like so:
-* classes - put the compiled output there (classes, resources)
-* lib - you can put the .jar libraries here or put them instead in javache's lib folder.
+Your app has to be **.jar** and has to be structured like so:
+* **classes** - put the compiled output there (classes, resources)
+* **lib** - you can put the .jar libraries here or put them instead in javache's lib folder.
+
+After you put your app, run **StartJavache.bat**. This will start the server and load your applications (by default on port 8000).
 
 To better understand, you can extract some of the provided example applications and/or read the documentation inside Documentation folder.
 
-In the exams folder you can find a working javache demo with everything set up.
-You just need to run a command.
+In the examples folder you can find a working javache demo with everything set up.
 
 More info
 -------------
@@ -78,7 +79,7 @@ Credits
 The idea for this project came from a workshop in a software academy that I went to.
 
 The web server that we made there was intended to show really vaguely the idea behind web servers and how they operate.
-had about 5 labs the final app was really buggy and slow, and it lacked many functionalities that are essential, such as asynchronous requests, uploading files, dependency injection, template engine, exception handling, security, interceptors and basically the whole app was really primitive.
+We had about 5 labs and the final app was really buggy and slow, and it lacked many functionalities that are essential, such as asynchronous requests, uploading files, dependency injection, template engine, exception handling, security, interceptors, embedded version of the server and basically the whole app was really primitive.
 
 So I decided to start from the ground up and create somewhat similar application, but more functional which resulted in something that was totally different than the original project except the names of the mini applications such as Summer, Javache and so on.
 

@@ -32,3 +32,4 @@ src/javache-web-server/server/javache.iml
 src/http-api/http.iml
 src/javache-web-server/server-embedded/dependency-reduced-pom.xml
 local-repository/
+build-output/

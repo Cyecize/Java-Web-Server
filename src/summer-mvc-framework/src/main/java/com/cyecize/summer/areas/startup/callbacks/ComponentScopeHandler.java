@@ -18,19 +18,7 @@ public class ComponentScopeHandler implements ServiceDetailsCreated {
         }
 
         final ServiceLifeSpan lifeSpan = this.getAnnotationValue(serviceDetails.getAnnotation());
-
-        switch (lifeSpan) {
-            case PROTOTYPE:
-                serviceDetails.setScopeType(ScopeType.PROTOTYPE);
-                break;
-            case SINGLETON:
-                serviceDetails.setScopeType(ScopeType.SINGLETON);
-                break;
-            default:
-                serviceDetails.setScopeType(ScopeType.PROXY);
-                break;
-        }
-
+        serviceDetails.setScopeType(lifeSpan.getScopeType());
     }
 
     private boolean isLifespanMethodPresent(Annotation annotation) {

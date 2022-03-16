@@ -127,9 +127,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
     private Object invokeAction(ActionMethod actionMethod, Map<String, Object> pathVariables) {
         final Object controllerInstance = actionMethod.getController().getInstance();
 
-        final Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);
-
         try {
+            final Object[] methodParams = this.getMethodParameters(actionMethod, pathVariables);
             actionMethod.getMethod().setAccessible(true);
             return actionMethod.getMethod().invoke(controllerInstance, methodParams);
         } catch (IllegalAccessException | InvocationTargetException e) {

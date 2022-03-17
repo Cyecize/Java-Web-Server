@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 public @interface ConvertedBy {
 
-    Class<? extends DataAdapter> value();
+    Class<? extends DataAdapter<?>> value();
 }

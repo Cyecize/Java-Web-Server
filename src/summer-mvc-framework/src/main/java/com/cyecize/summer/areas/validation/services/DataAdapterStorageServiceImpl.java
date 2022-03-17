@@ -15,7 +15,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
 
     private static final String NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT = "No generic type found for data adapter \"%s\".";
 
-    private final Map<String, List<DataAdapter>> dataAdapters;
+    private final Map<String, List<DataAdapter<?>>> dataAdapters;
 
     public DataAdapterStorageServiceImpl(DependencyContainer dependencyContainer) {
         this.dataAdapters = new HashMap<>();
@@ -35,9 +35,9 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      * @return the required adapter of null if nothing found.
      */
     @Override
-    public <T extends DataAdapter> DataAdapter getDataAdapter(Class<T> dataAdapterType) {
-        for (Map.Entry<String, List<DataAdapter>> entry : this.dataAdapters.entrySet()) {
-            for (DataAdapter adapter : entry.getValue()) {
+    public <T extends DataAdapter<?>> DataAdapter<?> getDataAdapter(Class<T> dataAdapterType) {
+        for (Map.Entry<String, List<DataAdapter<?>>> entry : this.dataAdapters.entrySet()) {
+            for (DataAdapter<?> adapter : entry.getValue()) {
                 if (dataAdapterType.isAssignableFrom(adapter.getClass())) {
                     return adapter;
                 }
@@ -57,8 +57,8 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      * @return the first data adapter.
      */
     @Override
-    public <T extends DataAdapter> DataAdapter getDataAdapter(String fieldGenericType, Class<T> dataAdapterType) {
-        final List<DataAdapter> dataAdapters = this.getAdaptersForGenericType(fieldGenericType);
+    public <T extends DataAdapter<?>> DataAdapter<?> getDataAdapter(String fieldGenericType, Class<T> dataAdapterType) {
+        final List<DataAdapter<?>> dataAdapters = this.getAdaptersForGenericType(fieldGenericType);
 
         if (dataAdapters == null) {
             return null;
@@ -77,8 +77,8 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      * @return the first data adapter.
      */
     @Override
-    public DataAdapter getDataAdapter(String genericType) {
-        final List<DataAdapter> dataAdapters = this.getAdaptersForGenericType(genericType);
+    public DataAdapter<?> getDataAdapter(String genericType) {
+        final List<DataAdapter<?>> dataAdapters = this.getAdaptersForGenericType(genericType);
 
         if (dataAdapters != null) {
             return dataAdapters.get(0);
@@ -93,8 +93,8 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      * @param genericType the target type of the data adapter.
      * @return adapters for that type.
      */
-    private List<DataAdapter> getAdaptersForGenericType(String genericType) {
-        final List<DataAdapter> dataAdapters = this.dataAdapters.get(genericType);
+    private List<DataAdapter<?>> getAdaptersForGenericType(String genericType) {
+        final List<DataAdapter<?>> dataAdapters = this.dataAdapters.get(genericType);
 
         if (dataAdapters == null || dataAdapters.size() < 1) {
             return null;
@@ -111,7 +111,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
     private void setDataAdapters(Collection<ServiceDetails> adapters) {
 
         for (ServiceDetails serviceDetails : adapters) {
-            final DataAdapter adapter = (DataAdapter) serviceDetails.getActualInstance();
+            final DataAdapter<?> adapter = (DataAdapter<?>) serviceDetails.getActualInstance();
 
             try {
                 final String genericType = ((ParameterizedType) adapter.getClass()
@@ -121,7 +121,7 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
                     this.dataAdapters.put(genericType, new ArrayList<>());
                 }
 
-                this.dataAdapters.get(genericType).add((DataAdapter) serviceDetails.getInstance());
+                this.dataAdapters.get(genericType).add((DataAdapter<?>) serviceDetails.getInstance());
             } catch (Throwable e) {
                 throw new RuntimeException(NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT, e);
             }

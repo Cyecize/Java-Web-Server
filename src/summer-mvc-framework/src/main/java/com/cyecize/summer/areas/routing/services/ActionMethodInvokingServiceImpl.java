@@ -216,7 +216,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
         if (matchingKeyValuePair != null) {
             if (parameter.isAnnotationPresent(ConvertedBy.class)) {
-                final DataAdapter dataAdapter = this.dataAdapters.getDataAdapter(parameter.getAnnotation(ConvertedBy.class).value());
+                final DataAdapter<?> dataAdapter = this.dataAdapters
+                        .getDataAdapter(parameter.getAnnotation(ConvertedBy.class).value());
 
                 if (dataAdapter != null) {
                     resultValue = dataAdapter.resolve(paramName, this.currentRequest);
@@ -263,7 +264,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
 
                 Object pathVariableValue = null;
                 if (param.isAnnotationPresent(ConvertedBy.class)) {
-                    final DataAdapter dataAdapter = this.dataAdapters.getDataAdapter(
+                    final DataAdapter<?> dataAdapter = this.dataAdapters.getDataAdapter(
                             param.getAnnotation(ConvertedBy.class).value()
                     );
 

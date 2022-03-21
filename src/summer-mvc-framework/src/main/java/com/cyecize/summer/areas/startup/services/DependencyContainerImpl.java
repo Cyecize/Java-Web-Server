@@ -1,8 +1,6 @@
 package com.cyecize.summer.areas.startup.services;
 
-import com.cyecize.ioc.exceptions.AlreadyInitializedException;
 import com.cyecize.ioc.models.ServiceDetails;
-import com.cyecize.ioc.services.ObjectInstantiationService;
 import com.cyecize.summer.common.annotations.Bean;
 import com.cyecize.summer.common.enums.ServiceLifeSpan;
 import com.cyecize.summer.constants.IocConstants;
@@ -95,12 +93,6 @@ public class DependencyContainerImpl implements DependencyContainer {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void init(Collection<Class<?>> collection, Collection<ServiceDetails> collection1,
-                     ObjectInstantiationService objectInstantiationService) throws AlreadyInitializedException {
-
     }
 
     @Override

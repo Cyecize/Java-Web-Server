@@ -3,7 +3,6 @@ package com.cyecize.summer.areas.routing.models;
 import com.cyecize.http.MultipartFile;
 import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
 import com.cyecize.summer.utils.PathUtils;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,9 +28,8 @@ public class UploadedFileImpl implements UploadedFile {
             throw new IOException(FILE_IS_NULL_MSG);
         }
 
-        String name = this.multipartFile.getFieldName() + new Date().getTime();
-        name = DigestUtils.md5Hex(name);
-        name += this.getFileExtension(this.multipartFile.getFileName());
+        final String name = this.multipartFile.getFieldName() + new Date().getTime()
+                + this.getFileExtension(this.multipartFile.getFileName());
 
         return this.save(relativePath, name);
     }

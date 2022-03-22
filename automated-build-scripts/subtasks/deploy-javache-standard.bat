@@ -1,14 +1,16 @@
-call %~dp0_constants.bat
+call %~dp0../_constants.bat
 call %~dp0rebuild-summer.bat
 
 cd %~dp0..\..\build-output
 SET src=%~dp0..\..\src
 SET third-party-repo=%~dp0..\..\third-party-repository
 
-rmdir \Q \S javache-standard
+rmdir "javache-standard" /S /Q
 mkdir javache-standard
 
 cd javache-standard
+
+SET currentDir=%CD%
 
 mkdir api
 copy %src%\http-api\target\http-%httpApiVersion%.jar api\http-%httpApiVersion%.jar
@@ -24,8 +26,16 @@ copy %src%\javache-web-server\server\conf\request-handlers.ini config\request-ha
 
 mkdir lib
 copy %src%\broccolina-request-handler\target\broccolina-%broccolinaVersion%.jar lib\broccolina-%broccolinaVersion%.jar
-copy %src%\coyote-resource-handler\target\toyote-%toyoteVersion%.jar lib\toyote-%toyoteVersion%.jar
-copy %src%\summer-mvc-framework\target\summer-%summerVersion%.jar lib\summer-%summerVersion%.jar
+:: Move Broccolina's dependencies
+xcopy %src%\broccolina-request-handler\target\dependency lib /E/H
+
+copy %src%\coyote-resource-handler\target\original-toyote-%toyoteVersion%.jar lib\toyote-%toyoteVersion%.jar
+:: Move Toyote's dependencies
+xcopy %src%\coyote-resource-handler\target\dependency lib /E/H
+
+copy %src%\summer-mvc-framework\target\original-summer-%summerVersion%.jar lib\summer-%summerVersion%.jar
+:: Move Summer MVC's dependencies
+xcopy %src%\summer-mvc-framework\target\dependency lib /E/H
 
 mkdir server
 xcopy %src%\javache-web-server\server\target\classes server /E/H
@@ -33,5 +43,9 @@ xcopy %src%\javache-web-server\server\target\classes server /E/H
 mkdir webapps
 
 copy %src%\javache-web-server\server\conf\StartJavache.bat StartJavache.bat
+
+
+:: Deploy Summer MVC Fat far too
+copy %src%\summer-mvc-framework\target\summer-%summerVersion%.jar ..\summer-%summerVersion%.jar
 
 cd %~dp0

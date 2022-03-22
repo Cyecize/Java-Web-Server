@@ -4,10 +4,7 @@ echo Begin building SUMMER MVC
 
 cd %~dp0../../src/summer-mvc-framework
 
-call mvn clean
-call mvn install dependency:copy-dependencies
-call mvc package
-
+call mvn clean package dependency:copy-dependencies
 
 cd %~dp0
 

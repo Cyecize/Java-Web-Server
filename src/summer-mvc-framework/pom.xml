@@ -45,6 +45,14 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                   <excludeScope>provided</excludeScope>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

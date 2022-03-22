@@ -18,7 +18,8 @@ copy %src%\solet-api\target\solet-%soletApiVersion%.jar api\solet-%soletApiVersi
 
 mkdir bin
 copy %src%\javache-web-server\api\target\javache-api-%javacheApiVersion%.jar bin\javache-api-%javacheApiVersion%.jar
-copy %third-party-repo%\magic-injector-fat-jar-%magicInjectorVersion%.jar bin\magic-injector-%magicInjectorVersion%.jar
+:: Move Javache API's dependencies to the bin folder. Those inclide Magic IoC Container
+xcopy %src%\javache-web-server\api\target\dependency bin /E/H
 
 mkdir config
 copy %src%\javache-web-server\server\conf\config.ini config\config.ini

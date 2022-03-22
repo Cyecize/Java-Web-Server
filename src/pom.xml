@@ -20,7 +20,7 @@
         <version.javache>1.3</version.javache>
         <version.javache-embedded>1.3</version.javache-embedded>
         <version.summer>1.3</version.summer>
-        <version.magic-injector>1.2</version.magic-injector>
+        <version.magic-injector>2.0</version.magic-injector>
     </properties>
 
     <repositories>

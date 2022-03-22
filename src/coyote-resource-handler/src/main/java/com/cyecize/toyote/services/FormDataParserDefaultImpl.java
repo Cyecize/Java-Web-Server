@@ -6,6 +6,7 @@ import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
+import com.cyecize.toyote.ToyoteConstants;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class FormDataParserDefaultImpl implements FormDataParser {
 
     @Autowired
     public FormDataParserDefaultImpl(LoggingService loggingService,
-        JavacheConfigService configService) {
+                                     JavacheConfigService configService) {
         this.loggingService = loggingService;
         this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
     }
@@ -40,6 +41,8 @@ public class FormDataParserDefaultImpl implements FormDataParser {
         if (requestBody == null || requestBody.isEmpty() || requestBody.trim().isEmpty()) {
             return;
         }
+
+        request.addBodyParameter(ToyoteConstants.RAW_BODY_PARAM_NAME, requestBody);
 
         final String[] bodyParamPairs = requestBody.split("&");
 

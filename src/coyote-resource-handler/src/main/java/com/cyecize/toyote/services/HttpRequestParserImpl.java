@@ -9,6 +9,7 @@ import com.cyecize.javache.JavacheConfigValue;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.toyote.ToyoteConstants;
+import com.cyecize.toyote.enums.FormDataParserProvider;
 import com.cyecize.toyote.exceptions.CannotParseRequestException;
 import com.cyecize.toyote.exceptions.RequestTooBigException;
 
@@ -17,6 +18,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +27,9 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
     private static final String REQUEST_TOO_BIG_MSG = "Request too big.";
 
-    private final FormDataParser defaultFormDataParser;
+    private final List<FormDataParser> formDataParsers;
 
-    private final FormDataParser multipartFormDataParser;
+    private final Map<FormDataParserProvider, FormDataParser> instanceProviderMap = new HashMap<>();
 
     private final LoggingService loggingService;
 
@@ -36,11 +38,10 @@ public class HttpRequestParserImpl implements HttpRequestParser {
     private final int maxRequestSize;
 
     @Autowired
-    public HttpRequestParserImpl(FormDataParserDefaultImpl defaultFormDataParser,
-                                 FormDataParserMultipartImpl multipartFormDataParser,
-                                 LoggingService loggingService, JavacheConfigService configService) {
-        this.defaultFormDataParser = defaultFormDataParser;
-        this.multipartFormDataParser = multipartFormDataParser;
+    public HttpRequestParserImpl(List<FormDataParser> formDataParsers,
+                                 LoggingService loggingService,
+                                 JavacheConfigService configService) {
+        this.formDataParsers = formDataParsers;
         this.loggingService = loggingService;
         this.showRequestLog = configService.getConfigParam(JavacheConfigValue.SHOW_REQUEST_LOG, boolean.class);
         this.maxRequestSize = configService.getConfigParam(JavacheConfigValue.MAX_REQUEST_SIZE, int.class);
@@ -69,11 +70,8 @@ public class HttpRequestParserImpl implements HttpRequestParser {
             }
 
             final String contentType = request.getContentType();
-            if (contentType != null && contentType.startsWith("multipart/form-data")) {
-                this.multipartFormDataParser.parseBodyParams(inputStream, request);
-            } else {
-                this.defaultFormDataParser.parseBodyParams(inputStream, request);
-            }
+            final FormDataParserProvider formDataParserProvider = FormDataParserProvider.findByContentType(contentType);
+            this.getParser(formDataParserProvider).parseBodyParams(inputStream, request);
 
             this.trimRequestPath(request);
             return request;
@@ -209,6 +207,22 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
     private static String decode(String str) {
         return URLDecoder.decode(str, StandardCharsets.UTF_8);
+    }
+
+    private FormDataParser getParser(FormDataParserProvider provider) {
+        if (this.instanceProviderMap.containsKey(provider)) {
+            return this.instanceProviderMap.get(provider);
+        }
+
+        final FormDataParser formDataParser = this.formDataParsers.stream()
+                .filter(parser -> provider.getParserType().isAssignableFrom(parser.getClass()))
+                .findFirst()
+                .orElseThrow(() -> new CannotParseRequestException(String.format(
+                        "Could not find %s form data parser", provider
+                )));
+        this.instanceProviderMap.put(provider, formDataParser);
+
+        return formDataParser;
     }
 
     private void trimRequestPath(HttpRequest request) {

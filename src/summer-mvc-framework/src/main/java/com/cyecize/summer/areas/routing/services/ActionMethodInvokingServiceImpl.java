@@ -14,6 +14,7 @@ import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
 import com.cyecize.summer.areas.validation.annotations.Valid;
+import com.cyecize.summer.areas.validation.exceptions.ConstraintValidationException;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageService;
@@ -147,6 +148,8 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
         final Parameter[] parameters = actionMethod.getMethod().getParameters();
         final Object[] parameterInstances = new Object[parameters.length];
 
+        final BindingResult bindingResult = this.dependencyContainer.getService(BindingResult.class);
+
         for (int i = 0; i < parameters.length; i++) {
             final Parameter parameter = parameters[i];
             if (parameter.isAnnotationPresent(RequestParam.class)) {
@@ -180,7 +183,7 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 if (parameter.isAnnotationPresent(Valid.class)) {
                     this.validationService.validateBindingModel(
                             instanceOfBindingModel,
-                            this.dependencyContainer.getService(BindingResult.class)
+                            bindingResult
                     );
                 }
 
@@ -188,6 +191,14 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException cause) {
                 throw new RuntimeException(String.format(CANNOT_INSTANTIATE_CLASS_FORMAT, parameter.getType().getName()), cause);
             }
+        }
+
+        if (bindingResult.hasErrors()
+                && Arrays.stream(parameters).noneMatch(p -> p.getType().isAssignableFrom(BindingResult.class))) {
+            throw new ConstraintValidationException(String.format(
+                    "Object validation completed with %d errors",
+                    bindingResult.getErrors().size())
+            );
         }
 
         return parameterInstances;

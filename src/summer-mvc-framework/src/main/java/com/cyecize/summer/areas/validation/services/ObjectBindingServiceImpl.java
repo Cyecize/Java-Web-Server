@@ -9,7 +9,7 @@ import com.cyecize.summer.areas.routing.models.UploadedFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
-import com.cyecize.summer.areas.validation.exceptions.ValidationException;
+import com.cyecize.summer.areas.validation.exceptions.ObjectBindingException;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
 import com.cyecize.summer.constants.ContentTypes;
 import com.cyecize.summer.utils.ReflectionUtils;
@@ -175,7 +175,7 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         try {
             this.objectMapper.readerForUpdating(bindingModel).readValue(payload);
         } catch (JsonProcessingException e) {
-            throw new ValidationException(String.format(
+            throw new ObjectBindingException(String.format(
                     "Could not convert json \n %s \n to binding model %s",
                     payload,
                     bindingModel.getClass()

@@ -1,6 +1,6 @@
 package com.cyecize.summer.areas.validation.constraints;
 
-import com.cyecize.summer.areas.validation.exceptions.ValidationException;
+import com.cyecize.summer.areas.validation.exceptions.ErrorDuringValidationException;
 import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.utils.ReflectionUtils;
@@ -29,7 +29,7 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
                 .findFirst().orElse(null);
 
         if (matchingField == null) {
-            throw new ValidationException(String.format(MATCHING_FIELD_NOT_FOUND_FORMAT, this.fieldName));
+            throw new ErrorDuringValidationException(String.format(MATCHING_FIELD_NOT_FOUND_FORMAT, this.fieldName));
         }
 
         matchingField.setAccessible(true);
@@ -38,7 +38,7 @@ public class FieldMatchConstraint implements ConstraintValidator<FieldMatch, Obj
         try {
             matchingVal = matchingField.get(bindingModel);
         } catch (IllegalAccessException e) {
-            throw new ValidationException(e.getMessage(), e);
+            throw new ErrorDuringValidationException(e.getMessage(), e);
         }
 
         if (matchingVal == null) {

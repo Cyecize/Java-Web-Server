@@ -2,7 +2,8 @@ package com.cyecize.summer.areas.validation.services;
 
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.Constraint;
-import com.cyecize.summer.areas.validation.exceptions.ValidationException;
+import com.cyecize.summer.areas.validation.annotations.Valid;
+import com.cyecize.summer.areas.validation.exceptions.ErrorDuringValidationException;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
 import com.cyecize.summer.areas.validation.interfaces.ConstraintValidator;
 import com.cyecize.summer.areas.validation.models.FieldError;
@@ -31,24 +32,31 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
      */
     @Override
     public void validateBindingModel(Object bindingModel, BindingResult bindingResult) {
+        if (bindingModel == null || ReflectionUtils.isPrimitive(bindingModel.getClass())) {
+            return;
+        }
+
         try {
             for (Field declaredField : ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass())) {
                 this.validateField(declaredField, bindingModel, bindingResult);
+                if (declaredField.isAnnotationPresent(Valid.class)) {
+                    this.validateBindingModel(declaredField.get(bindingModel), bindingResult);
+                }
             }
         } catch (Throwable th) {
-            throw new ValidationException(th.getMessage(), th);
+            throw new ErrorDuringValidationException(th.getMessage(), th);
         }
     }
 
     /**
      * Iterates all annotations for the given field.
      * If an annotation is annotated with {@link Constraint}, get the constraint validator.
-     * If the constraintValidator is null, throw {@link ValidationException}.
+     * If the constraintValidator is null, throw {@link ErrorDuringValidationException}.
      * Reload the validator if lifeSpan == REQUEST
      * <p>
      * If the validator returns false, add new {@link FieldError} to the {@link BindingResult}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void validateField(Field field, Object bindingModel, BindingResult bindingResult) {
         try {
             field.setAccessible(true);
@@ -63,7 +71,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                 final ConstraintValidator validator = this.dependencyContainer.getService(constraint.validatedBy());
 
                 if (validator == null) {
-                    throw new ValidationException(String.format(
+                    throw new ErrorDuringValidationException(String.format(
                             ADD_ANNOTATION_TO_CLASS_FORMAT,
                             constraint.validatedBy().getName(),
                             Component.class.getName()
@@ -85,14 +93,14 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
             }
 
         } catch (IllegalAccessException e) {
-            throw new ValidationException(e.getMessage(), e);
+            throw new ErrorDuringValidationException(e.getMessage(), e);
         }
     }
 
     /**
      * Gets the message method of a given annotation using reflection.
      *
-     * @throws ValidationException if the annotation is missing the message method.
+     * @throws ErrorDuringValidationException if the annotation is missing the message method.
      */
     private String getAnnotationMessage(Annotation annotation) {
         try {
@@ -100,9 +108,9 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
             message.setAccessible(true);
             return (String) message.invoke(annotation);
         } catch (NoSuchMethodException e) {
-            throw new ValidationException(String.format(NO_MESSAGE_PRESENT_FORMAT, annotation.getClass().getName()));
+            throw new ErrorDuringValidationException(String.format(NO_MESSAGE_PRESENT_FORMAT, annotation.getClass().getName()));
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new ValidationException(e.getMessage(), e);
+            throw new ErrorDuringValidationException(e.getMessage(), e);
         }
     }
 }

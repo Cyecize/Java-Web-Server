@@ -47,7 +47,7 @@ Technologies used
 	
 	* nio-multipart-parser used in Toyote for parsing multipart requests.
 	
-	* Gson (com.google.code.gson) used in SummerMVC.
+	* Jackson Databind used in SummerMVC (Gson in older versions). 
 	
 	* Apache Tika used in Toyote for detecting media types.
 	

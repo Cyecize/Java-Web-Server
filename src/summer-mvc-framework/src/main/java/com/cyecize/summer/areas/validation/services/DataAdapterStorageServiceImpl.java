@@ -1,25 +1,27 @@
 package com.cyecize.summer.areas.validation.services;
 
-import com.cyecize.ioc.models.ServiceDetails;
-import com.cyecize.summer.areas.startup.services.DependencyContainer;
+import com.cyecize.ioc.annotations.Nullable;
+import com.cyecize.ioc.utils.GenericsUtils;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
+import com.cyecize.summer.common.annotations.Component;
 
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+@Component
 public class DataAdapterStorageServiceImpl implements DataAdapterStorageService {
 
     private static final String NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT = "No generic type found for data adapter \"%s\".";
 
     private final Map<String, List<DataAdapter<?>>> dataAdapters;
 
-    public DataAdapterStorageServiceImpl(DependencyContainer dependencyContainer) {
+    public DataAdapterStorageServiceImpl(@Nullable List<DataAdapter<?>> dataAdapters) {
         this.dataAdapters = new HashMap<>();
-        this.setDataAdapters(dependencyContainer.getImplementations(DataAdapter.class));
+        this.setDataAdaptersAndUpdateObjectMapper(Objects.requireNonNullElse(dataAdapters, List.of()));
     }
 
     @Override
@@ -108,20 +110,20 @@ public class DataAdapterStorageServiceImpl implements DataAdapterStorageService 
      * generic type and adds the adapter to a map of data adapters where the key is the
      * generic type and the value is a list of data adapters for that type.
      */
-    private void setDataAdapters(Collection<ServiceDetails> adapters) {
-
-        for (ServiceDetails serviceDetails : adapters) {
-            final DataAdapter<?> adapter = (DataAdapter<?>) serviceDetails.getActualInstance();
-
+    private void setDataAdaptersAndUpdateObjectMapper(List<DataAdapter<?>> adapters) {
+        for (DataAdapter<?> adapter : adapters) {
             try {
-                final String genericType = ((ParameterizedType) adapter.getClass()
-                        .getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
+                final Type genericTypeArgument = GenericsUtils.getGenericTypeArguments(
+                        adapter.getClass(), DataAdapter.class
+                )[0];
+
+                final String genericType = genericTypeArgument.getTypeName();
 
                 if (!this.dataAdapters.containsKey(genericType)) {
                     this.dataAdapters.put(genericType, new ArrayList<>());
                 }
 
-                this.dataAdapters.get(genericType).add((DataAdapter<?>) serviceDetails.getInstance());
+                this.dataAdapters.get(genericType).add(adapter);
             } catch (Throwable e) {
                 throw new RuntimeException(NO_GENERIC_TYPE_FOUND_FOR_CLS_FORMAT, e);
             }

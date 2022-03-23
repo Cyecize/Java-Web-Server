@@ -4,16 +4,17 @@ import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
-import com.cyecize.summer.areas.template.exceptions.EmptyViewException;
 import com.cyecize.summer.areas.routing.exceptions.ViewNotFoundException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
+import com.cyecize.summer.areas.template.exceptions.EmptyViewException;
 import com.cyecize.summer.areas.template.services.TemplateRenderingService;
 import com.cyecize.summer.common.models.JsonResponse;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
 import com.cyecize.summer.constants.ContentTypes;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,7 +32,7 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
 
-    private final Gson gson;
+    private final ObjectMapper objectMapper;
 
     private final DependencyContainer dependencyContainer;
 
@@ -41,10 +42,11 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
 
     private ActionInvokeResult actionInvokeResult;
 
-    public ActionMethodResultHandlerImpl(DependencyContainer dependencyContainer, TemplateRenderingService renderingService) {
+    public ActionMethodResultHandlerImpl(DependencyContainer dependencyContainer,
+                                         TemplateRenderingService renderingService) {
         this.dependencyContainer = dependencyContainer;
         this.renderingService = renderingService;
-        this.gson = new Gson();
+        this.objectMapper = dependencyContainer.getService(ObjectMapper.class);
     }
 
     /**
@@ -102,7 +104,11 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
      * Sets the response as a Json representation of the return type.
      */
     private void handleOtherResponse(ActionInvokeResult result) {
-        this.response.setContent(this.gson.toJson(result.getInvocationResult()));
+        try {
+            this.response.setContent(this.objectMapper.writeValueAsString(result.getInvocationResult()));
+        } catch (JsonProcessingException e) {
+            throw new ActionInvocationException("Error while converting response to JSON.", e);
+        }
     }
 
     /**
@@ -114,7 +120,11 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
         }
 
         this.response.addHeader(CONTENT_TYPE_HEADER, ContentTypes.APPLICATION_JSON);
-        this.response.setContent(this.gson.toJson(result));
+        try {
+            this.response.setContent(this.objectMapper.writeValueAsString(result));
+        } catch (JsonProcessingException e) {
+            throw new ActionInvocationException("Error while converting response to JSON.", e);
+        }
     }
 
     /**

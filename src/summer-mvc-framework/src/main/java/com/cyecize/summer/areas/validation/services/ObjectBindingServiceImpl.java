@@ -9,13 +9,20 @@ import com.cyecize.summer.areas.routing.models.UploadedFileImpl;
 import com.cyecize.summer.areas.routing.utils.PrimitiveTypeDataResolver;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.ConvertedBy;
+import com.cyecize.summer.areas.validation.exceptions.ValidationException;
 import com.cyecize.summer.areas.validation.interfaces.DataAdapter;
+import com.cyecize.summer.constants.ContentTypes;
 import com.cyecize.summer.utils.ReflectionUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.cyecize.summer.constants.GeneralConstants.HTTP_REQUEST_RAW_BODY_PAYLOAD_PARAM;
 
 public class ObjectBindingServiceImpl implements ObjectBindingService {
 
@@ -25,24 +32,37 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
 
     private final PrimitiveTypeDataResolver dataResolver;
 
+    private final ObjectMapper objectMapper;
+
     private String assetsDir;
 
     public ObjectBindingServiceImpl(DependencyContainer dependencyContainer, DataAdapterStorageService dataAdapters) {
         this.dependencyContainer = dependencyContainer;
         this.dataAdapters = dataAdapters;
         this.dataResolver = new PrimitiveTypeDataResolver();
+        this.objectMapper = dependencyContainer.getService(ObjectMapper.class);
     }
 
     /**
      * Iterates through fields and for every field checks if there is a data adapter for it.
      * If there is, use the data adapter, otherwise check if the field is MultipartFile or List.
      * Finally consider that the field is primitive.
+     * <p>
+     * In case content type is application/json, use {@link ObjectMapper} to map body to the provided binding model.
      */
     @Override
     public void populateBindingModel(Object bindingModel) {
         final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
 
         if (request.getBodyParameters() == null) {
+            return;
+        }
+
+        if (ContentTypes.APPLICATION_JSON.equals(request.getContentType())) {
+            this.populateBindingModelFromJsonPayload(
+                    request.getBodyParam(HTTP_REQUEST_RAW_BODY_PAYLOAD_PARAM),
+                    bindingModel
+            );
             return;
         }
 
@@ -143,6 +163,24 @@ public class ObjectBindingServiceImpl implements ObjectBindingService {
         }
 
         return parsedParams;
+    }
+
+    /**
+     * Supports {@link ConvertedBy} and standard {@link JsonDeserialize}.
+     *
+     * @param payload      -
+     * @param bindingModel -
+     */
+    private void populateBindingModelFromJsonPayload(String payload, Object bindingModel) {
+        try {
+            this.objectMapper.readerForUpdating(bindingModel).readValue(payload);
+        } catch (JsonProcessingException e) {
+            throw new ValidationException(String.format(
+                    "Could not convert json \n %s \n to binding model %s",
+                    payload,
+                    bindingModel.getClass()
+            ), e);
+        }
     }
 
     /**

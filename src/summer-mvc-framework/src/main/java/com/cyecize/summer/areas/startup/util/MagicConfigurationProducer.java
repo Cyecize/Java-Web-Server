@@ -8,7 +8,7 @@ import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfigImpl;
 import com.cyecize.summer.areas.security.interceptors.SecurityInterceptor;
 import com.cyecize.summer.areas.security.models.Principal;
-import com.cyecize.summer.areas.startup.callbacks.ComponentScopeHandler;
+import com.cyecize.summer.areas.validation.objectmapper.ObjectMapperBean;
 import com.cyecize.summer.areas.validation.constraints.FieldMatchConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxLengthConstraint;
@@ -18,8 +18,10 @@ import com.cyecize.summer.areas.validation.constraints.MinLengthConstraint;
 import com.cyecize.summer.areas.validation.constraints.NotEmptyConstraint;
 import com.cyecize.summer.areas.validation.constraints.NotNullConstraint;
 import com.cyecize.summer.areas.validation.constraints.RegExConstraint;
+import com.cyecize.summer.areas.validation.objectmapper.GenericDeserializerConvertedByAnnotation;
 import com.cyecize.summer.areas.validation.models.BindingResultImpl;
 import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
+import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImpl;
 import com.cyecize.summer.common.annotations.BeanConfig;
 import com.cyecize.summer.common.annotations.Component;
 import com.cyecize.summer.common.models.Model;
@@ -39,6 +41,7 @@ public final class MagicConfigurationProducer {
             .unmodifiableMap(new HashMap<>() {{
                 //platform
                 put(SoletRequestAndResponseBean.class, BeanConfig.class);
+                put(ObjectMapperBean.class, BeanConfig.class);
                 put(SoletConfigImpl.class, null);
                 put(HttpSessionImpl.class, null);
                 put(Model.class, Component.class);
@@ -47,6 +50,8 @@ public final class MagicConfigurationProducer {
                 put(Principal.class, Component.class);
                 put(BindingResultImpl.class, Component.class);
                 put(RedirectedBindingResult.class, Component.class);
+                put(DataAdapterStorageServiceImpl.class, Component.class);
+                put(GenericDeserializerConvertedByAnnotation.class, Component.class);
 
                 //constraints
                 put(FieldMatchConstraint.class, Component.class);

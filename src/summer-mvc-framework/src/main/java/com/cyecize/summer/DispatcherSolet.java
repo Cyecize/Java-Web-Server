@@ -21,10 +21,11 @@ import com.cyecize.summer.areas.startup.services.UserConfigService;
 import com.cyecize.summer.areas.startup.services.UserConfigServiceImpl;
 import com.cyecize.summer.areas.startup.util.JavacheConfigServiceUtils;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
+import com.cyecize.summer.areas.validation.objectmapper.ObjectMapperHandlerInstantiator;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageService;
-import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImpl;
 import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
 import com.cyecize.summer.areas.validation.services.ObjectValidationServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.Set;
@@ -97,8 +98,12 @@ public abstract class DispatcherSolet implements HttpSolet {
     }
 
     private void initRequestProcessor(Map<String, Set<ActionMethod>> actionMethods) {
-        final DataAdapterStorageService dataAdapterStorageService =
-                new DataAdapterStorageServiceImpl(this.dependencyContainer);
+        final DataAdapterStorageService dataAdapterStorageService = this.dependencyContainer
+                .getService(DataAdapterStorageService.class);
+
+        this.dependencyContainer.getService(ObjectMapper.class).setHandlerInstantiator(new ObjectMapperHandlerInstantiator(
+                this.dependencyContainer
+        ));
 
         this.requestProcessor = new RequestProcessorImpl(
                 (SoletLogger) this.getSoletConfig().getAttribute(SoletConstants.SOLET_CONFIG_LOGGER),

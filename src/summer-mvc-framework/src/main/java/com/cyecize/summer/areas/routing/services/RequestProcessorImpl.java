@@ -1,6 +1,7 @@
 package com.cyecize.summer.areas.routing.services;
 
 import com.cyecize.http.HttpRequest;
+import com.cyecize.http.HttpSession;
 import com.cyecize.http.HttpStatus;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletResponse;
@@ -81,9 +82,9 @@ public class RequestProcessorImpl implements RequestProcessor {
      * Updates request beans on every request.
      */
     private void updatePlatformBeans(HttpSoletRequest request, HttpSoletResponse response) {
-        this.dependencyContainer.update(request);
-        this.dependencyContainer.update(response);
-        this.dependencyContainer.update(request.getSession());
+        this.dependencyContainer.update(HttpSoletRequest.class, request);
+        this.dependencyContainer.update(HttpSoletResponse.class, response);
+        this.dependencyContainer.update(HttpSession.class, request.getSession());
     }
 
     /**

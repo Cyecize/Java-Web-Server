@@ -2,11 +2,15 @@ package com.cyecize.summer.areas.startup.util;
 
 import com.cyecize.http.HttpRequestImpl;
 import com.cyecize.http.HttpResponseImpl;
+import com.cyecize.http.HttpSession;
+import com.cyecize.http.HttpSessionImpl;
+import com.cyecize.ioc.annotations.Bean;
+import com.cyecize.ioc.annotations.Scope;
+import com.cyecize.ioc.enums.ScopeType;
 import com.cyecize.solet.HttpSoletRequest;
 import com.cyecize.solet.HttpSoletRequestImpl;
 import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.solet.HttpSoletResponseImpl;
-import com.cyecize.summer.common.annotations.Bean;
 import com.cyecize.summer.common.annotations.BeanConfig;
 
 /**
@@ -18,12 +22,20 @@ import com.cyecize.summer.common.annotations.BeanConfig;
 public class SoletRequestAndResponseBean {
 
     @Bean
-    public HttpSoletRequestImpl request() {
+    @Scope(ScopeType.PROXY)
+    public HttpSoletRequest request() {
         return new HttpSoletRequestImpl(new HttpRequestImpl());
     }
 
     @Bean
-    public HttpSoletResponseImpl response() {
+    @Scope(ScopeType.PROXY)
+    public HttpSoletResponse response() {
         return new HttpSoletResponseImpl(new HttpResponseImpl());
+    }
+
+    @Bean
+    @Scope(ScopeType.PROXY)
+    public HttpSession session() {
+        return new HttpSessionImpl();
     }
 }

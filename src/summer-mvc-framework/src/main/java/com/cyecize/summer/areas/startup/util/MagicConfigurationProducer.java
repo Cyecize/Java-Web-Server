@@ -1,6 +1,5 @@
 package com.cyecize.summer.areas.startup.util;
 
-import com.cyecize.http.HttpSessionImpl;
 import com.cyecize.ioc.config.MagicConfiguration;
 import com.cyecize.ioc.events.ServiceDetailsCreated;
 import com.cyecize.ioc.handlers.DependencyResolver;
@@ -8,7 +7,6 @@ import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfigImpl;
 import com.cyecize.summer.areas.security.interceptors.SecurityInterceptor;
 import com.cyecize.summer.areas.security.models.Principal;
-import com.cyecize.summer.areas.validation.objectmapper.ObjectMapperBean;
 import com.cyecize.summer.areas.validation.constraints.FieldMatchConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxLengthConstraint;
@@ -18,9 +16,10 @@ import com.cyecize.summer.areas.validation.constraints.MinLengthConstraint;
 import com.cyecize.summer.areas.validation.constraints.NotEmptyConstraint;
 import com.cyecize.summer.areas.validation.constraints.NotNullConstraint;
 import com.cyecize.summer.areas.validation.constraints.RegExConstraint;
-import com.cyecize.summer.areas.validation.objectmapper.GenericDeserializerConvertedByAnnotation;
 import com.cyecize.summer.areas.validation.models.BindingResultImpl;
 import com.cyecize.summer.areas.validation.models.RedirectedBindingResult;
+import com.cyecize.summer.areas.validation.objectmapper.GenericDeserializerConvertedByAnnotation;
+import com.cyecize.summer.areas.validation.objectmapper.ObjectMapperBean;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImpl;
 import com.cyecize.summer.common.annotations.BeanConfig;
 import com.cyecize.summer.common.annotations.Component;
@@ -43,7 +42,6 @@ public final class MagicConfigurationProducer {
                 put(SoletRequestAndResponseBean.class, BeanConfig.class);
                 put(ObjectMapperBean.class, BeanConfig.class);
                 put(SoletConfigImpl.class, null);
-                put(HttpSessionImpl.class, null);
                 put(Model.class, Component.class);
                 put(ModelAndView.class, Component.class);
                 put(RedirectAttributes.class, Component.class);

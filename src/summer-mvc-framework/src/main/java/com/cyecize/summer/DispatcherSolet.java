@@ -90,7 +90,7 @@ public abstract class DispatcherSolet implements HttpSolet {
         );
 
         this.dependencyContainer = summerAppContext.getDependencyContainer();
-        this.dependencyContainer.update(soletConfig);
+        this.dependencyContainer.update(SoletConfig.class, soletConfig);
 
         this.initRequestProcessor(summerAppContext.getActionsByMethod());
 
@@ -105,28 +105,21 @@ public abstract class DispatcherSolet implements HttpSolet {
                 this.dependencyContainer
         ));
 
+        final TemplateRenderingTwigService platformTemplateService = this.dependencyContainer
+                .getService(TemplateRenderingTwigService.class);
+        platformTemplateService.initialize(this.dependencyContainer);
+
         this.requestProcessor = new RequestProcessorImpl(
                 (SoletLogger) this.getSoletConfig().getAttribute(SoletConstants.SOLET_CONFIG_LOGGER),
                 new ActionMethodInvokingServiceImpl(
                         this.dependencyContainer,
-                        new ObjectBindingServiceImpl(
-                                this.dependencyContainer,
-                                dataAdapterStorageService
-                        ),
+                        new ObjectBindingServiceImpl(this.dependencyContainer, dataAdapterStorageService),
                         new ObjectValidationServiceImpl(this.dependencyContainer),
                         dataAdapterStorageService,
                         actionMethods
                 ),
-                new ActionMethodResultHandlerImpl(
-                        this.dependencyContainer,
-                        new TemplateRenderingTwigService(
-                                this.getSoletConfig().getAttribute(SoletConstants.SOLET_CFG_WORKING_DIR).toString(),
-                                this.dependencyContainer
-                        )
-                ),
-                new InterceptorInvokerServiceImpl(
-                        this.dependencyContainer
-                ),
+                new ActionMethodResultHandlerImpl(this.dependencyContainer, platformTemplateService),
+                new InterceptorInvokerServiceImpl(this.dependencyContainer),
                 this.dependencyContainer
         );
     }

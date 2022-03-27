@@ -1,7 +1,6 @@
 package com.cyecize.summer.areas.template.functions;
 
 import com.cyecize.solet.HttpSoletRequest;
-import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import org.jtwig.exceptions.JtwigException;
 import org.jtwig.functions.FunctionRequest;
 import org.jtwig.functions.SimpleJtwigFunction;
@@ -10,10 +9,10 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
 
     private static final String INVALID_PARAM_ERROR = "Path function expects one parameter of type string.";
 
-    private final DependencyContainer dependencyContainer;
+    private final HttpSoletRequest request;
 
-    public JTwigPathFunction(DependencyContainer dependencyContainer) {
-        this.dependencyContainer = dependencyContainer;
+    public JTwigPathFunction(HttpSoletRequest request) {
+        this.request = request;
     }
 
     @Override
@@ -34,7 +33,6 @@ public class JTwigPathFunction extends SimpleJtwigFunction {
      * Gets app name by replacing the relative URL with "" on the absolute URL.
      */
     private String createPrefix() {
-        final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
         String appName = request.getRequestURL().replace(request.getRelativeRequestURL(), "");
 
         if (appName.length() < 1) {

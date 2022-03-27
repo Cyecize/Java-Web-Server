@@ -7,6 +7,7 @@ import com.cyecize.solet.HttpSolet;
 import com.cyecize.solet.SoletConfigImpl;
 import com.cyecize.summer.areas.security.interceptors.SecurityInterceptor;
 import com.cyecize.summer.areas.security.models.Principal;
+import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
 import com.cyecize.summer.areas.validation.constraints.FieldMatchConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxLengthConstraint;
@@ -23,6 +24,7 @@ import com.cyecize.summer.areas.validation.objectmapper.ObjectMapperBean;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageServiceImpl;
 import com.cyecize.summer.common.annotations.BeanConfig;
 import com.cyecize.summer.common.annotations.Component;
+import com.cyecize.summer.common.annotations.Service;
 import com.cyecize.summer.common.models.Model;
 import com.cyecize.summer.common.models.ModelAndView;
 import com.cyecize.summer.common.models.RedirectAttributes;
@@ -40,8 +42,8 @@ public final class MagicConfigurationProducer {
             .unmodifiableMap(new HashMap<>() {{
                 //platform
                 put(SoletRequestAndResponseBean.class, BeanConfig.class);
+                put(SoletConfigBean.class, BeanConfig.class);
                 put(ObjectMapperBean.class, BeanConfig.class);
-                put(SoletConfigImpl.class, null);
                 put(Model.class, Component.class);
                 put(ModelAndView.class, Component.class);
                 put(RedirectAttributes.class, Component.class);
@@ -50,6 +52,7 @@ public final class MagicConfigurationProducer {
                 put(RedirectedBindingResult.class, Component.class);
                 put(DataAdapterStorageServiceImpl.class, Component.class);
                 put(GenericDeserializerConvertedByAnnotation.class, Component.class);
+                put(TemplateRenderingTwigService.class, Service.class);
 
                 //constraints
                 put(FieldMatchConstraint.class, Component.class);

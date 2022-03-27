@@ -1,6 +1,5 @@
 package com.cyecize.summer.areas.template.functions;
 
-import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.security.models.Principal;
 import org.jtwig.exceptions.JtwigException;
 import org.jtwig.functions.FunctionRequest;
@@ -10,10 +9,10 @@ public class JTwigHasRoleFunction extends SimpleJtwigFunction {
 
     private static final String INVALID_PARAMETER_MESSAGE = "HasRole function accepts one parameter of type String";
 
-    private final DependencyContainer dependencyContainer;
+    private final Principal principal;
 
-    public JTwigHasRoleFunction(DependencyContainer dependencyContainer) {
-        this.dependencyContainer = dependencyContainer;
+    public JTwigHasRoleFunction(Principal principal) {
+        this.principal = principal;
     }
 
     @Override
@@ -32,7 +31,6 @@ public class JTwigHasRoleFunction extends SimpleJtwigFunction {
             throw new JtwigException(INVALID_PARAMETER_MESSAGE);
         }
 
-        final Principal principal = this.dependencyContainer.getService(Principal.class);
-        return principal.isUserPresent() && principal.hasAuthority((String) functionRequest.get(0));
+        return this.principal.isUserPresent() && this.principal.hasAuthority((String) functionRequest.get(0));
     }
 }

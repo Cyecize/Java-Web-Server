@@ -10,10 +10,10 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
 
     private static final String INVALID_PARAMETER_MESSAGE = "FormErrors function accepts zero or one parameters of type String";
 
-    private final DependencyContainer dependencyContainer;
+    private final RedirectedBindingResult redirectedBindingResult;
 
-    public JTwigFieldErrorsFunction(DependencyContainer dependencyContainer) {
-        this.dependencyContainer = dependencyContainer;
+    public JTwigFieldErrorsFunction(RedirectedBindingResult redirectedBindingResult) {
+        this.redirectedBindingResult = redirectedBindingResult;
     }
 
     @Override
@@ -28,9 +28,8 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
      */
     @Override
     public Object execute(FunctionRequest functionRequest) {
-        final RedirectedBindingResult bindingResult = this.dependencyContainer.getService(RedirectedBindingResult.class);
         if (functionRequest.getNumberOfArguments() < 1) {
-            return bindingResult.getErrors();
+            return this.redirectedBindingResult.getErrors();
         }
 
         if (functionRequest.getNumberOfArguments() > 1 || functionRequest.getArguments().get(0) == null ||
@@ -38,6 +37,6 @@ public class JTwigFieldErrorsFunction extends SimpleJtwigFunction {
             throw new JtwigException(INVALID_PARAMETER_MESSAGE);
         }
 
-        return bindingResult.getFieldErrors((String) functionRequest.getArguments().get(0));
+        return this.redirectedBindingResult.getFieldErrors((String) functionRequest.getArguments().get(0));
     }
 }

@@ -10,10 +10,10 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
 
     private static final String INVALID_PARAM_ERROR = "Path function expects one parameter of type string.";
 
-    private final DependencyContainer dependencyContainer;
+    private final HttpSoletRequest request;
 
-    public JTwigUrlFunction(DependencyContainer dependencyContainer) {
-        this.dependencyContainer = dependencyContainer;
+    public JTwigUrlFunction(HttpSoletRequest httpSoletRequest) {
+        this.request = httpSoletRequest;
     }
 
     @Override
@@ -35,9 +35,8 @@ public class JTwigUrlFunction extends SimpleJtwigFunction {
      * so the leftover is the app name prefix.
      */
     private String getURI() {
-        final HttpSoletRequest request = this.dependencyContainer.getService(HttpSoletRequest.class);
-        String URI = request.getHost() + "/" + request.getRequestURL()
-                .replace(request.getRelativeRequestURL(), "");
+        String URI = this.request.getHost() + "/" + this.request.getRequestURL()
+                .replace(this.request.getRelativeRequestURL(), "");
 
         if (URI.endsWith("/")) {
             URI = URI.substring(0, URI.length() - 1);

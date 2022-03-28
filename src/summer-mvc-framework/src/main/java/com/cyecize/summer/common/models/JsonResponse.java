@@ -1,13 +1,15 @@
 package com.cyecize.summer.common.models;
 
 import com.cyecize.http.HttpStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class JsonResponse {
 
-    private Map<String, Object> response;
+    @JsonProperty
+    private final Map<String, Object> response;
 
     private HttpStatus status;
 

@@ -13,4 +13,8 @@ public interface InterceptorAdapter {
     default void postHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler, Model model) throws Exception {
 
     }
+
+    default int getOrder() {
+        return 1;
+    }
 }

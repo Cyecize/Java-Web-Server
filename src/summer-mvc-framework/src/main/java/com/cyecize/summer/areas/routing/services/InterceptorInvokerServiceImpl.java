@@ -7,16 +7,18 @@ import com.cyecize.summer.common.extensions.InterceptorAdapter;
 import com.cyecize.summer.common.models.Model;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class InterceptorInvokerServiceImpl implements InterceptorInvokerService {
 
-    private Collection<InterceptorAdapter> interceptors;
+    private final Collection<InterceptorAdapter> interceptors;
 
     public InterceptorInvokerServiceImpl(DependencyContainer dependencyContainer) {
         this.interceptors = dependencyContainer.getImplementations(InterceptorAdapter.class)
                 .stream()
                 .map(sd -> (InterceptorAdapter) sd.getInstance())
+                .sorted(Comparator.comparingInt(InterceptorAdapter::getOrder))
                 .collect(Collectors.toList());
     }
 

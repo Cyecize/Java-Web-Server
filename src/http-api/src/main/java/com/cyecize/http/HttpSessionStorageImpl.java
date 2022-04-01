@@ -1,16 +1,17 @@
 package com.cyecize.http;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class HttpSessionStorageImpl implements HttpSessionStorage {
 
-    private Map<String, HttpSession> sessions;
+    private final ConcurrentHashMap<String, HttpSession> sessions;
 
     public HttpSessionStorageImpl() {
-        this.sessions = new HashMap<>();
+        this.sessions = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -20,9 +21,12 @@ public class HttpSessionStorageImpl implements HttpSessionStorage {
 
     @Override
     public void refreshSessions() {
-        this.sessions = this.sessions.entrySet().stream()
-                .filter(kvp -> kvp.getValue().isValid())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final List<String> invalidSessions = this.sessions.entrySet().stream()
+                .filter(kvp -> !kvp.getValue().isValid())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        invalidSessions.forEach(this.sessions::remove);
     }
 
     @Override

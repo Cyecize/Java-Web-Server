@@ -9,6 +9,8 @@ import com.cyecize.solet.SoletLogger;
 import com.cyecize.summer.areas.routing.exceptions.ActionInvocationException;
 import com.cyecize.summer.areas.routing.models.ActionInvokeResult;
 import com.cyecize.summer.areas.routing.models.ActionMethod;
+import com.cyecize.summer.areas.security.UserDetailsContextHolder;
+import com.cyecize.summer.areas.security.interfaces.UserDetails;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.startup.services.SessionScopeManager;
@@ -55,6 +57,7 @@ public class RequestProcessorImpl implements RequestProcessor {
     @Override
     public boolean processRequest(HttpSoletRequest request, HttpSoletResponse response) {
         this.updatePlatformBeans(request, response);
+        this.loadSecurityContext(request);
         this.dependencyContainer.clearFlashServices();
         this.dependencyContainer.reloadServices(ServiceLifeSpan.REQUEST);
 
@@ -85,6 +88,19 @@ public class RequestProcessorImpl implements RequestProcessor {
         this.dependencyContainer.update(HttpSoletRequest.class, request);
         this.dependencyContainer.update(HttpSoletResponse.class, response);
         this.dependencyContainer.update(HttpSession.class, request.getSession());
+    }
+
+    /**
+     * Sets the {@link UserDetails} object, that is stored in the session, to the user details context.
+     * This should be called on every request to ensure the correct user is set for the correct request.
+     * If there is no user saved in the session, then the context holder will be cleared.
+     *
+     * @param request - current request.
+     */
+    private void loadSecurityContext(HttpSoletRequest request) {
+        final HttpSession session = request.getSession();
+        final UserDetails user = (UserDetails) session.getAttribute(SecurityConstants.SESSION_USER_DETAILS_KEY);
+        UserDetailsContextHolder.setUserDetails(user);
     }
 
     /**

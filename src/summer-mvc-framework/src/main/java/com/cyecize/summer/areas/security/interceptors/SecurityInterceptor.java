@@ -6,7 +6,6 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.security.annotations.PreAuthorize;
 import com.cyecize.summer.areas.security.enums.AuthorizationType;
 import com.cyecize.summer.areas.security.exceptions.NoSecurityConfigurationException;
-import com.cyecize.summer.areas.security.exceptions.UnauthorizedException;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.security.models.SecuredArea;
 import com.cyecize.summer.areas.security.models.SecurityConfig;
@@ -18,9 +17,8 @@ import com.cyecize.summer.common.extensions.InterceptorAdapter;
 @Component(lifespan = ServiceLifeSpan.REQUEST)
 public class SecurityInterceptor implements InterceptorAdapter {
 
-    private static final String NO_SECURITY_CONFIG_MSG = SecurityConfig.class.getName() + " configuration is missing, create one in a bean!";
-
-    private static final String NOT_AUTHORIZED_FOR_URL_FORMAT = "User not authorized for \"%s\".";
+    private static final String NO_SECURITY_CONFIG_MSG = SecurityConfig.class.getName()
+            + " configuration is missing, create one in a bean!";
 
     private final SecurityConfig securityConfig;
 
@@ -32,12 +30,12 @@ public class SecurityInterceptor implements InterceptorAdapter {
     }
 
     @Override
-    public boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler) throws Exception {
-
+    public boolean preHandle(HttpSoletRequest request, HttpSoletResponse response, Object handler) {
         if (this.securityConfig != null) {
             if (request.getRelativeRequestURL().equals(this.securityConfig.getLogoutURL())) {
+                this.securityConfig.getBeforeLogoutHandler().handle(request, response, this.securityConfig);
                 this.principal.logout();
-                response.sendRedirect(request.getContextPath() + this.securityConfig.getLogoutRedirectURL());
+                this.securityConfig.getLogoutCompletedHandler().handle(request, response, this.securityConfig);
                 return false;
             }
 
@@ -67,10 +65,11 @@ public class SecurityInterceptor implements InterceptorAdapter {
 
     /**
      * Scans the secured areas.
-     * If Route matches secured area, check if the user is logged in and redirect to login if not.
-     * If the user is logged in, check if the required role is present and throw Exception if it not present.
+     * Calls the corresponding error handlers if one of the following conditions is met:
+     * If Route matches secured area, check if the user is logged in and call error handler if not.
+     * If the user is logged in, check if the required role is present and call error handler not present.
      */
-    private boolean handleSecuredAreas(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {
+    private boolean handleSecuredAreas(HttpSoletRequest request, HttpSoletResponse response) {
         final SecuredArea securedArea = this.securityConfig.getSecuredAreas().stream()
                 .filter(sa -> sa.getRoute().matcher(request.getRelativeRequestURL()).find())
                 .findFirst().orElse(null);
@@ -80,34 +79,34 @@ public class SecurityInterceptor implements InterceptorAdapter {
         }
 
         if (!principal.isUserPresent()) {
-            this.handleNotLoggedIn(request, response);
+            this.securityConfig.getNotLoggedInHandler().handle(request, response, this.securityConfig);
             return false;
         }
 
         if (!this.principal.hasAuthority(securedArea.getAuthority())) {
-            this.handleNotPrivileged(request, response);
+            this.securityConfig.getNotPrivilegedHandler().handle(request, response, this.securityConfig);
         }
 
         return true;
     }
 
     /**
-     * If User is not logged in and authorization is required, redirect to login with refer callback.
-     * If User is logged in, but Anonymous is required, consider it as HTTP 401.
-     * If User is logged, and role is required, check if the user has that role and Handle HTTP 401 if role is absent.
+     * Perform security checks and call the corresponding error handler if any one of the following conditions is met:
+     * If User is not logged in and authorization is required
+     * If User is logged in, but Anonymous is required
+     * If User is logged, and role is required, check if the user has that role and call error handler role is absent.
      */
-    private boolean handleAnnotation(PreAuthorize annotation, HttpSoletRequest request, HttpSoletResponse response)
-            throws Exception {
+    private boolean handleAnnotation(PreAuthorize annotation, HttpSoletRequest request, HttpSoletResponse response) {
         if (this.securityConfig == null) throw new NoSecurityConfigurationException(NO_SECURITY_CONFIG_MSG);
 
         if (annotation.value() == AuthorizationType.LOGGED_IN && !this.principal.isUserPresent()) {
-            this.handleNotLoggedIn(request, response);
+            this.securityConfig.getNotLoggedInHandler().handle(request, response, this.securityConfig);
             return false;
         }
 
         if (annotation.value() == AuthorizationType.ANONYMOUS) {
             if (this.principal.isUserPresent()) {
-                this.handleNotPrivileged(request, response);
+                this.securityConfig.getNotPrivilegedHandler().handle(request, response, this.securityConfig);
                 return false;
             }
 
@@ -116,7 +115,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
 
         if (!annotation.role().equals("")) {
             if (!this.principal.hasAuthority(annotation.role())) {
-                this.handleNotPrivileged(request, response);
+                this.securityConfig.getNotPrivilegedHandler().handle(request, response, this.securityConfig);
                 return false;
             }
         }
@@ -124,14 +123,12 @@ public class SecurityInterceptor implements InterceptorAdapter {
         return true;
     }
 
-    private void handleNotLoggedIn(HttpSoletRequest request, HttpSoletResponse response) {
-        response.sendRedirect(
-                request.getContextPath() + this.securityConfig.getLoginURL() +
-                        "?callback=" + request.getRelativeRequestURL()
-        );
-    }
+    @Override
+    public int getOrder() {
+        if (this.securityConfig != null) {
+            return this.securityConfig.getSecurityInterceptorOrder();
+        }
 
-    private void handleNotPrivileged(HttpSoletRequest request, HttpSoletResponse response) throws UnauthorizedException {
-        throw new UnauthorizedException(String.format(NOT_AUTHORIZED_FOR_URL_FORMAT, request.getRelativeRequestURL()));
+        return InterceptorAdapter.super.getOrder();
     }
 }

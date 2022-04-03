@@ -98,6 +98,7 @@ public class SecurityInterceptor implements InterceptorAdapter {
      */
     private boolean handleAnnotation(PreAuthorize annotation, HttpSoletRequest request, HttpSoletResponse response) {
         if (this.securityConfig == null) throw new NoSecurityConfigurationException(NO_SECURITY_CONFIG_MSG);
+        if (annotation.value() == AuthorizationType.ANY) return true;
 
         if (annotation.value() == AuthorizationType.LOGGED_IN && !this.principal.isUserPresent()) {
             this.securityConfig.getNotLoggedInHandler().handle(request, response, this.securityConfig);

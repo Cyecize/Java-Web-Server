@@ -14,6 +14,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 public class ObjectValidationServiceImpl implements ObjectValidationService {
 
@@ -33,6 +34,14 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
     @Override
     public void validateBindingModel(Object bindingModel, BindingResult bindingResult) {
         if (bindingModel == null || ReflectionUtils.isPrimitive(bindingModel.getClass())) {
+            return;
+        }
+
+        //If the type is collection, validate each of its elements.
+        if (Collection.class.isAssignableFrom(bindingModel.getClass())) {
+            for (Object element : (Collection<?>) bindingModel) {
+                this.validateBindingModel(element, bindingResult);
+            }
             return;
         }
 

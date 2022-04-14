@@ -5,11 +5,14 @@ import com.cyecize.summer.areas.routing.models.ActionMethod;
 import com.cyecize.summer.areas.routing.models.annotationModels.ActionAnnotationHandlerContainer;
 import com.cyecize.summer.areas.routing.models.annotationModels.AnnotationExtractedValue;
 import com.cyecize.summer.areas.routing.utils.PathFormatter;
+import com.cyecize.summer.common.annotations.routing.DeleteMapping;
 import com.cyecize.summer.common.annotations.routing.ExceptionListener;
 import com.cyecize.summer.common.annotations.routing.GetMapping;
 import com.cyecize.summer.common.annotations.routing.HttpMethod;
+import com.cyecize.summer.common.annotations.routing.PatchMapping;
 import com.cyecize.summer.common.annotations.routing.PathVariable;
 import com.cyecize.summer.common.annotations.routing.PostMapping;
+import com.cyecize.summer.common.annotations.routing.PutMapping;
 import com.cyecize.summer.common.annotations.routing.RequestMapping;
 import com.cyecize.summer.constants.ContentTypes;
 
@@ -53,6 +56,27 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
                 )
         ));
 
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(PutMapping.class,
+                annotation -> new AnnotationExtractedValue(
+                        List.of(HttpMethod.PUT.name()),
+                        annotation.produces(), annotation.value()
+                )
+        ));
+
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(PatchMapping.class,
+                annotation -> new AnnotationExtractedValue(
+                        List.of(HttpMethod.PATCH.name()),
+                        annotation.produces(), annotation.value()
+                )
+        ));
+
+        METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(DeleteMapping.class,
+                annotation -> new AnnotationExtractedValue(
+                        List.of(HttpMethod.DELETE.name()),
+                        annotation.produces(), annotation.value()
+                )
+        ));
+
         METHOD_ANNOTATION_HANDLERS.add(new ActionAnnotationHandlerContainer<>(ExceptionListener.class,
                 annotation -> new AnnotationExtractedValue(
                         List.of(EXCEPTION),
@@ -72,7 +96,7 @@ public class ActionMethodScanningServiceImpl implements ActionMethodScanningServ
 
     private final PathFormatter pathFormatter;
 
-    private Map<String, Set<ActionMethod>> actionsByHttpMethod;
+    private final Map<String, Set<ActionMethod>> actionsByHttpMethod;
 
     public ActionMethodScanningServiceImpl(PathFormatter pathFormatter) {
         this.pathFormatter = pathFormatter;

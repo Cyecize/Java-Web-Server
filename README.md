@@ -73,6 +73,8 @@ In the examples folder you can find a working javache demo with everything set u
 More info
 -------------
 If you are having trouble running the app, contact me at ceci2205@abv.bg .
+Check out this repo: https://github.com/Cyecize/White-Goods-Backend-Javache
+It is a REST application fully built on this framework using the best practices for REST and WEB development.
 
 Credits
 -------

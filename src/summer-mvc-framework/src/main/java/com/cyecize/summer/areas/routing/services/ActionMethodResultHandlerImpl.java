@@ -190,7 +190,9 @@ public class ActionMethodResultHandlerImpl implements ActionMethodResultHandler 
     }
 
     private void handleNullResponse() {
-        this.response.setContent("");
+        if (this.response.getContent() == null) {
+            this.response.setContent("");
+        }
     }
 
     /**

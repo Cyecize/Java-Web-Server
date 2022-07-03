@@ -66,6 +66,8 @@ public class JarFileUnzipServiceImpl implements JarFileUnzipService {
                             }
                         }
                     }
+                } else if (!currentEntryAsFile.getParentFile().exists()) {
+                    currentEntryAsFile.getParentFile().mkdirs();
                 }
 
                 try (OutputStream fileOutputStream = new FileOutputStream(currentEntryAsFile)) {

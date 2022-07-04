@@ -32,6 +32,8 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
     private final String assetsDir;
 
+    private final String webappsDir;
+
     private final String rootAppName;
 
     private final Map<String, HttpSolet> solets;
@@ -46,6 +48,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
         this.loggingService = loggingService;
         this.configService = configService;
         this.assetsDir = this.getAssetsDir();
+        this.webappsDir = this.getWebappsDir();
         this.rootAppName = configService.getConfigParamString(JavacheConfigValue.MAIN_APP_JAR_NAME);
         this.solets = new HashMap<>();
 
@@ -113,13 +116,7 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                 PathUtils.appendPath(this.assetsDir, applicationName)
         );
 
-        soletConfigCopy.setAttribute(
-                SoletConstants.SOLET_CFG_WORKING_DIR,
-                PathUtils.appendPath(
-                        this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
-                        File.separator
-                )
-        );
+        soletConfigCopy.setAttribute(SoletConstants.SOLET_CFG_WORKING_DIR, this.getSoletWorkingDir(applicationName));
 
         soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_LOGGER, new SoletLoggerImpl(
                 this.loggingService,
@@ -176,5 +173,22 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
                 this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
                 this.configService.getConfigParamString(JavacheConfigValue.ASSETS_DIR_NAME)
         );
+    }
+
+    private String getWebappsDir() {
+        return PathUtils.appendPath(
+                this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
+                this.configService.getConfigParamString(JavacheConfigValue.WEB_APPS_DIR_NAME)
+        );
+    }
+
+    private String getSoletWorkingDir(String appName) {
+        final String appDir = PathUtils.appendPath(this.webappsDir, appName);
+        final String appWorkingDir = PathUtils.appendPath(
+                appDir,
+                this.configService.getConfigParamString(JavacheConfigValue.APP_COMPILE_OUTPUT_DIR_NAME)
+        );
+
+        return PathUtils.appendPath(appWorkingDir, File.separator);
     }
 }

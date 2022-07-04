@@ -76,7 +76,7 @@ public class JavacheConfigBeanCreator {
 
         if (workingDir.endsWith(".jar")) {
             JarFileUnzipService unzipService = new JarFileUnzipServiceImpl();
-            unzipService.unzipJar(new File(workingDir), false, workingDir.replace(".jar", ""));
+            unzipService.unzipJar(new File(File.separator + workingDir), false, workingDir.replace(".jar", ""));
             workingDir = workingDir.replace(".jar", "");
         }
 

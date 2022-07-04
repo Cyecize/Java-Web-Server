@@ -115,7 +115,10 @@ public class ApplicationLoadingServiceImpl implements ApplicationLoadingService 
 
         soletConfigCopy.setAttribute(
                 SoletConstants.SOLET_CFG_WORKING_DIR,
-                soletClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)
+                PathUtils.appendPath(
+                        this.configService.getConfigParamString(JavacheConfigValue.JAVACHE_WORKING_DIRECTORY),
+                        File.separator
+                )
         );
 
         soletConfigCopy.setAttribute(SoletConstants.SOLET_CONFIG_LOGGER, new SoletLoggerImpl(

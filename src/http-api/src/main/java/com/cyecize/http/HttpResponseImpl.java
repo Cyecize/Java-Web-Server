@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.cyecize.http.Constants.LINE_SEPARATOR;
+
 public class HttpResponseImpl implements HttpResponse {
 
     private static final String CONTENT_TYPE = "Content-Type";
@@ -91,21 +93,21 @@ public class HttpResponseImpl implements HttpResponse {
     private String getHeaderString() {
         final StringBuilder result = new StringBuilder()
                 .append(HttpStatus.getResponseLine(this.getStatusCode().getStatusCode()))
-                .append(System.lineSeparator());
+                .append(LINE_SEPARATOR);
 
         this.headers.put(CONTENT_TYPE, this.resolveCharset(this.headers.getOrDefault(CONTENT_TYPE, "text/html")));
 
         for (Map.Entry<String, String> header : this.getHeaders().entrySet()) {
-            result.append(header.getKey()).append(": ").append(header.getValue()).append(System.lineSeparator());
+            result.append(header.getKey()).append(": ").append(header.getValue()).append(LINE_SEPARATOR);
         }
 
         if (!this.cookies.isEmpty()) {
             for (HttpCookie cookie : this.cookies.values()) {
-                result.append("Set-Cookie: ").append(cookie.toRFCString()).append(System.lineSeparator());
+                result.append("Set-Cookie: ").append(cookie.toRFCString()).append(LINE_SEPARATOR);
             }
         }
 
-        result.append(System.lineSeparator());
+        result.append(LINE_SEPARATOR);
         return result.toString();
     }
 

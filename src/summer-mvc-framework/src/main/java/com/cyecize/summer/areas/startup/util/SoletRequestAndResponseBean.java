@@ -13,6 +13,8 @@ import com.cyecize.solet.HttpSoletResponse;
 import com.cyecize.solet.HttpSoletResponseImpl;
 import com.cyecize.summer.common.annotations.BeanConfig;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * This is required because Summer components rely on {@link HttpSoletRequest}
  * and {@link HttpSoletResponse} instances.
@@ -30,7 +32,7 @@ public class SoletRequestAndResponseBean {
     @Bean
     @Scope(ScopeType.PROXY)
     public HttpSoletResponse response() {
-        return new HttpSoletResponseImpl(new HttpResponseImpl());
+        return new HttpSoletResponseImpl(new HttpResponseImpl(), new ByteArrayOutputStream());
     }
 
     @Bean

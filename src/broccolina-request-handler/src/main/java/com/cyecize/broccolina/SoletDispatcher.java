@@ -84,7 +84,8 @@ public class SoletDispatcher implements RequestHandler {
         );
 
         final HttpSoletResponse response = new HttpSoletResponseImpl(
-                sharedData.getObject(SharedDataPropertyNames.HTTP_RESPONSE, HttpResponse.class)
+                sharedData.getObject(SharedDataPropertyNames.HTTP_RESPONSE, HttpResponse.class),
+                outputStream
         );
 
         if (request.isResource() && !this.trackResources) {
@@ -105,7 +106,7 @@ public class SoletDispatcher implements RequestHandler {
         this.sessionManagementService.sendSessionIfExistent(request, response);
         this.sessionManagementService.clearInvalidSessions();
 
-        outputStream.write(response.getBytes());
+        response.getOutputStream().write();
 
         return true;
     }

@@ -3,6 +3,7 @@ package com.cyecize.http;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.cyecize.http.Constants.LINE_SEPARATOR;
 
@@ -92,7 +93,9 @@ public class HttpResponseImpl implements HttpResponse {
      */
     private String getHeaderString() {
         final StringBuilder result = new StringBuilder()
-                .append(HttpStatus.getResponseLine(this.getStatusCode().getStatusCode()))
+                .append(HttpStatus.getResponseLine(
+                        Objects.requireNonNullElse(this.getStatusCode(), HttpStatus.OK).getStatusCode())
+                )
                 .append(LINE_SEPARATOR);
 
         this.headers.put(CONTENT_TYPE, this.resolveCharset(this.headers.getOrDefault(CONTENT_TYPE, "text/html")));

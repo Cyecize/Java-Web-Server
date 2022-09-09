@@ -103,6 +103,12 @@ public class SoletDispatcher implements RequestHandler {
             response.setStatusCode(HttpStatus.OK);
         }
 
+        if (!response.getHeaders().containsKey(BroccolinaConstants.CONTENT_LENGTH_HEADER)
+                && response.getContent() != null
+                && response.getContent().length > 0) {
+            response.addHeader(BroccolinaConstants.CONTENT_LENGTH_HEADER, response.getContent().length + "");
+        }
+
         this.sessionManagementService.sendSessionIfExistent(request, response);
         this.sessionManagementService.clearInvalidSessions();
 

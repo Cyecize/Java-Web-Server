@@ -5,10 +5,14 @@ import java.io.File;
 public final class PathUtils {
 
     public static String appendPath(String url, String path) {
+        return appendPath(url, path, File.separator);
+    }
+
+    public static String appendPath(String url, String path, String separator) {
         url = trimEndingSlashes(url);
         path = trimAllSlashes(path);
 
-        return url + File.separator + path;
+        return url + separator + path;
     }
 
     public static String trimEndingSlashes(String str) {

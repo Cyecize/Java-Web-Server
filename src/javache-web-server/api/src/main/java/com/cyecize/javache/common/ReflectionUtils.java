@@ -1,6 +1,5 @@
 package com.cyecize.javache.common;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,7 +20,8 @@ public final class ReflectionUtils {
     }
 
     public static URL createDirURL(String canonicalPath) throws MalformedURLException {
-        return new URL("file:/" + canonicalPath + File.separator);
+        final String path = PathUtils.appendPath("file:", canonicalPath, "/");
+        return new URL(PathUtils.appendPath(path, ""));
     }
 
     /**

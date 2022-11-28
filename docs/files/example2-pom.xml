@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.cyecize</groupId>
+    <artifactId>mishmash</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- Following 2 plugins can be used to build a self executable jar or.
+            After the build, just run java -jar outputName.jar
+            If building docker image, make sure they are uncommented.
+
+            -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Build an executable JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.cyecize.mishmash.StartUp</mainClass>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                        <manifestEntries>
+                            <!--                            <Class-Path>lib/summer-1.3.jar lib/javache-embedded-1.3.jar</Class-Path>-->
+                            <Class-Path>lib/summer-1.3.jar lib/javache-1.3.jar</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+
+            <!-- Following 2 plugins can be used to build a jar file in the correct format for the standalone server.
+                      After the build, just place the jar file into the webapps folder of javache.
+                       The file name may need to be renamed to ROOT.jar.
+                       If using Docker, make sure these 2 are commented.
+
+                       -->
+
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-dependency-plugin</artifactId>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>copy-dependencies</id>-->
+            <!--                        <phase>prepare-package</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>copy-dependencies</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <outputDirectory>${project.build.directory}/classes/lib</outputDirectory>-->
+            <!--                            <overWriteReleases>false</overWriteReleases>-->
+            <!--                            <overWriteSnapshots>false</overWriteSnapshots>-->
+            <!--                            <overWriteIfNewer>true</overWriteIfNewer>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
+
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-antrun-plugin</artifactId>-->
+            <!--                <version>3.1.0</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>Prepare-For-Jar</id>-->
+            <!--                        <phase>compile</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>run</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <encoding>${project.build.sourceEncoding}</encoding>-->
+            <!--                            <target name="Prepare classes folder for custom jar file">-->
+            <!--                                <copy encoding="${project.build.sourceEncoding}"-->
+            <!--                                      outputencoding="${project.build.sourceEncoding}"-->
+            <!--                                      todir="${project.basedir}/target/temp/classes/">-->
+            <!--                                    <fileset dir="${project.basedir}/target/classes/"/>-->
+            <!--                                </copy>-->
+            <!--                                <delete dir="${project.basedir}/target/classes"/>-->
+
+            <!--                                <copy encoding="${project.build.sourceEncoding}"-->
+            <!--                                      outputencoding="${project.build.sourceEncoding}"-->
+            <!--                                      todir="${project.basedir}/target/classes/classes/">-->
+            <!--                                    <fileset dir="${project.basedir}/target/temp/classes/"/>-->
+            <!--                                </copy>-->
+            <!--                            </target>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                    <execution>-->
+            <!--                        <id>Restore-After-Jar</id>-->
+            <!--                        <phase>package</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>run</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <encoding>${project.build.sourceEncoding}</encoding>-->
+            <!--                            <target name="Restore classes folder">-->
+            <!--                                <delete dir="${project.basedir}/target/classes/classes"/>-->
+            <!--                                <copy encoding="${project.build.sourceEncoding}"-->
+            <!--                                      outputencoding="${project.build.sourceEncoding}"-->
+            <!--                                      todir="${project.basedir}/target/classes/">-->
+            <!--                                    <fileset dir="${project.basedir}/target/temp/classes/"/>-->
+            <!--                                </copy>-->
+            <!--                                <delete dir="${project.basedir}/target/temp/"/>-->
+            <!--                            </target>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- platform dependencies, do not include in build -->
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>summer</artifactId>
+            <version>1.3</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/summer-1.3.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>com.cyecize</groupId>
+            <artifactId>javache</artifactId>
+            <scope>system</scope>
+            <version>1.3</version>
+            <systemPath>${basedir}/lib/javache-embedded-1.3.jar</systemPath>
+        </dependency>
+
+        <!-- END PLATFORM DEPENDENCIES -->
+
+        <!-- third party dependencies Include in build or paste the jar in javache's lib folder -->
+
+        <!-- https://mvnrepository.com/artifact/org.modelmapper/modelmapper -->
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>0.7.5</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.4.3.Final</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.47</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
+    </dependencies>
+
+</project>

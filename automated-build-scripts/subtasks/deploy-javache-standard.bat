@@ -44,9 +44,10 @@ xcopy %src%\javache-web-server\server\target\classes server /E/H
 mkdir webapps
 
 copy %src%\javache-web-server\server\conf\StartJavache.bat StartJavache.bat
+copy %src%\javache-web-server\server\conf\StartJavache.sh StartJavache.sh
 
 
-:: Deploy Summer MVC Fat far too
+:: Deploy Summer MVC Fat jar too
 copy %src%\summer-mvc-framework\target\summer-%summerVersion%.jar ..\summer-%summerVersion%.jar
 
 cd %~dp0

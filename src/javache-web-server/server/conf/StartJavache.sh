@@ -8,4 +8,5 @@ done
 echo "$libraries"
 
 cd server
-java  -cp "$libraries%" com.cyecize.StartUp
+java  -cp "$libraries" com.cyecize.StartUp
+

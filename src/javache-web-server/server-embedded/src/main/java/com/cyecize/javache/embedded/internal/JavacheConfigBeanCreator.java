@@ -11,6 +11,9 @@ import com.cyecize.javache.services.JavacheConfigService;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -72,11 +75,17 @@ public class JavacheConfigBeanCreator {
      * @return working directory.
      */
     private String getWorkingDir() throws IOException {
-        String workingDir = mainClass.getProtectionDomain().getCodeSource().getLocation().getFile().substring(1);
+        String workingDir;
+        try {
+            final URI uri = mainClass.getProtectionDomain().getCodeSource().getLocation().toURI();
+            workingDir = Path.of(uri).toString();
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
+        }
 
         if (workingDir.endsWith(".jar")) {
-            JarFileUnzipService unzipService = new JarFileUnzipServiceImpl();
-            unzipService.unzipJar(new File(File.separator + workingDir), false, workingDir.replace(".jar", ""));
+            final JarFileUnzipService unzipService = new JarFileUnzipServiceImpl();
+            unzipService.unzipJar(new File(workingDir), false, workingDir.replace(".jar", ""));
             workingDir = workingDir.replace(".jar", "");
         }
 

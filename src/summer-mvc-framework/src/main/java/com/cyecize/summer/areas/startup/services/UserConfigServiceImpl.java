@@ -68,13 +68,16 @@ public class UserConfigServiceImpl implements UserConfigService {
                 final String line = reader.readLine();
 
                 final int delimiterIndex = line.indexOf('=');
-                //If there is no '=' sign or there is no value after it.
-                if (delimiterIndex == -1 || delimiterIndex == line.length() - 1) {
+                //If there is no '=' sign.
+                if (delimiterIndex == -1) {
                     continue;
                 }
 
                 final String key = line.substring(0, delimiterIndex).trim();
-                final String value = line.substring(delimiterIndex + 1).trim();
+
+                final String value = delimiterIndex == line.length() - 1
+                        ? null //there is no value after '', in that case read null.
+                        : line.substring(delimiterIndex + 1).trim();
 
                 this.config.put(key, this.parseValue(value));
             }
@@ -91,6 +94,9 @@ public class UserConfigServiceImpl implements UserConfigService {
      * @return parsed string.
      */
     private String parseValue(String value) {
+        if (value == null) {
+            return null;
+        }
         final String placeholdersRegex = "\\$\\{(?<source>\\w+)\\.(?<key>\\w+)\\}";
         final Pattern placeholdersPattern = Pattern.compile(placeholdersRegex);
 

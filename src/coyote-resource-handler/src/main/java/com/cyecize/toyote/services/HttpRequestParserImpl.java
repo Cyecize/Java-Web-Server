@@ -148,7 +148,10 @@ public class HttpRequestParserImpl implements HttpRequestParser {
 
     private void setMethodAndURL(String requestFirstLine, HttpRequest request) {
         request.setMethod(requestFirstLine.split("\\s")[0]);
-        request.setRequestURL(requestFirstLine.split("[\\s\\?]")[1]);
+        request.setRequestURL(URLDecoder.decode(
+                requestFirstLine.split("[\\s\\?]")[1],
+                StandardCharsets.UTF_8
+        ));
     }
 
     private void addHeaders(List<String> requestMetadata, HttpRequest request) {

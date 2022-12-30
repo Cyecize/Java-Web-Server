@@ -8,6 +8,7 @@ import com.cyecize.solet.SoletConfigImpl;
 import com.cyecize.summer.areas.security.interceptors.SecurityInterceptor;
 import com.cyecize.summer.areas.security.models.Principal;
 import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
+import com.cyecize.summer.areas.validation.constraints.BooleanExactValueConstraint;
 import com.cyecize.summer.areas.validation.constraints.FieldMatchConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxConstraint;
 import com.cyecize.summer.areas.validation.constraints.MaxLengthConstraint;
@@ -56,6 +57,7 @@ public final class MagicConfigurationProducer {
 
                 //constraints
                 put(FieldMatchConstraint.class, Component.class);
+                put(BooleanExactValueConstraint.class, Component.class);
                 put(MaxConstraint.class, Component.class);
                 put(MaxLengthConstraint.class, Component.class);
                 put(MediaTypeConstraint.class, Component.class);

@@ -188,13 +188,16 @@ public class ActionMethodInvokingServiceImpl implements ActionMethodInvokingServ
                 }
 
                 parameterInstances[i] = instanceOfBindingModel;
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException cause) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                     InvocationTargetException cause) {
                 throw new RuntimeException(String.format(CANNOT_INSTANTIATE_CLASS_FORMAT, parameter.getType().getName()), cause);
             }
         }
 
         if (bindingResult.hasErrors()
-                && Arrays.stream(parameters).noneMatch(p -> p.getType().isAssignableFrom(BindingResult.class))) {
+                && !actionMethod.getMethod().isAnnotationPresent(ExceptionListener.class)
+                && Arrays.stream(parameters)
+                .noneMatch(p -> p.getType().isAssignableFrom(BindingResult.class))) {
             throw new ConstraintValidationException(String.format(
                     "Object validation completed with %d errors",
                     bindingResult.getErrors().size())

@@ -6,6 +6,7 @@ import com.cyecize.solet.SoletLogger;
 import com.cyecize.summer.areas.startup.exceptions.ConfigurationMissingException;
 import com.cyecize.summer.areas.startup.util.JavacheConfigServiceUtils;
 import com.cyecize.summer.constants.IocConstants;
+import com.cyecize.summer.utils.EnvVariableUtils;
 import com.cyecize.summer.utils.PathUtils;
 
 import java.io.BufferedReader;
@@ -75,9 +76,15 @@ public class UserConfigServiceImpl implements UserConfigService {
 
                 final String key = line.substring(0, delimiterIndex).trim();
 
-                final String value = delimiterIndex == line.length() - 1
-                        ? null //there is no value after '', in that case read null.
-                        : line.substring(delimiterIndex + 1).trim();
+                final String valFromEnv = EnvVariableUtils.getEnvVariable(key);
+                final String value;
+                if (valFromEnv != null) {
+                    value = valFromEnv;
+                } else {
+                    value = delimiterIndex == line.length() - 1
+                            ? null //there is no value after '', in that case read null.
+                            : line.substring(delimiterIndex + 1).trim();
+                }
 
                 this.config.put(key, this.parseValue(value));
             }
@@ -108,7 +115,7 @@ public class UserConfigServiceImpl implements UserConfigService {
             final String key = matcher.group("key");
 
             if (source.equalsIgnoreCase("env")) {
-                final String envValue = System.getenv(key);
+                final String envValue = EnvVariableUtils.getEnvVariable(key);
                 if (envValue == null) {
                     throw new ConfigurationMissingException(String.format(
                             "Could not find environment variable with name '%s'.", key

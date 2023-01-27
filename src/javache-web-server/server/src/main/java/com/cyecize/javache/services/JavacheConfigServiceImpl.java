@@ -97,6 +97,7 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
             this.loadRequestHandlerConfig();
             this.initDefaultConfigParams();
             this.initConfigParams();
+            this.applyEnvironmentVariables();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -179,6 +180,27 @@ public class JavacheConfigServiceImpl implements JavacheConfigService {
             this.configParameters.put(keyValuePair[0], this.dataResolver.resolve(
                     this.configParameters.get(keyValuePair[0]).getClass(), keyValuePair[1]
             ));
+        }
+    }
+
+    /**
+     * As a last step, Javache will check for any environment variables with names that match {@link JavacheConfigValue}
+     * Since environment variables are applied last, they have the highest priority.
+     */
+    private void applyEnvironmentVariables() {
+        for (JavacheConfigValue cfg : JavacheConfigValue.values()) {
+            final String val = System.getenv(cfg.name());
+            if (val == null) {
+                continue;
+            }
+
+            this.configParameters.put(
+                    cfg.name(),
+                    this.dataResolver.resolve(
+                            this.configParameters.get(cfg.name()).getClass(),
+                            val
+                    )
+            );
         }
     }
 }

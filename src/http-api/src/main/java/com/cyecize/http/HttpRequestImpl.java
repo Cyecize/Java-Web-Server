@@ -15,6 +15,8 @@ public class HttpRequestImpl implements HttpRequest {
 
     private int contentLength;
 
+    private String remoteAddress;
+
     private final List<MultipartFile> multipartFiles;
 
     private final Map<String, String> headers;
@@ -52,6 +54,11 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     @Override
+    public void setRemoteAddress(String address) {
+        this.remoteAddress = address;
+    }
+
+    @Override
     public void setSession(HttpSession session) {
         this.session = session;
     }
@@ -85,6 +92,11 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public int getContentLength() {
         return this.contentLength;
+    }
+
+    @Override
+    public String getRemoteAddress() {
+        return this.remoteAddress;
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.cyecize.http.HttpRequestImpl;
 import com.cyecize.ioc.annotations.Autowired;
 import com.cyecize.ioc.annotations.Service;
 import com.cyecize.javache.JavacheConfigValue;
+import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.javache.api.SharedDataPropertyNames;
 import com.cyecize.javache.services.JavacheConfigService;
 import com.cyecize.javache.services.LoggingService;
 import com.cyecize.toyote.ToyoteConstants;
@@ -15,6 +17,7 @@ import com.cyecize.toyote.exceptions.RequestTooBigException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -54,9 +57,12 @@ public class HttpRequestParserImpl implements HttpRequestParser {
      * @return populated {@link HttpRequest}
      */
     @Override
-    public HttpRequest parseHttpRequest(InputStream inputStream) throws CannotParseRequestException {
+    public HttpRequest parseHttpRequest(InputStream inputStream,
+                                        RequestHandlerSharedData sharedData) throws CannotParseRequestException {
         try {
             final HttpRequest request = new HttpRequestImpl();
+            final Socket socket = sharedData.getObject(SharedDataPropertyNames.CLIENT_CONNECTION, Socket.class);
+            request.setRemoteAddress(socket.getInetAddress().getHostAddress());
 
             final List<String> headers = parseMetadataLines(inputStream, false);
 

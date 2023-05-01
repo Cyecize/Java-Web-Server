@@ -11,6 +11,8 @@ public interface HttpRequest {
 
     void setContentLength(int contentLength);
 
+    void setRemoteAddress(String address);
+
     void setSession(HttpSession session);
 
     void addHeader(String header, String value);
@@ -22,6 +24,8 @@ public interface HttpRequest {
     boolean isResource();
 
     int getContentLength();
+
+    String getRemoteAddress();
 
     String getMethod();
 

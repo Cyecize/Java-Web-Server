@@ -3,6 +3,7 @@ package com.cyecize.javache.core;
 import com.cyecize.javache.api.RequestDestroyHandler;
 import com.cyecize.javache.api.RequestHandler;
 import com.cyecize.javache.api.RequestHandlerSharedData;
+import com.cyecize.javache.api.SharedDataPropertyNames;
 import com.cyecize.javache.services.LoggingService;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class ConnectionHandlerImpl implements Runnable {
      */
     private void processClientConnection() throws IOException {
         final RequestHandlerSharedData sharedData = new RequestHandlerSharedData();
+        sharedData.addObject(SharedDataPropertyNames.CLIENT_CONNECTION, this.clientSocket);
 
         for (RequestHandler requestHandler : this.requestHandlers) {
             boolean requestHandled = requestHandler.handleRequest(

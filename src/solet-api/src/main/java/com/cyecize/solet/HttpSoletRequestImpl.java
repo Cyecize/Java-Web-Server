@@ -50,6 +50,11 @@ public class HttpSoletRequestImpl implements HttpSoletRequest {
     }
 
     @Override
+    public void setRemoteAddress(String address) {
+        this.request.setRemoteAddress(address);
+    }
+
+    @Override
     public void setSession(HttpSession session) {
         this.request.setSession(session);
     }
@@ -77,6 +82,11 @@ public class HttpSoletRequestImpl implements HttpSoletRequest {
     @Override
     public int getContentLength() {
         return this.request.getContentLength();
+    }
+
+    @Override
+    public String getRemoteAddress() {
+        return this.request.getRemoteAddress();
     }
 
     @Override

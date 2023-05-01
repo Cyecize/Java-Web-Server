@@ -43,7 +43,7 @@ public class ToyoteRequestHandler implements RequestHandler {
     public boolean handleRequest(InputStream inputStream, OutputStream outputStream, RequestHandlerSharedData sharedData)
             throws IOException {
         try {
-            final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream);
+            final HttpRequest request = this.httpRequestParser.parseHttpRequest(inputStream, sharedData);
             final HttpResponse response = new HttpResponseImpl();
 
             sharedData.addObject(SharedDataPropertyNames.HTTP_REQUEST, request);

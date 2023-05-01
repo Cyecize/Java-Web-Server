@@ -8,4 +8,6 @@ public final class SharedDataPropertyNames {
   public static final String HTTP_REQUEST = "HTTP_REQUEST";
 
   public static final String HTTP_RESPONSE = "HTTP_RESPONSE";
+
+  public static final String CLIENT_CONNECTION = "CLIENT_CONNECTION";
 }

@@ -48,8 +48,8 @@ public class FormDataParserDefaultImpl implements FormDataParser {
 
         for (String bodyParamPair : bodyParamPairs) {
             final String[] tokens = bodyParamPair.split("=");
-            final String paramKey = decode(tokens[0]);
-            final String value = tokens.length > 1 ? decode(tokens[1]) : null;
+            final String paramKey = this.decode(tokens[0]);
+            final String value = tokens.length > 1 ? this.decode(tokens[1]) : null;
 
             request.addBodyParameter(paramKey, value);
         }
@@ -68,7 +68,12 @@ public class FormDataParserDefaultImpl implements FormDataParser {
         return body;
     }
 
-    private static String decode(String str) {
-        return URLDecoder.decode(str, StandardCharsets.UTF_8);
+    private String decode(String str) {
+        try {
+            return URLDecoder.decode(str, StandardCharsets.UTF_8);
+        } catch (Exception ex) {
+            this.loggingService.warning("Error while URL decoding string: " + str);
+            return str;
+        }
     }
 }

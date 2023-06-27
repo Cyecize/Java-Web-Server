@@ -44,6 +44,7 @@ public final class MagicConfigurationProducer {
                 //platform
                 put(SoletRequestAndResponseBean.class, BeanConfig.class);
                 put(SoletConfigBean.class, BeanConfig.class);
+                put(ObjectValidationServiceBean.class, BeanConfig.class);
                 put(ObjectMapperBean.class, BeanConfig.class);
                 put(Model.class, Component.class);
                 put(ModelAndView.class, Component.class);

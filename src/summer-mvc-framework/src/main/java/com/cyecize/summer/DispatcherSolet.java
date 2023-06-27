@@ -24,6 +24,7 @@ import com.cyecize.summer.areas.template.services.TemplateRenderingTwigService;
 import com.cyecize.summer.areas.validation.objectmapper.ObjectMapperHandlerInstantiator;
 import com.cyecize.summer.areas.validation.services.DataAdapterStorageService;
 import com.cyecize.summer.areas.validation.services.ObjectBindingServiceImpl;
+import com.cyecize.summer.areas.validation.services.ObjectValidationService;
 import com.cyecize.summer.areas.validation.services.ObjectValidationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -109,12 +110,15 @@ public abstract class DispatcherSolet implements HttpSolet {
                 .getService(TemplateRenderingTwigService.class);
         platformTemplateService.initialize(this.dependencyContainer);
 
+        final ObjectValidationService objectValidationService = new ObjectValidationServiceImpl(this.dependencyContainer);
+        this.dependencyContainer.update(ObjectValidationService.class, objectValidationService);
+
         this.requestProcessor = new RequestProcessorImpl(
                 (SoletLogger) this.getSoletConfig().getAttribute(SoletConstants.SOLET_CONFIG_LOGGER),
                 new ActionMethodInvokingServiceImpl(
                         this.dependencyContainer,
                         new ObjectBindingServiceImpl(this.dependencyContainer, dataAdapterStorageService),
-                        new ObjectValidationServiceImpl(this.dependencyContainer),
+                        objectValidationService,
                         dataAdapterStorageService,
                         actionMethods
                 ),

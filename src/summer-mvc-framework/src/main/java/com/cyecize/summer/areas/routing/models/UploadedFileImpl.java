@@ -2,6 +2,7 @@ package com.cyecize.summer.areas.routing.models;
 
 import com.cyecize.http.MultipartFile;
 import com.cyecize.summer.areas.routing.interfaces.UploadedFile;
+import com.cyecize.summer.areas.validation.annotations.RejectedValueExclude;
 import com.cyecize.summer.utils.PathUtils;
 
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+@RejectedValueExclude
 public class UploadedFileImpl implements UploadedFile {
 
     private static final String FILE_IS_NULL_MSG = "File is null";

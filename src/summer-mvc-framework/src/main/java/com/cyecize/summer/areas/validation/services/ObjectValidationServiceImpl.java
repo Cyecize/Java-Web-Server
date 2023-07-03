@@ -1,7 +1,9 @@
 package com.cyecize.summer.areas.validation.services;
 
+import com.cyecize.ioc.utils.AliasFinder;
 import com.cyecize.summer.areas.startup.services.DependencyContainer;
 import com.cyecize.summer.areas.validation.annotations.Constraint;
+import com.cyecize.summer.areas.validation.annotations.RejectedValueExclude;
 import com.cyecize.summer.areas.validation.annotations.Valid;
 import com.cyecize.summer.areas.validation.exceptions.ErrorDuringValidationException;
 import com.cyecize.summer.areas.validation.interfaces.BindingResult;
@@ -104,18 +106,36 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                     continue;
                 }
 
-                bindingResult.addNewError(new FieldError(
-                        bindingModel.getClass().getName(),
-                        field.getName(),
-                        this.getAnnotationMessage(currentAnnotation),
-                        fieldVal,
-                        row
-                ));
+                bindingResult.addNewError(this.createFieldError(bindingModel, field, currentAnnotation, fieldVal, row));
             }
 
         } catch (IllegalAccessException e) {
             throw new ErrorDuringValidationException(e.getMessage(), e);
         }
+    }
+
+    private FieldError createFieldError(Object bindingModel,
+                                        Field field,
+                                        Annotation currentAnnotation,
+                                        Object fieldVal,
+                                        Integer row) {
+        // Hide field value from the response if it is configured to do so.
+        if (fieldVal != null) {
+            if (AliasFinder.isAnnotationPresent(field.getDeclaredAnnotations(), RejectedValueExclude.class)) {
+                fieldVal = null;
+            } else if (AliasFinder.isAnnotationPresent(
+                    fieldVal.getClass().getDeclaredAnnotations(), RejectedValueExclude.class)) {
+                fieldVal = null;
+            }
+        }
+
+        return new FieldError(
+                bindingModel.getClass().getName(),
+                field.getName(),
+                this.getAnnotationMessage(currentAnnotation),
+                fieldVal,
+                row
+        );
     }
 
     /**

@@ -33,21 +33,32 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
      */
     @Override
     public void validateBindingModel(Object bindingModel, BindingResult bindingResult) {
+        this.validateBindingModel(bindingModel, bindingResult, null);
+    }
+
+    /**
+     * @param bindingModel  -
+     * @param bindingResult -
+     * @param row           - If the validation is for a collection, this works as an indicator to know which element in the
+     *                      collection has an error.
+     */
+    private void validateBindingModel(Object bindingModel, BindingResult bindingResult, Integer row) {
         if (bindingModel == null || ReflectionUtils.isPrimitive(bindingModel.getClass())) {
             return;
         }
 
         //If the type is collection, validate each of its elements.
         if (Collection.class.isAssignableFrom(bindingModel.getClass())) {
+            int rowCount = 0;
             for (Object element : (Collection<?>) bindingModel) {
-                this.validateBindingModel(element, bindingResult);
+                this.validateBindingModel(element, bindingResult, rowCount++);
             }
             return;
         }
 
         try {
             for (Field declaredField : ReflectionUtils.getAllFieldsRecursively(bindingModel.getClass())) {
-                this.validateField(declaredField, bindingModel, bindingResult);
+                this.validateField(declaredField, bindingModel, bindingResult, row);
                 if (declaredField.isAnnotationPresent(Valid.class)) {
                     this.validateBindingModel(declaredField.get(bindingModel), bindingResult);
                 }
@@ -66,7 +77,7 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
      * If the validator returns false, add new {@link FieldError} to the {@link BindingResult}.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void validateField(Field field, Object bindingModel, BindingResult bindingResult) {
+    private void validateField(Field field, Object bindingModel, BindingResult bindingResult, Integer row) {
         try {
             field.setAccessible(true);
             Object fieldVal = field.get(bindingModel);
@@ -97,7 +108,8 @@ public class ObjectValidationServiceImpl implements ObjectValidationService {
                         bindingModel.getClass().getName(),
                         field.getName(),
                         this.getAnnotationMessage(currentAnnotation),
-                        fieldVal
+                        fieldVal,
+                        row
                 ));
             }
 

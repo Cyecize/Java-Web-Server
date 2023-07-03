@@ -2,19 +2,22 @@ package com.cyecize.summer.areas.validation.models;
 
 public class FieldError {
 
-    private String object;
+    private final String object;
 
-    private String fieldName;
+    private final String fieldName;
 
-    private String message;
+    private final String message;
 
-    private Object rejectedValue;
+    private final Object rejectedValue;
 
-    public FieldError(String objectName, String fieldName, String errorMessage, Object rejectedValue) {
+    private final Integer row;
+
+    public FieldError(String objectName, String fieldName, String errorMessage, Object rejectedValue, Integer row) {
         this.object = objectName;
         this.fieldName = fieldName;
         this.message = errorMessage;
         this.rejectedValue = rejectedValue;
+        this.row = row;
     }
 
     public String getObject() {
@@ -31,6 +34,10 @@ public class FieldError {
 
     public Object getRejectedValue() {
         return this.rejectedValue;
+    }
+
+    public Integer getRow() {
+        return this.row;
     }
 
     @Override
